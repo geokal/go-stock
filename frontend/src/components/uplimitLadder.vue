@@ -1,9 +1,11 @@
 <script setup>
 import {onBeforeMount, onBeforeUnmount, ref, computed, h} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {GetConfig, GetUplimitHot, IsTradingTime, IsTradingDay, GetLatestTradingDay} from "../../wailsjs/go/main/App";
 import {NButton, NText, NTag, NTooltip, NProgress, useMessage} from "naive-ui";
 import StockLightweightKlineChart from "./StockLightweightKlineChart.vue";
 
+const { t } = useI18n()
 const message = useMessage()
 const loading = ref(false)
 const rawData = ref(null)
@@ -84,7 +86,7 @@ function fetchData(date, retryCount = 0) {
   loading.value = true
   const d = typeof date === 'string' ? date : formatDate(date)
   selectedDate.value = d
-  const loadingMsg = message.loading('正在获取涨停梯队数据...', { duration: 0 })
+  const loadingMsg = message.loading(t('market.uplimitLadderLoading'), { duration: 0 })
   GetUplimitHot(d, 20).then(res => {
     if (res && res.code === 20000) {
       const data = res.data
@@ -106,22 +108,22 @@ function fetchData(date, retryCount = 0) {
         const prevDate = new Date(d)
         prevDate.setDate(prevDate.getDate() - 1)
         const prevDateStr = formatDate(prevDate)
-        message.info(`当前日期 ${d} 暂无数据，尝试查询前一日：${prevDateStr}`)
+        message.info(t('market.uplimitLadderNoDataRetry', { date: d, prev: prevDateStr }))
         loadingMsg.destroy()
         fetchData(prevDateStr, retryCount + 1)
         return
       } else {
         rawData.value = data
         loadingMsg.destroy()
-        message.info('暂无历史数据')
+        message.info(t('market.uplimitLadderNoHistory'))
       }
     } else {
       loadingMsg.destroy()
-      message.error(res?.message || '获取数据失败')
+      message.error(res?.message || t('market.uplimitLadderFetchFailed'))
     }
   }).catch(err => {
     loadingMsg.destroy()
-    message.error('请求失败')
+    message.error(t('market.uplimitLadderRequestFailed'))
     console.error(err)
   }).finally(() => {
     if (retryCount === 0 || rawData.value) {
@@ -333,15 +335,15 @@ function getScoreBarWidth(score, maxScore) {
 const plateTableMaxHeight = computed(() => Math.max(300, window.innerHeight * 0.7))
 
 const plateStockColumns = [
-  {title: '代码', key: 'stock_code', width: 90, render: (row) => h(NText, {depth: 3, style: 'font-size:12px'}, () => row.stock_code)},
-  {title: '名称', key: 'stock_name', width: 80, render: (row) => h(NText, {strong: true, style: 'cursor:pointer;color:#2080f0;text-decoration:underline;', onClick: () => showKline(row.stock_code, row.stock_name)}, () => row.stock_name)},
-  {title: '类型', key: 'up_limit_type', width: 70, render: (row) => h(NTag, {color: {color: getTypeColor(row.up_limit_type), textColor: '#fff'}, size: 'tiny', round: true}, () => getTypeLabel(row.up_limit_type))},
-  {title: '描述', key: 'up_limit_desc', width: 70, render: (row) => row.up_limit_desc ? h(NTag, {size: 'tiny', type: row.up_limit_keep_times >= 3 ? 'error' : 'default', round: true}, () => row.up_limit_desc) : ''},
-  {title: '时间', key: 'up_limit_time', width: 70, render: (row) => h(NText, {depth: 3, style: 'font-size:12px'}, () => row.up_limit_time || '')},
-  {title: '封单比', key: 'fd_max', width: 65, render: (row) => h(NText, {style: 'font-size:12px'}, () => row.fd_max + '%')},
-  {title: '收盘封单', key: 'fd_close', width: 75, render: (row) => h(NText, {style: 'color:' + getFdCloseColor(row.fd_close) + ';font-size:12px;font-weight:bold'}, () => row.fd_close + '%')},
-  {title: '成交额', key: 'amount', width: 70, render: (row) => h(NText, {style: 'font-size:12px'}, () => row.amount + '亿')},
-  {title: '市值', key: 'market_c', width: 70, render: (row) => h(NText, {style: 'font-size:12px'}, () => row.market_c + '亿')},
+  {title: t('market.code'), key: 'stock_code', width: 90, render: (row) => h(NText, {depth: 3, style: 'font-size:12px'}, () => row.stock_code)},
+  {title: t('market.name'), key: 'stock_name', width: 80, render: (row) => h(NText, {strong: true, style: 'cursor:pointer;color:#2080f0;text-decoration:underline;', onClick: () => showKline(row.stock_code, row.stock_name)}, () => row.stock_name)},
+  {title: t('market.upLimitType'), key: 'up_limit_type', width: 70, render: (row) => h(NTag, {color: {color: getTypeColor(row.up_limit_type), textColor: '#fff'}, size: 'tiny', round: true}, () => getTypeLabel(row.up_limit_type))},
+  {title: t('market.upLimitDesc'), key: 'up_limit_desc', width: 70, render: (row) => row.up_limit_desc ? h(NTag, {size: 'tiny', type: row.up_limit_keep_times >= 3 ? 'error' : 'default', round: true}, () => row.up_limit_desc) : ''},
+  {title: t('market.time'), key: 'up_limit_time', width: 70, render: (row) => h(NText, {depth: 3, style: 'font-size:12px'}, () => row.up_limit_time || '')},
+  {title: t('market.sealedAmount'), key: 'fd_max', width: 65, render: (row) => h(NText, {style: 'font-size:12px'}, () => row.fd_max + '%')},
+  {title: t('market.closeSealed'), key: 'fd_close', width: 75, render: (row) => h(NText, {style: 'color:' + getFdCloseColor(row.fd_close) + ';font-size:12px;font-weight:bold'}, () => row.fd_close + '%')},
+  {title: t('market.amount'), key: 'amount', width: 70, render: (row) => h(NText, {style: 'font-size:12px'}, () => row.amount + t('market.unit100m'))},
+  {title: t('market.marketCap'), key: 'market_c', width: 70, render: (row) => h(NText, {style: 'font-size:12px'}, () => row.market_c + t('market.unit100m'))},
 ]
 
 function selectPlate(code) {
@@ -371,7 +373,7 @@ function toEastMoneyCode(code) {
 function showKline(code, name) {
   const em = toEastMoneyCode(code)
   if (!em) {
-    message.warning('当前代码暂不支持K线图')
+    message.warning(t('market.uplimitLadderKlineUnsupported'))
     return
   }
   klineCode.value = em
@@ -395,15 +397,15 @@ function showKline(code, name) {
                 style="width: 150px"
                 :on-update:formatted-value="(v) => { if(v) fetchData(v) }"
               />
-              <n-tag type="success" size="small" round>涨停 {{ totalZtCount }} 只</n-tag>
-              <n-tag type="warning" size="small" round>最高 {{ maxCount }} 连板</n-tag>
-              <n-tag v-if="rawData?.today" type="info" size="small" round>实时数据</n-tag>
+              <n-tag type="success" size="small" round>{{ t('market.uplimitCount', { count: totalZtCount }) }}</n-tag>
+              <n-tag type="warning" size="small" round>{{ t('market.maxConsecutiveBoards', { count: maxCount }) }}</n-tag>
+              <n-tag v-if="rawData?.today" type="info" size="small" round>{{ t('market.realtimeData') }}</n-tag>
             </n-space>
             <n-space>
-              <n-button :type="activeView==='ladder'?'primary':'default'" size="small" @click="activeView='ladder'">涨停高度</n-button>
-              <n-button :type="activeView==='plate'?'primary':'default'" size="small" @click="activeView='plate'">板块热度</n-button>
-              <n-button :type="activeView==='hot'?'primary':'default'" size="small" @click="activeView='hot'">个股热度</n-button>
-              <n-button :type="activeView==='exploded'?'primary':'default'" size="small" @click="activeView='exploded'">炸板股</n-button>
+              <n-button :type="activeView==='ladder'?'primary':'default'" size="small" @click="activeView='ladder'">{{ t('market.uplimitHeight') }}</n-button>
+              <n-button :type="activeView==='plate'?'primary':'default'" size="small" @click="activeView='plate'">{{ t('market.sectorHeat') }}</n-button>
+              <n-button :type="activeView==='hot'?'primary':'default'" size="small" @click="activeView='hot'">{{ t('market.stockHeat') }}</n-button>
+              <n-button :type="activeView==='exploded'?'primary':'default'" size="small" @click="activeView='exploded'">{{ t('market.explodedStocks') }}</n-button>
             </n-space>
           </n-space>
         </n-card>
@@ -414,9 +416,9 @@ function showKline(code, name) {
               <template #header>
                 <n-space align="center" :size="8">
                   <n-tag :type="level.level>=5?'error':level.level>=3?'warning':'info'" round size="small" style="font-weight:bold;">
-                    {{ level.level }} 板
+                    {{ level.level }}{{ t('market.board') }}
                   </n-tag>
-                  <n-text depth="3" style="font-size:12px;">{{ level.count }}只</n-text>
+                  <n-text depth="3" style="font-size:12px;">{{ level.count }}{{ t('market.stocks') }}</n-text>
                 </n-space>
               </template>
               <n-space vertical :size="8">
@@ -435,15 +437,15 @@ function showKline(code, name) {
                     </n-space>
                     <n-space align="center" :size="12" wrap>
                       <n-space align="center" :size="4">
-                        <n-text depth="3" style="font-size:11px;">封单</n-text>
+                        <n-text depth="3" style="font-size:11px;">{{ t('market.sealedAmount') }}</n-text>
                         <n-text :style="'color:'+getFdCloseColor(stock.fd_close)+';font-weight:bold;font-size:13px;'">{{ stock.fd_close }}%</n-text>
                       </n-space>
                       <n-space align="center" :size="4">
-                        <n-text depth="3" style="font-size:11px;">成交</n-text>
+                        <n-text depth="3" style="font-size:11px;">{{ t('market.transaction') }}</n-text>
                         <n-text style="font-size:13px;">{{ stock.amount }}亿</n-text>
                       </n-space>
                       <n-space align="center" :size="4">
-                        <n-text depth="3" style="font-size:11px;">市值</n-text>
+                        <n-text depth="3" style="font-size:11px;">{{ t('market.marketCap') }}</n-text>
                         <n-text style="font-size:13px;">{{ stock.market_c }}亿</n-text>
                       </n-space>
                     </n-space>
@@ -456,7 +458,7 @@ function showKline(code, name) {
             </n-collapse-item>
           </n-collapse>
           <n-card v-if="banInfo.length === 0 && !loading" size="small">
-            <n-empty description="暂无连板数据"/>
+            <n-empty :description="t('market.noLadderData')"/>
           </n-card>
         </template>
 
@@ -464,7 +466,7 @@ function showKline(code, name) {
           <n-space vertical :size="12">
             <n-card size="small" :bordered="true" v-if="relayPlates.length">
               <template #header>
-                <n-text style="font-weight:bold;">🔥 接力主线</n-text>
+                <n-text style="font-weight:bold;">🔥 {{ t('market.relayMainLine') }}</n-text>
               </template>
               <n-space :size="8" wrap>
                 <n-tag v-for="rp in relayPlates" :key="rp.p_code" round
@@ -487,12 +489,12 @@ function showKline(code, name) {
                     <n-space align="center" :size="8">
                       <n-text strong style="font-size:14px;">{{ plate.name }}</n-text>
                       <n-tag size="tiny" round :type="plate.score>5000?'error':plate.score>2000?'warning':'info'">
-                        热度 {{ plate.score }}
+                        {{ t('market.heat') }} {{ plate.score }}
                       </n-tag>
                     </n-space>
                     <n-text depth="3" style="font-size:12px;">
-                      涨停{{ rawData?.plate_stocks?.[plate.code]?.length || 0 }}只
-                      炸板{{ rawData?.plate_stocks_zb?.[plate.code]?.length || 0 }}只
+                      {{ t('market.uplimitCount', { count: rawData?.plate_stocks?.[plate.code]?.length || 0 }) }}
+                      {{ t('market.exploded') }}{{ rawData?.plate_stocks_zb?.[plate.code]?.length || 0 }}{{ t('market.stocks') }}
                     </n-text>
                   </n-space>
                   <n-progress
@@ -511,17 +513,17 @@ function showKline(code, name) {
         <template v-if="activeView==='hot'">
           <n-card size="small" :bordered="true">
             <template #header>
-              <n-text style="font-weight:bold;">个股热度排行</n-text>
-              <n-text depth="3" style="font-size:12px;margin-left:8px;">热度≥{{ hotThreshold }}为超级热门</n-text>
+              <n-text style="font-weight:bold;">{{ t('market.stockHeatRanking') }}</n-text>
+              <n-text depth="3" style="font-size:12px;margin-left:8px;">{{ t('market.heatThresholdTip', { threshold: hotThreshold }) }}</n-text>
             </template>
             <n-table :single-line="false" striped size="small" style="font-size:13px;">
               <n-thead>
                 <n-tr>
-                  <n-th width="50px">排名</n-th>
-                  <n-th>代码</n-th>
-                  <n-th>名称</n-th>
-                  <n-th>热度</n-th>
-                  <n-th>概念板块</n-th>
+                  <n-th width="50px">{{ t('market.rank') }}</n-th>
+                  <n-th>{{ t('market.code') }}</n-th>
+                  <n-th>{{ t('market.name') }}</n-th>
+                  <n-th>{{ t('market.heat') }}</n-th>
+                  <n-th>{{ t('market.conceptPlate') }}</n-th>
                 </n-tr>
               </n-thead>
               <n-tbody>
@@ -560,20 +562,20 @@ function showKline(code, name) {
           <n-card size="small" :bordered="true">
             <template #header>
               <n-space align="center" :size="8">
-                <n-text style="font-weight:bold;">炸板股</n-text>
-                <n-tag type="warning" size="small" round>{{ explodedStocks.length }}只</n-tag>
+                <n-text style="font-weight:bold;">{{ t('market.explodedStocks') }}</n-text>
+                <n-tag type="warning" size="small" round>{{ explodedStocks.length }}{{ t('market.stocks') }}</n-tag>
               </n-space>
             </template>
             <n-table v-if="explodedStocks.length" :single-line="false" striped size="small" style="font-size:13px;">
               <n-thead>
                 <n-tr>
-                  <n-th>代码</n-th>
-                  <n-th>名称</n-th>
-                  <n-th>时间</n-th>
-                  <n-th>最高封单</n-th>
-                  <n-th>成交额</n-th>
-                  <n-th>市值</n-th>
-                  <n-th>概念板块</n-th>
+                  <n-th>{{ t('market.code') }}</n-th>
+                  <n-th>{{ t('market.name') }}</n-th>
+                  <n-th>{{ t('market.time') }}</n-th>
+                  <n-th>{{ t('market.maxSealed') }}</n-th>
+                  <n-th>{{ t('market.amount') }}</n-th>
+                  <n-th>{{ t('market.marketCap') }}</n-th>
+                  <n-th>{{ t('market.conceptPlate') }}</n-th>
                 </n-tr>
               </n-thead>
               <n-tbody>
@@ -592,7 +594,7 @@ function showKline(code, name) {
                 </n-tr>
               </n-tbody>
             </n-table>
-            <n-empty v-else description="暂无炸板数据"/>
+            <n-empty v-else :description="t('market.noExplodedData')"/>
           </n-card>
         </template>
 
@@ -600,7 +602,7 @@ function showKline(code, name) {
     </n-spin>
 
     <n-modal v-model:show="showPlateModal" preset="card"
-      :title="plateInfo[selectedPlate]?.name + ' - 涨停股详情' || '涨停股详情'"
+      :title="(plateInfo[selectedPlate]?.name || '') + ' - ' + t('market.explodedStocksDetail')"
       style="width: 900px; max-width: 95vw;"
       :bordered="true" :segmented="{content:true}">
       <n-data-table :columns="plateStockColumns" :data="plateStocksFiltered"
@@ -609,7 +611,7 @@ function showKline(code, name) {
     </n-modal>
 
     <n-modal v-model:show="showKlineModal" preset="card"
-      :title="(klineName || '') + ' — 多周期K线'"
+      :title="(klineName || '') + ' — ' + t('market.multiPeriodKline')"
       style="width: 95vw; max-width: 1200px;"
       :bordered="true">
       <stock-lightweight-kline-chart

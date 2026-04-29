@@ -1,5 +1,7 @@
 <script setup>
 import {computed, h, onBeforeMount, onBeforeUnmount, onMounted,onUnmounted, ref,reactive} from 'vue'
+import {useI18n} from 'vue-i18n'
+const { t } = useI18n()
 import {
   GetAiRecommendStocksList,
   GetConfig,
@@ -89,21 +91,21 @@ const loadingRef = ref(true)
 // Remarks                  string     `json:"remarks" md:"备注"`
 const columnsRef = ref([
   {
-    title: '推荐模型',
+    title: t('agentChat.model'),
     key: 'modelName',
     render(row, index) {
       return h(NText, { type: "info" }, { default: () => row.modelName })
     }
   },
   {
-    title: '评级',
+    title: t('agentChat.rating'),
     key: 'rating',
     render(row, index) {
       return h(NText, { type: "info" }, { default: () => row.rating || '-' })
     }
   },
   {
-    title: '推荐时间',
+    title: t('agentChat.recommendTime'),
     key: 'dataTime',
     render(row, index) {
       //2026-01-14T22:13:27.2693252+08:00 格式化为常用时间格式
@@ -111,29 +113,29 @@ const columnsRef = ref([
     }
   },
   {
-    title: '板块概念',
+    title: t('agentChat.bkName'),
     key: 'bkName'
   },
   {
-    title: '股票名称',
+    title: t('stock.name'),
     key: 'stockName',
     render(row, index) {
       return h(NText, { type: "info" }, { default: () => row.stockName })
     }
   },
   {
-    title: '股票代码',
+    title: t('stock.code'),
     key: 'stockCode'
   },
   {
-    title: '最新分时',
+    title: t('agentChat.latestSparkline'),
     key: 'stockCode',
     render(row, index) {
       return h(sparkLine, { idSuffix:row.ID, stockName: row.stockName, stockCode: row.stockCode, lastPrice: row.stockCurrentPrice, openPrice: row.stockPrePrice, tooltip: true }, )
     }
   },
   {
-    title: '最新',
+    title: t('agentChat.latest'),
     key: 'stockCurrentPrice',
     minWidth: 120,
     render(row, index) {
@@ -148,7 +150,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '推荐时',
+    title: t('agentChat.recommendPrice'),
     key: 'stockPrice',
     render(row, index) {
 
@@ -157,16 +159,16 @@ const columnsRef = ref([
       }
 
       let diff = ((Number(row.stockCurrentPrice) - Number(row.stockPrice))/ Number(row.stockPrice)*100).toFixed(2)
-      let flagStr="暂平"
+      let flagStr = t('aiRecommendStocksList.breakEven')
       let flag="info"
       if(Number(row.stockCurrentPrice)>Number(row.stockPrice)) {
-        flagStr="暂赢 "+diff+"%"
+        flagStr = t('aiRecommendStocksList.smallWin') + " " + diff + "%"
         flag="error"
       }else if(Number(row.stockCurrentPrice)===Number(row.stockPrice)){
-        flagStr="暂平"
+        flagStr = t('aiRecommendStocksList.breakEven')
         flag="info"
       }else{
-        flagStr="暂亏 "+ diff+"%"
+        flagStr = t('aiRecommendStocksList.smallLoss') + " " + diff + "%"
         flag="success"
       }
 
@@ -174,14 +176,14 @@ const columnsRef = ref([
     }
   },
   {
-    title: '昨收',
+    title: t('agentChat.preClose'),
     key: 'stockPrePrice',
     render(row, index) {
       return h(NText, { type: "info" }, { default: () => row.stockPrePrice })
     }
   },
   {
-    title: '开仓价',
+    title: t('agentChat.openPositionPrice'),
     key: 'recommendBuyPrice',
     render(row, index) {
       if(vipLevel.value===""|| Number(vipLevel.value) <=0){
@@ -203,7 +205,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '止盈价',
+    title: t('agentChat.stopProfitPrice'),
     key: 'recommendStopProfitPrice',
     render(row, index) {
       if(vipLevel.value===""|| Number(vipLevel.value) <=0){
@@ -223,7 +225,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '止损价',
+    title: t('agentChat.stopLossPrice'),
     key: 'recommendStopLossPrice',
     render(row, index) {
       if(vipLevel.value===""|| Number(vipLevel.value) <=0){
@@ -245,28 +247,28 @@ const columnsRef = ref([
     }
   },
   {
-    title: '推荐理由',
+    title: t('agentChat.recommendReason'),
     key: 'recommendReason',
     ellipsis: {
       tooltip: isValidVip
     }
   },
   {
-    title: '风险提示',
+    title: t('agentChat.riskRemarks'),
     key: 'riskRemarks',
     ellipsis: {
       tooltip: isValidVip
     }
   },
   {
-    title: '备注',
+    title: t('agentChat.remarks'),
     key: 'remarks',
     ellipsis: {
       tooltip: isValidVip
     }
   },
   {
-    title: '监控预警',
+    title: t('agentChat.alert'),
     key: 'enableAlert',
     width: 80,
     render(row, index) {
@@ -277,7 +279,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '操作',
+    title: t('common.edit'),
     render(row, index) {
       return [h(
           NTag,
@@ -288,9 +290,9 @@ const columnsRef = ref([
             type: 'warning', // 橙色按钮
             onClick: () => showDetail(row)
           },
-          { default: () => '查看' }
+          { default: () => t('common.edit') }
       ),h(NTag, { strong: true,
-        tertiary: true, type: 'error',  onClick: () => deleteAiRecommendStocks(row.ID) }, { default: () => '删除' })]
+        tertiary: true, type: 'error',  onClick: () => deleteAiRecommendStocks(row.ID) }, { default: () => t('common.delete') })]
     }
   },
 ])
@@ -311,9 +313,9 @@ const paginationReactive = reactive({
 })
 
 const enableAlertOptions = [
-  { label: '全部', value: null },
-  { label: '已开启预警', value: true },
-  { label: '未开启预警', value: false }
+  { label: t('common.all'), value: null },
+  { label: t('agentChat.alertEnabled'), value: true },
+  { label: t('agentChat.alertDisabled'), value: false }
 ]
 
 const modalDataRef = reactive({
@@ -441,7 +443,7 @@ function recommendRangeToSinglePrice(p) {
 
 function showDetail(row) {
   if(vipLevel.value===""|| Number(vipLevel.value) <=0){
-    notify.warning({content: '未开通VIP或者已经过期'})
+    notify.warning({content: t('agentChat.vipExpired')})
     return
   }
   modalDataRef.title = row.stockName
@@ -483,10 +485,10 @@ function toggleAlert(row, newEnableAlert) {
 <template>
   <n-input-group>
     <n-date-picker  v-model:value="paginationReactive.range" type="daterange"   style="width: 40%"/>
-    <n-select v-model:value="paginationReactive.enableAlert" :options="enableAlertOptions" placeholder="预警状态" style="width: 15%" clearable />
-    <n-input clearable placeholder="输入关键词搜索" v-model:value="paginationReactive.keyword"/>
+    <n-select v-model:value="paginationReactive.enableAlert" :options="enableAlertOptions" :placeholder="t('agentChat.alertStatus')" style="width: 15%" clearable />
+    <n-input clearable :placeholder="t('agentChat.enterKeyword')" v-model:value="paginationReactive.keyword"/>
     <n-button type="primary" ghost @click="handleSearch"  @input="handleSearch">
-      搜索
+      {{ t('common.search') }}
     </n-button>
   </n-input-group>
         <n-data-table
@@ -518,7 +520,7 @@ function toggleAlert(row, newEnableAlert) {
     </n-card>
     <n-card size="small">
     <n-text type="info">{{modalDataRef.content}}</n-text>
-    <n-divider><n-gradient-text type="error">风险提示</n-gradient-text></n-divider>
+    <n-divider><n-gradient-text type="error">{{ t('agentChat.riskRemarks') }}</n-gradient-text></n-divider>
     <n-text type="error">{{modalDataRef.riskRemarks}}</n-text>
     </n-card>
   </n-modal>

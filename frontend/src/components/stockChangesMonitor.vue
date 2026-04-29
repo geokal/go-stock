@@ -2,6 +2,9 @@
 import {computed, h, onBeforeMount, onBeforeUnmount, onMounted, onUnmounted, ref, reactive} from 'vue'
 import {GetStockChanges, GetConfig, GetStockChangeHistory, SaveStockChangesToHistory, GetAllStockChangesWithPaging} from "../../wailsjs/go/main/App";
 import {NButton, NTag, NText, useMessage, useNotification} from "naive-ui";
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const notify = useNotification()
 const message = useMessage()
@@ -32,70 +35,70 @@ const paginationReactive = reactive({
   industry: "",
   concept: "",
   prefix({ itemCount }) {
-    return `${itemCount} 条记录`
+    return `${itemCount} ${t('common.records')}`
   }
 })
 
 const volumeOptions = [
-  { label: '不限', value: null },
-  { label: '>100手', value: 10000 },
-  { label: '>200手', value: 20000 },
-  { label: '>500手', value: 50000 },
-  { label: '>1000手', value: 100000 },
-  { label: '>2000手', value: 200000 },
-  { label: '>5000手', value: 500000 },
-  { label: '>10000手', value: 1000000 },
-  { label: '>20000手', value: 2000000 },
-  { label: '>50000手', value: 5000000 },
+  { label: t('stockChangesMonitor.unlimited'), value: null },
+  { label: t('stockChangesMonitor.over100lots'), value: 10000 },
+  { label: t('stockChangesMonitor.over200lots'), value: 20000 },
+  { label: t('stockChangesMonitor.over500lots'), value: 50000 },
+  { label: t('stockChangesMonitor.over1000lots'), value: 100000 },
+  { label: t('stockChangesMonitor.over2000lots'), value: 200000 },
+  { label: t('stockChangesMonitor.over5000lots'), value: 500000 },
+  { label: t('stockChangesMonitor.over10000lots'), value: 1000000 },
+  { label: t('stockChangesMonitor.over20000lots'), value: 2000000 },
+  { label: t('stockChangesMonitor.over50000lots'), value: 5000000 },
 ]
 
 const amountOptions = [
-  { label: '不限', value: null },
-  { label: '>100万', value: 1000000 },
-  { label: '>500万', value: 5000000 },
-  { label: '>1000万', value: 10000000 },
-  { label: '>2000万', value: 20000000 },
-  { label: '>5000万', value: 50000000 },
-  { label: '>1亿', value: 100000000 },
-  { label: '>2亿', value: 200000000 },
-  { label: '>5亿', value: 500000000 },
+  { label: t('stockChangesMonitor.unlimited'), value: null },
+  { label: t('stockChangesMonitor.over100w'), value: 1000000 },
+  { label: t('stockChangesMonitor.over500w'), value: 5000000 },
+  { label: t('stockChangesMonitor.over1000w'), value: 10000000 },
+  { label: t('stockChangesMonitor.over2000w'), value: 20000000 },
+  { label: t('stockChangesMonitor.over5000w'), value: 50000000 },
+  { label: t('stockChangesMonitor.over100m'), value: 100000000 },
+  { label: t('stockChangesMonitor.over200m'), value: 200000000 },
+  { label: t('stockChangesMonitor.over500m'), value: 500000000 },
 ]
 
 const changeRateOptions = [
-  { label: '不限', value: null },
-  { label: '>3%', value: 3 },
-  { label: '>5%', value: 5 },
-  { label: '>7%', value: 7 },
-  { label: '>9%', value: 9 },
-  { label: '>涨停', value: 9.9 },
+  { label: t('stockChangesMonitor.unlimited'), value: null },
+  { label: t('stockChangesMonitor.over3pct'), value: 3 },
+  { label: t('stockChangesMonitor.over5pct'), value: 5 },
+  { label: t('stockChangesMonitor.over7pct'), value: 7 },
+  { label: t('stockChangesMonitor.over9pct'), value: 9 },
+  { label: t('stockChangesMonitor.overLimitUp'), value: 9.9 },
 ]
 
 const bullishTypes = [
-  {label: '火箭发射', value: '8201'},
-  {label: '快速反弹', value: '8202'},
-  {label: '大笔买入', value: '8193'},
-  {label: '封涨停板', value: '4'},
-  {label: '打开跌停板', value: '32'},
-  {label: '有大买盘', value: '64'},
-  {label: '竞价上涨', value: '8207'},
-  {label: '高开5日线', value: '8209'},
-  {label: '向上缺口', value: '8211'},
-  {label: '60日新高', value: '8213'},
-  {label: '60日大幅上涨', value: '8215'},
-  {label: '打开涨停板', value: '16'},
+  {label: t('stockChangesMonitor.rocketLaunch'), value: '8201'},
+  {label: t('stockChangesMonitor.quickRebound'), value: '8202'},
+  {label: t('stockChangesMonitor.largeBuy'), value: '8193'},
+  {label: t('stockChangesMonitor.sealLimitUp'), value: '4'},
+  {label: t('stockChangesMonitor.openLimitDown'), value: '32'},
+  {label: t('stockChangesMonitor.hasBigBuy'), value: '64'},
+  {label: t('stockChangesMonitor.auctionRise'), value: '8207'},
+  {label: t('stockChangesMonitor.aboveMA5'), value: '8209'},
+  {label: t('stockChangesMonitor.upGap'), value: '8211'},
+  {label: t('stockChangesMonitor.newHigh60D'), value: '8213'},
+  {label: t('stockChangesMonitor.bigRise60D'), value: '8215'},
+  {label: t('stockChangesMonitor.openLimitUp'), value: '16'},
 ]
 
 const bearishTypes = [
-  {label: '加速下跌', value: '8204'},
-  {label: '高台跳水', value: '8203'},
-  {label: '大笔卖出', value: '8194'},
-  {label: '封跌停板', value: '8'},
-  {label: '有大卖盘', value: '128'},
-  {label: '竞价下跌', value: '8208'},
-  {label: '低开5日线', value: '8210'},
-  {label: '向下缺口', value: '8212'},
-  {label: '60日新低', value: '8214'},
-  {label: '60日大幅下跌', value: '8216'},
+  {label: t('stockChangesMonitor.acceleratedFall'), value: '8204'},
+  {label: t('stockChangesMonitor.highDive'), value: '8203'},
+  {label: t('stockChangesMonitor.largeSell'), value: '8194'},
+  {label: t('stockChangesMonitor.sealLimitDown'), value: '8'},
+  {label: t('stockChangesMonitor.hasBigSell'), value: '128'},
+  {label: t('stockChangesMonitor.auctionFall'), value: '8208'},
+  {label: t('stockChangesMonitor.belowMA5'), value: '8210'},
+  {label: t('stockChangesMonitor.downGap'), value: '8212'},
+  {label: t('stockChangesMonitor.newLow60D'), value: '8214'},
+  {label: t('stockChangesMonitor.bigFall60D'), value: '8216'},
 ]
 
 const allTypeValues = [...bullishTypes, ...bearishTypes].map(t => t.value)
@@ -103,7 +106,7 @@ const selectedTypes = ref(allTypeValues)
 
 const columnsRef = ref([
   {
-    title: '日期',
+    title: t('stockChangesMonitor.date'),
     key: 'changeDate',
     width: 100,
     render(row) {
@@ -116,7 +119,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '代码',
+    title: t('stockChangesMonitor.code'),
     key: 'code',
     width: 100,
     render(row) {
@@ -125,7 +128,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '名称',
+    title: t('stockChangesMonitor.name'),
     key: 'name',
     width: 100,
     render(row) {
@@ -133,13 +136,13 @@ const columnsRef = ref([
     }
   },
   {
-    title: '异动类型',
+    title: t('stockChangesMonitor.changeType'),
     key: 'typeName',
     width: 120,
     render(row) {
       const typeName = row.typeName || row.TypeName
-      const bullishSet = new Set(['火箭发射', '快速反弹', '大笔买入', '封涨停板', '打开跌停板', '有大买盘', '竞价上涨', '高开5日线', '向上缺口', '60日新高', '60日大幅上涨', '打开涨停板'])
-      const bearishSet = new Set(['加速下跌', '高台跳水', '大笔卖出', '封跌停板', '有大卖盘', '竞价下跌', '低开5日线', '向下缺口', '60日新低', '60日大幅下跌'])
+      const bullishSet = new Set([t('stockChangesMonitor.rocketLaunch'), t('stockChangesMonitor.quickRebound'), t('stockChangesMonitor.largeBuy'), t('stockChangesMonitor.sealLimitUp'), t('stockChangesMonitor.openLimitDown'), t('stockChangesMonitor.hasBigBuy'), t('stockChangesMonitor.auctionRise'), t('stockChangesMonitor.aboveMA5'), t('stockChangesMonitor.upGap'), t('stockChangesMonitor.newHigh60D'), t('stockChangesMonitor.bigRise60D'), t('stockChangesMonitor.openLimitUp')])
+      const bearishSet = new Set([t('stockChangesMonitor.acceleratedFall'), t('stockChangesMonitor.highDive'), t('stockChangesMonitor.largeSell'), t('stockChangesMonitor.sealLimitDown'), t('stockChangesMonitor.hasBigSell'), t('stockChangesMonitor.auctionFall'), t('stockChangesMonitor.belowMA5'), t('stockChangesMonitor.downGap'), t('stockChangesMonitor.newLow60D'), t('stockChangesMonitor.bigFall60D')])
       
       let tagType = 'default'
       if (bullishSet.has(typeName)) {
@@ -151,7 +154,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '价格',
+    title: t('stockChangesMonitor.price'),
     key: 'price',
     width: 80,
     render(row) {
@@ -163,7 +166,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '涨跌幅(%)',
+    title: t('stockChangesMonitor.changeRatePct'),
     key: 'changeRate',
     width: 100,
     render(row) {
@@ -177,7 +180,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '成交量',
+    title: t('stockChangesMonitor.volume'),
     key: 'volume',
     width: 100,
     render(row) {
@@ -189,7 +192,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '金额',
+    title: t('stockChangesMonitor.amount'),
     key: 'amount',
     width: 100,
     render(row) {
@@ -201,7 +204,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '行业',
+    title: t('stockChangesMonitor.industry'),
     key: 'industry',
     width: 100,
     ellipsis: {
@@ -212,7 +215,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '概念',
+    title: t('stockChangesMonitor.concept'),
     key: 'concept',
     width: 150,
     ellipsis: {
@@ -227,27 +230,27 @@ const columnsRef = ref([
 function formatVolume(vol) {
   const lots = vol / 100
   if (lots >= 100000000) {
-    return (lots / 100000000).toFixed(2) + '亿手'
+    return (lots / 100000000).toFixed(2) + t('stockChangesMonitor.hundredMillionLots')
   } else if (lots >= 10000) {
-    return (lots / 10000).toFixed(2) + '万手'
+    return (lots / 10000).toFixed(2) + t('stockChangesMonitor.tenThousandLots')
   } else if (lots >= 1) {
-    return lots.toFixed(0) + '手'
+    return lots.toFixed(0) + t('stockChangesMonitor.lots')
   }
-  return vol + '股'
+  return vol + t('stockChangesMonitor.shares')
 }
 
 function formatAmount(amount) {
   if (amount >= 100000000) {
-    return (amount / 100000000).toFixed(2) + '亿'
+    return (amount / 100000000).toFixed(2) + t('stockChangesMonitor.hundredMillion')
   } else if (amount >= 10000) {
-    return (amount / 10000).toFixed(2) + '万'
+    return (amount / 10000).toFixed(2) + t('stockChangesMonitor.tenThousand')
   }
   return amount.toFixed(2)
 }
 
 function copyCode(code) {
   navigator.clipboard.writeText(code).then(() => {
-    message.success('已复制: ' + code)
+    message.success(t('stockChangesMonitor.copied') + code)
   })
 }
 
@@ -260,7 +263,7 @@ function checkTradingTime() {
 
   if (day === 0 || day === 6) {
     isTrading.value = false
-    marketStatus.value = '休市（周末）'
+    marketStatus.value = t('stockChangesMonitor.closedWeekend')
     return
   }
 
@@ -272,26 +275,26 @@ function checkTradingTime() {
   if (currentTime >= morningStart && currentTime <= morningEnd) {
     isTrading.value = true
     if (currentTime < 930) {
-      marketStatus.value = '集合竞价'
+      marketStatus.value = t('stockChangesMonitor.auction')
     } else {
-      marketStatus.value = '上午交易'
+      marketStatus.value = t('stockChangesMonitor.morningTrading')
     }
   } else if (currentTime >= afternoonStart && currentTime <= afternoonEnd) {
     isTrading.value = true
     if (currentTime < 1300) {
-      marketStatus.value = '午间集合竞价'
+      marketStatus.value = t('stockChangesMonitor.noonAuction')
     } else {
-      marketStatus.value = '下午交易'
+      marketStatus.value = t('stockChangesMonitor.afternoonTrading')
     }
   } else if (currentTime > morningEnd && currentTime < afternoonStart) {
     isTrading.value = false
-    marketStatus.value = '午间休市'
+    marketStatus.value = t('stockChangesMonitor.lunchBreak')
   } else if (currentTime > afternoonEnd) {
     isTrading.value = false
-    marketStatus.value = '已收盘'
+    marketStatus.value = t('stockChangesMonitor.closed')
   } else {
     isTrading.value = false
-    marketStatus.value = '未开盘'
+    marketStatus.value = t('stockChangesMonitor.notOpened')
   }
 }
 
@@ -305,7 +308,7 @@ async function fetchRealtimeData() {
       paginationReactive.itemCount = result.totalCount || 0
     }
   } catch (e) {
-    console.error('获取异动数据失败:', e)
+    console.error(t('stockChangesMonitor.fetchFailed'), e)
   } finally {
     loadingRef.value = false
   }
@@ -364,7 +367,7 @@ async function fetchHistoryData() {
       paginationReactive.pageCount = result.totalPages || 1
     }
   } catch (e) {
-    console.error('获取历史数据失败:', e)
+    console.error(t('stockChangesMonitor.fetchHistoryFailed'), e)
   } finally {
     loadingRef.value = false
   }
@@ -501,11 +504,11 @@ async function fetchAllCurrentData() {
     if (result) {
       dataRef.value = result.data || []
       paginationReactive.itemCount = result.totalCount || 0
-      message.success(`获取到 ${result.data?.length || 0} 条当日异动数据`)
+      message.success(t('stockChangesMonitor.changeDataFetched', { count: result.data?.length || 0 }))
     }
   } catch (e) {
-    console.error('获取全部异动数据失败:', e)
-    message.error('获取全部异动数据失败')
+    console.error(t('stockChangesMonitor.fetchAllFailed'), e)
+    message.error(t('stockChangesMonitor.fetchAllFailed'))
   } finally {
     loadingRef.value = false
   }
@@ -538,52 +541,52 @@ onBeforeUnmount(() => {
       <n-space vertical>
         <n-space justify="space-between" align="center">
           <n-space align="center">
-            <n-text strong>股票异动监控</n-text>
+            <n-text strong>{{ t('stockChangesMonitor.title') }}</n-text>
             <n-tag v-if="viewMode === 'realtime'" :type="isTrading ? 'success' : 'warning'" size="small">
               {{ marketStatus }}
             </n-tag>
             <n-tag :type="viewMode === 'realtime' ? 'error' : 'info'" size="small">
-              {{ viewMode === 'realtime' ? '实时数据' : '历史数据' }}
+              {{ viewMode === 'realtime' ? t('stockChangesMonitor.realtimeData') : t('stockChangesMonitor.historyData') }}
             </n-tag>
-            <n-text depth="3" style="font-size: 12px">共 {{ paginationReactive.itemCount }} 条记录</n-text>
+            <n-text depth="3" style="font-size: 12px">{{ t('stockChangesMonitor.recordCount', { count: paginationReactive.itemCount }) }}</n-text>
           </n-space>
           <n-space align="center">
             <n-radio-group v-model:value="viewMode" @update:value="handleViewModeChange">
-              <n-radio-button value="realtime">实时数据</n-radio-button>
-              <n-radio-button value="history">历史数据</n-radio-button>
+              <n-radio-button value="realtime">{{ t('stockChangesMonitor.realtimeData') }}</n-radio-button>
+              <n-radio-button value="history">{{ t('stockChangesMonitor.historyData') }}</n-radio-button>
             </n-radio-group>
             
             <template v-if="viewMode === 'realtime'">
               <n-text v-if="autoRefresh && isTrading" depth="3" style="font-size: 12px">
-                {{ countdown }}秒后刷新
+                {{ countdown }}{{ t('stockChangesMonitor.secondsUntilRefresh') }}
               </n-text>
               <n-text v-else-if="!isTrading" depth="3" style="font-size: 12px">
-                非交易时间暂停刷新
+                {{ t('stockChangesMonitor.pauseRefreshNonTrading') }}
               </n-text>
               <n-switch v-model:value="autoRefresh" @update:value="toggleAutoRefresh" :disabled="!isTrading">
-                <template #checked>自动刷新</template>
-                <template #unchecked>手动刷新</template>
+                <template #checked>{{ t('stockChangesMonitor.autoRefresh') }}</template>
+                <template #unchecked>{{ t('stockChangesMonitor.manualRefresh') }}</template>
               </n-switch>
             </template>
             
             <n-button @click="fetchData" :loading="loadingRef" type="primary" size="small">
-              刷新
+              {{ t('stockChangesMonitor.refresh') }}
             </n-button>
             
             <n-button v-if="viewMode === 'realtime'" @click="saveCurrentData" size="small">
-              保存到历史
+              {{ t('stockChangesMonitor.saveToHistory') }}
             </n-button>
           </n-space>
         </n-space>
 
         <n-alert v-if="viewMode === 'realtime' && !isTrading" type="info" size="small">
-          当前非A股交易时间（周一至周五 9:30-11:30, 13:00-15:00），自动刷新已暂停。您可以查看历史数据或手动刷新。
+          {{ t('stockChangesMonitor.nonTradingTimeAlert') }}
         </n-alert>
 
         <n-space v-if="viewMode === 'history'" align="center">
           <n-input 
             v-model:value="paginationReactive.keyword" 
-            placeholder="输入股票代码或名称" 
+            placeholder="{{ t('stockChangesMonitor.enterStockCodeOrName') }}" 
             clearable 
             style="width: 200px"
             @keyup="handleSearchKeyup"
@@ -591,72 +594,72 @@ onBeforeUnmount(() => {
           <n-date-picker v-model:value="paginationReactive.range" type="daterange" clearable />
           <n-time-picker 
             v-model:value="paginationReactive.startTime" 
-            placeholder="开始时间" 
+            placeholder="{{ t('stockChangesMonitor.startTime') }}" 
             clearable 
             format="HH:mm:ss"
             style="width: 120px"
           />
           <n-time-picker 
             v-model:value="paginationReactive.endTime" 
-            placeholder="结束时间" 
+            placeholder="{{ t('stockChangesMonitor.endTime') }}" 
             clearable 
             format="HH:mm:ss"
             style="width: 120px"
           />
           <n-button type="primary" @click="handleSearch" :loading="loadingRef">
-            查询
+            {{ t('stockChangesMonitor.search') }}
           </n-button>
           <n-button @click="fetchAllCurrentData" :loading="loadingRef">
-            获取今日全部数据
+            {{ t('stockChangesMonitor.getTodayAllData') }}
           </n-button>
         </n-space>
         <n-space v-if="viewMode === 'history'" align="center" style="margin-top: 8px">
           <n-select
             v-model:value="paginationReactive.minVolume"
             :options="volumeOptions"
-            placeholder="成交量筛选"
+            :placeholder="t('stockChangesMonitor.volumeFilter')"
             style="width: 120px"
             clearable
           />
           <n-select
             v-model:value="paginationReactive.minAmount"
             :options="amountOptions"
-            placeholder="金额筛选"
+            :placeholder="t('stockChangesMonitor.amountFilter')"
             style="width: 120px"
             clearable
           />
           <n-select
             v-model:value="paginationReactive.minChangeRate"
             :options="changeRateOptions"
-            placeholder="涨跌幅筛选"
+            :placeholder="t('stockChangesMonitor.changeRateFilter')"
             style="width: 120px"
             clearable
           />
-          <n-input 
-            v-model:value="paginationReactive.industry" 
-            placeholder="行业关键词" 
-            clearable 
+          <n-input
+            v-model:value="paginationReactive.industry"
+            :placeholder="t('stockChangesMonitor.industryKeyword')"
+            clearable
             style="width: 120px"
           />
-          <n-input 
-            v-model:value="paginationReactive.concept" 
-            placeholder="概念关键词" 
-            clearable 
+          <n-input
+            v-model:value="paginationReactive.concept"
+            :placeholder="t('stockChangesMonitor.conceptKeyword')"
+            clearable
             style="width: 120px"
           />
         </n-space>
         
         <n-space align="center" style="margin-top: 8px">
-          <n-text depth="3">异动类型筛选：</n-text>
-          <n-button size="tiny" type="primary" @click="selectAllTypes">全选</n-button>
-          <n-button size="tiny" @click="clearAllTypes">清空</n-button>
-          <n-text depth="3" style="font-size: 12px">已选 {{ selectedTypes.length }}/{{ allTypeValues.length }} 种</n-text>
+          <n-text depth="3">{{ t('stockChangesMonitor.changeTypeFilter') }}</n-text>
+          <n-button size="tiny" type="primary" @click="selectAllTypes">{{ t('stockChangesMonitor.selectAll') }}</n-button>
+          <n-button size="tiny" @click="clearAllTypes">{{ t('stockChangesMonitor.clear') }}</n-button>
+          <n-text depth="3" style="font-size: 12px">{{ t('stockChangesMonitor.selectedCount') }}</n-text>
         </n-space>
 
         <n-space vertical>
           <n-space align="center">
-            <n-text style="color: #dc2626; font-weight: 500;">利好异动</n-text>
-            <n-button size="tiny" @click="selectAllBullish">全选利好</n-button>
+            <n-text style="color: #dc2626; font-weight: 500;">{{ t('stockChangesMonitor.bullishChanges') }}</n-text>
+            <n-button size="tiny" @click="selectAllBullish">{{ t('stockChangesMonitor.selectAllBullish') }}</n-button>
           </n-space>
           <n-checkbox-group v-model:value="selectedTypes" @update:value="fetchData">
             <n-space>
@@ -671,8 +674,8 @@ onBeforeUnmount(() => {
 
         <n-space vertical>
           <n-space align="center">
-            <n-text style="color: #16a34a; font-weight: 500;">利空异动</n-text>
-            <n-button size="tiny" @click="selectAllBearish">全选利空</n-button>
+            <n-text style="color: #16a34a; font-weight: 500;">{{ t('stockChangesMonitor.bearishChanges') }}</n-text>
+            <n-button size="tiny" @click="selectAllBearish">{{ t('stockChangesMonitor.selectAllBearish') }}</n-button>
           </n-space>
           <n-checkbox-group v-model:value="selectedTypes" @update:value="fetchData">
             <n-space>

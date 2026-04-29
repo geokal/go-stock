@@ -1,5 +1,6 @@
 <script setup>
 import {onBeforeMount, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {GetStockList, StockResearchReport} from "../../wailsjs/go/main/App";
 import {ArrowDownOutline, CaretDown, CaretUp, PulseOutline, Refresh, RefreshCircleSharp,} from "@vicons/ionicons5";
 
@@ -8,6 +9,7 @@ import MoneyTrend from "./moneyTrend.vue";
 import {useMessage} from "naive-ui";
 import {BrowserOpenURL} from "../../wailsjs/runtime";
 
+const { t } = useI18n()
 const {stockCode}=defineProps(
     {
       stockCode: {
@@ -24,7 +26,6 @@ const options =  ref([])
 
 function getStockResearchReport(value) {
   StockResearchReport(value).then(result => {
-    //console.log(result)
     list.value = result
   })
 }
@@ -35,15 +36,15 @@ onBeforeMount(()=>{
 
 function ratingChangeName(ratingChange){
   if(ratingChange===0){
-    return '调高'
+    return t('stockResearchReportList.adjustUp')
   }else if(ratingChange===1){
-    return '调低'
+    return t('stockResearchReportList.adjustDown')
   }else if(ratingChange===2){
-    return '首次'
+    return t('stockResearchReportList.first')
   }else if(ratingChange===3){
-    return '维持'
+    return t('stockResearchReportList.maintain')
   }else if (ratingChange===4){
-    return '无变化'
+    return t('stockResearchReportList.noChange')
   }else{
     return ''
   }
@@ -86,26 +87,24 @@ function handleSearch(value) {
 
 <template>
   <n-card>
-    <n-auto-complete  :options="options" placeholder="请输入A股名称或者代码"  clearable filterable  :on-select="handleSearch" :on-update:value="findStockList"  />
+    <n-auto-complete  :options="options" :placeholder="t('stockResearchReportList.enterStockName')"  clearable filterable  :on-select="handleSearch" :on-update:value="findStockList"  />
   </n-card>
   <n-table striped size="small">
     <n-thead>
       <n-tr>
-<!--        <n-th>代码</n-th>-->
-        <n-th>名称</n-th>
-        <n-th>行业</n-th>
-        <n-th>标题</n-th>
-        <n-th>东财评级</n-th>
-        <n-th>评级变动</n-th>
-        <n-th>机构评级</n-th>
-        <n-th>分析师</n-th>
-        <n-th>机构</n-th>
-        <n-th> <n-flex justify="space-between">日期<n-icon @click="getStockResearchReport" color="#409EFF" :size="20"  :component="RefreshCircleSharp"/></n-flex></n-th>
+        <n-th>{{ t('stockResearchReportList.name') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.industry') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.title') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.emRating') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.ratingChange') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.orgRating') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.analyst') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.organization') }}</n-th>
+        <n-th> <n-flex justify="space-between">{{ t('stockResearchReportList.date') }}<n-icon @click="getStockResearchReport(stockCode)" color="#409EFF" :size="20"  :component="RefreshCircleSharp"/></n-flex></n-th>
       </n-tr>
     </n-thead>
     <n-tbody>
       <n-tr v-for="item in list" :key="item.infoCode">
-<!--        <n-td>{{item.stockCode}}</n-td>-->
         <n-td :title="item.stockCode">
           <n-popover trigger="hover" placement="right">
             <template #trigger>
@@ -118,7 +117,7 @@ function handleSearch(value) {
         <n-td>
           <n-a type="info"  @click="openWin(item.infoCode)">{{item.title}}</n-a>
         </n-td>
-        <n-td><n-text :type="item.emRatingName==='增持'?'error':'info'">
+        <n-td><n-text :type="item.emRatingName===t('stockResearchReportList.increaseHold')?'error':'info'">
           {{item.emRatingName}}
         </n-text></n-td>
         <n-td><n-text :type="item.ratingChange===0?'error':'info'">{{ratingChangeName(item.ratingChange)}}</n-text></n-td>

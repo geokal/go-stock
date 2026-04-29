@@ -1,5 +1,7 @@
 <script setup>
+
 import { h, onMounted, onUnmounted, ref, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   AddTradingRecord,
   GetTradingRecordList,
@@ -36,6 +38,7 @@ import sparkLine from "./stockSparkLine.vue";
 import StockLightweightKlineChart from "./StockLightweightKlineChart.vue";
 import { GetEffectiveSponsorVip } from '../../wailsjs/go/main/App'
 
+const { t } = useI18n()
 const message = useMessage()
 const notify = useNotification()
 
@@ -60,7 +63,7 @@ const formData = reactive({
   ID: 0,
   StockCode: '',
   StockName: '',
-  Direction: '买入',
+  Direction: 'buy',
   Price: 0,
   Volume: 0,
   Amount: 0,
@@ -74,9 +77,9 @@ const formData = reactive({
 })
 
 const directionOptions = [
-  { label: '全部', value: '' },
-  { label: '买入', value: '买入' },
-  { label: '卖出', value: '卖出' }
+  { label: t('tradingRecord.all'), value: '' },
+  { label: t('tradingRecord.buy'), value: 'buy' },
+  { label: t('tradingRecord.sell'), value: 'sell' }
 ]
 
 const stockCodeOptions = reactive([])
@@ -110,7 +113,7 @@ function searchStock(value) {
       stockNameOptions.splice(0, stockNameOptions.length, ...nameList)
     }
   }).catch(err => {
-    console.error('搜索股票失败:', err)
+    console.error(t('tradingRecord.searchStockFailed'), err)
   })
 }
 
@@ -177,17 +180,13 @@ function fetchStockPrice(stockCode, market) {
       formData.Price = res.price
     }
   }).catch(err => {
-    console.error('获取股票价格失败:', err)
+    console.error(t('tradingRecord.getPriceFailed'), err)
   })
 }
 
-/** 当前自然月 [月初 0 点, 月末当日]（供日期区间选择与 formatDate 查询） */
+/** Current natural month [month start 0 point, month end] (for date range selection and formatDate query) */
 function currentMonthDateRange() {
   const now = new Date()
-  // return [
-  //   new Date(now.getFullYear(), now.getMonth(), 1),
-  //   new Date(now.getFullYear(), now.getMonth() + 1, 0)
-  // ]
   return null
 }
 
@@ -200,7 +199,7 @@ const paginationReactive = reactive({
   direction: '',
   range: currentMonthDateRange(),
   prefix({ itemCount }) {
-    return `${itemCount} 条记录`
+    return `${itemCount} ${t('tradingRecord.records')}`
   }
 })
 
@@ -223,7 +222,6 @@ function toEastMoneyCode(code) {
   if (c.endsWith('.SZ')) return 'sz' + c.slice(0, -3).toLowerCase()
   if (c.endsWith('.BJ')) return 'bj' + c.slice(0, -3).toLowerCase()
   if (c.endsWith('.HK')) return 'hk' + c.slice(0, -3).toLowerCase()
-  // 不带后缀的代码，根据规则添加前缀
   if (c.startsWith('6')) return 'sh' + c.toLowerCase()
   if (c.startsWith('0') || c.startsWith('3')) return 'sz' + c.toLowerCase()
   if (c.startsWith('8') || c.startsWith('9')) return 'bj' + c.toLowerCase()
@@ -244,7 +242,7 @@ async function refreshEffectiveVip() {
 function openKlineChart(row) {
   refreshEffectiveVip().then(() => {
     if (vipLevel.value < 2) {
-      message.warning('查看K线仅限VIP2及以上用户使用')
+      message.warning(t('tradingRecord.klineVipOnly'))
       return
     }
     klineStockCode.value = toEastMoneyCode(row.StockCode)
@@ -259,7 +257,6 @@ function openKlineChart(row) {
 
 
 function formatRowTradingTime(row) {
-  console.log('formatRowTradingTime:', row)
   const t = row.TradingTime
   if (t == null || t === '') return '-'
   let date
@@ -277,7 +274,7 @@ function formatRowTradingTime(row) {
   return `${utc8Time.getFullYear()}-${pad(utc8Time.getMonth() + 1)}-${pad(utc8Time.getDate())} ${pad(utc8Time.getHours())}:${pad(utc8Time.getMinutes())}:${pad(utc8Time.getSeconds())}`
 }
 
-/** 统一列表行字段（Wails/JSON 可能为 PascalCase），供表格渲染与刷新使用 */
+/** Unified list row fields (Wails/JSON may be PascalCase), for table rendering and refresh */
 function normalizeTradingRecordRow(row) {
   if (!row || typeof row !== 'object') return row
   const closePrice = Number(row.closePrice ?? row.ClosePrice ?? 0)
@@ -312,7 +309,7 @@ function query({ page, pageSize = 12, keyword = '', direction = '', startDate = 
   })
 }
 
-/** 定时静默刷新当前列表与统计，不占用 loadingRef，避免与上次请求重叠时整页停更 */
+/** Timed silent refresh of current list and statistics, not occupying loadingRef, avoiding full page stop on overlap with previous request */
 function silentRefreshCurrentPage() {
   query({
     page: paginationReactive.page,
@@ -350,7 +347,7 @@ function handlePageChange(currentPage) {
         loadingRef.value = false
       })
       .catch((e) => {
-        message.error(e?.message || '加载交易日志失败')
+        message.error(e?.message || t('tradingRecord.loadFailed'))
         loadingRef.value = false
       })
   }
@@ -375,7 +372,7 @@ function handleSearch() {
         loadingRef.value = false
       })
       .catch((e) => {
-        message.error(e?.message || '加载交易日志失败')
+        message.error(e?.message || t('tradingRecord.loadFailed'))
         loadingRef.value = false
       })
   }
@@ -385,13 +382,12 @@ function handleSearch() {
 function fetchStatistics() {
   GetTradingRecordStatistics()
     .then((res) => {
-      console.log('统计数据返回:', res)
       if (res) {
         statisticsRef.value = res
       }
     })
     .catch((e) => {
-      console.error('获取统计数据失败:', e)
+      console.error(t('tradingRecord.getStatsFailed'), e)
     })
 }
 
@@ -407,7 +403,7 @@ function openAddModal() {
     ID: 0,
     StockCode: '',
     StockName: '',
-    Direction: '买入',
+    Direction: 'buy',
     Price: 0,
     Volume: 0,
     Amount: 0,
@@ -436,19 +432,18 @@ function handleAdd() {
       TradingTime: new Date(formData.TradingTime)
     })
       .then(() => {
-        message.success('添加交易日志成功')
+        message.success(t('tradingRecord.addSuccess'))
         showAddModal.value = false
         handleSearch()
       })
       .catch((e) => {
-        message.error(e?.message || '添加交易日志失败')
+        message.error(e?.message || t('tradingRecord.addFailed'))
       })
   }
 
-  if (formData.Direction === '买入' && formData.StockCode) {
+  if (formData.Direction === 'buy' && formData.StockCode) {
     CheckFrequentTrading(formData.StockCode)
       .then((res) => {
-        console.log('检查频繁交易结果:', res)
         const canTrade = res.canTrade
         const msg = res.msg
         if (!canTrade) {
@@ -458,7 +453,7 @@ function handleAdd() {
         run()
       })
       .catch((e) => {
-        console.error('检查频繁交易失败:', e)
+        console.error(t('tradingRecord.checkFrequentFailed'), e)
         run()
       })
   } else {
@@ -473,55 +468,55 @@ function handleUpdate() {
     TradingTime: new Date(formData.TradingTime)
   })
     .then(() => {
-      message.success('更新交易日志成功')
+      message.success(t('tradingRecord.updateSuccess'))
       showEditModal.value = false
       handleSearch()
     })
     .catch((e) => {
-      message.error(e?.message || '更新交易日志失败')
+      message.error(e?.message || t('tradingRecord.updateFailed'))
     })
 }
 
 function deleteTradingRecord(id) {
   DeleteTradingRecord(id)
     .then(() => {
-      notify.info({ content: '删除成功', duration: 2000 })
+      notify.info({ content: t('tradingRecord.deleteSuccess'), duration: 2000 })
       handleSearch()
     })
     .catch((e) => {
-      message.error(e?.message || '删除交易日志失败')
+      message.error(e?.message || t('tradingRecord.deleteFailed'))
     })
 }
 
 const columnsRef = ref([
   {
-    title: '股票代码',
+    title: t('tradingRecord.stockCode'),
     key: 'StockCode',
     render(row) {
       return h(NText, { type: 'info' }, { default: () => row.StockCode })
     }
   },
   {
-    title: '股票名称',
+    title: t('tradingRecord.stockName'),
     key: 'StockName',
     render(row) {
       return h(NText, { type: 'info' }, { default: () => row.StockName })
     }
   },
   {
-    title: '方向',
+    title: t('tradingRecord.direction'),
     key: 'Direction',
     width: 80,
     render(row) {
       return h(
         NTag,
-        { type: row.Direction === '买入' ? 'error' : 'success', size: 'small', round: true, bordered: false },
+        { type: row.Direction === 'buy' ? 'error' : 'success', size: 'small', round: true, bordered: false },
         { default: () => row.Direction }
       )
     }
   },
   {
-    title: '价格',
+    title: t('tradingRecord.price'),
     key: 'Price',
     width: 100,
     render(row) {
@@ -529,7 +524,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '数量',
+    title: t('tradingRecord.volume'),
     key: 'Volume',
     width: 100,
     render(row) {
@@ -537,7 +532,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '金额',
+    title: t('tradingRecord.amount'),
     key: 'Amount',
     width: 120,
     render(row) {
@@ -545,7 +540,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '收盘/最新价',
+    title: t('tradingRecord.closePrice'),
     key: 'closePrice',
     width: 100,
     render(row) {
@@ -553,7 +548,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '盈亏额',
+    title: t('tradingRecord.profitAmount'),
     key: 'profitAmount',
     width: 100,
     render(row) {
@@ -562,7 +557,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '收益率',
+    title: t('tradingRecord.profitRate'),
     key: 'profitPercent',
     width: 100,
     render(row) {
@@ -572,7 +567,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '时间',
+    title: t('tradingRecord.time'),
     key: 'TradingTime',
     width: 180,
     render(row) {
@@ -580,7 +575,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '止损价',
+    title: t('tradingRecord.stopLossPrice'),
     key: 'StopLossPrice',
     width: 100,
     render(row) {
@@ -590,7 +585,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '止盈价',
+    title: t('tradingRecord.takeProfitPrice'),
     key: 'TakeProfitPrice',
     width: 100,
     render(row) {
@@ -600,12 +595,12 @@ const columnsRef = ref([
     }
   },
   {
-    title: '交易理由',
+    title: t('tradingRecord.reason'),
     key: 'Reason',
     ellipsis: { tooltip: true }
   },
   {
-    title: '操作',
+    title: t('common.actions'),
     width: 200,
     render(row) {
       return [
@@ -617,7 +612,7 @@ const columnsRef = ref([
             type: 'info',
             onClick: () => openKlineChart(row)
           },
-          { default: () => 'K线' }
+          { default: () => t('tradingRecord.kline') }
         ),
         h(
           NTag,
@@ -627,7 +622,7 @@ const columnsRef = ref([
             type: 'warning',
             onClick: () => openEditModal(row)
           },
-          { default: () => '编辑' }
+          { default: () => t('common.edit') }
         ),
         h(
           NTag,
@@ -637,7 +632,7 @@ const columnsRef = ref([
             type: 'error',
             onClick: () => deleteTradingRecord(row.ID)
           },
-          { default: () => '删除' }
+          { default: () => t('common.delete') }
         )
       ]
     }
@@ -645,7 +640,6 @@ const columnsRef = ref([
 ])
 
 onMounted(() => {
-  // 获取主题配置
   GetConfig().then(result => {
     if (result.darkTheme) {
       darkTheme.value = true
@@ -669,18 +663,16 @@ onMounted(() => {
       loadingRef.value = false
     })
     .catch((e) => {
-      message.error(e?.message || '加载交易日志失败')
+      message.error(e?.message || t('tradingRecord.loadFailed'))
       loadingRef.value = false
     })
   fetchStatistics()
-  // 定时刷新收盘/最新价与盈亏：不抢 loading，避免请求进行中时跳过后续刷新
   refreshTimer.value = setInterval(() => {
     silentRefreshCurrentPage()
   }, 1000 * 10)
 })
 
 onUnmounted(() => {
-  // 清除定时器
   if (refreshTimer.value) {
     clearInterval(refreshTimer.value)
   }
@@ -693,39 +685,39 @@ onUnmounted(() => {
     <n-select
       v-model:value="paginationReactive.direction"
       :options="directionOptions"
-      placeholder="交易方向"
+      :placeholder="t('tradingRecord.direction')"
       style="width: 15%"
       clearable
     />
-    <n-input clearable placeholder="股票代码 / 名称" v-model:value="paginationReactive.keyword" />
-    <n-button type="primary" ghost @click="handleSearch">搜索</n-button>
-    <n-button @click="resetFilter">重置</n-button>
-    <n-button type="primary" ghost @click="openAddModal">添加记录</n-button>
+    <n-input clearable :placeholder="t('tradingRecord.stockCodeName')" v-model:value="paginationReactive.keyword" />
+    <n-button type="primary" ghost @click="handleSearch">{{ t('common.search') }}</n-button>
+    <n-button @click="resetFilter">{{ t('common.reset') }}</n-button>
+    <n-button type="primary" ghost @click="openAddModal">{{ t('tradingRecord.addRecord') }}</n-button>
   </n-input-group>
 
   <n-grid :cols="6" :x-gap="12" style="margin-top: 12px; padding: 12px; border-radius: 4px">
     <n-grid-item>
-      <n-statistic label="持仓金额(元)">
+      <n-statistic :label="t('tradingRecord.holdingsAmount')">
         <n-number-animation :from="0" :to="statisticsRef?.holdingsAmount || 0" :precision="2" />
       </n-statistic>
     </n-grid-item>
     <n-grid-item>
-      <n-statistic label="持仓市值(元)">
+      <n-statistic :label="t('tradingRecord.marketValue')">
         <n-number-animation :from="0" :to="statisticsRef?.currentValue || 0" :precision="2" />
       </n-statistic>
     </n-grid-item>
     <n-grid-item>
-      <n-statistic label="总买入(元)">
+      <n-statistic :label="t('tradingRecord.totalBuy')">
         <n-number-animation :from="0" :to="statisticsRef?.totalBuyAmount || 0" :precision="2" />
       </n-statistic>
     </n-grid-item>
     <n-grid-item>
-      <n-statistic label="总卖出(元)">
+      <n-statistic :label="t('tradingRecord.totalSell')">
         <n-number-animation :from="0" :to="statisticsRef?.totalSellAmount || 0" :precision="2" />
       </n-statistic>
     </n-grid-item>
     <n-grid-item>
-      <n-statistic label="总收益(元)">
+      <n-statistic :label="t('tradingRecord.totalProfit')">
         <n-text :type="statisticsRef?.totalProfit > 0 ? 'error' : 'success'">
           <n-number-animation :from="0" :to="statisticsRef?.totalProfit || 0" :precision="2"  />
         </n-text>
@@ -733,7 +725,7 @@ onUnmounted(() => {
     </n-grid-item>
     <n-grid-item>
 
-      <n-statistic label="收益率">
+      <n-statistic :label="t('tradingRecord.profitRate')">
         <n-text :type="statisticsRef?.profitRate > 0 ? 'error' : 'success'">
           <n-number-animation :from="0" :to="statisticsRef?.profitRate || 0" :precision="2"  />%
         </n-text>
@@ -755,15 +747,15 @@ onUnmounted(() => {
     style="height: calc(100vh - 310px); margin-top: 10px"
   />
 
-  <n-modal v-model:show="showAddModal" preset="card" title="添加交易日志" style="width: 820px">
+  <n-modal v-model:show="showAddModal" preset="card" :title="t('tradingRecord.addTradingLog')" style="width: 820px">
     <n-form label-placement="top" size="small">
       <n-grid :cols="3" :x-gap="12" :y-gap="2">
         <n-grid-item>
-          <n-form-item label="股票代码">
+          <n-form-item :label="t('tradingRecord.stockCode')">
             <n-auto-complete
               v-model:value="formData.StockCode"
               :options="stockCodeOptions"
-              placeholder="请输入股票代码"
+              :placeholder="t('tradingRecord.enterStockCode')"
               :input-props="{ autocomplete: 'disabled' }"
               clearable
               @update:value="searchStock"
@@ -772,11 +764,11 @@ onUnmounted(() => {
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="股票名称">
+          <n-form-item :label="t('tradingRecord.stockName')">
             <n-auto-complete
               v-model:value="formData.StockName"
               :options="stockNameOptions"
-              placeholder="请输入股票名称"
+              :placeholder="t('tradingRecord.enterStockName')"
               :input-props="{ autocomplete: 'disabled' }"
               clearable
               @update:value="searchStock"
@@ -785,75 +777,75 @@ onUnmounted(() => {
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="交易方向">
+          <n-form-item :label="t('tradingRecord.direction')">
             <n-select
               v-model:value="formData.Direction"
               :options="[
-                { label: '买入', value: '买入' },
-                { label: '卖出', value: '卖出' }
+                { label: t('tradingRecord.buy'), value: 'buy' },
+                { label: t('tradingRecord.sell'), value: 'sell' }
               ]"
             />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="价格">
+          <n-form-item :label="t('tradingRecord.price')">
             <n-input-number v-model:value="formData.Price" :precision="2" :min="0" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="成交数量">
+          <n-form-item :label="t('tradingRecord.volume')">
             <n-input-number v-model:value="formData.Volume" :min="1" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="交易时间">
+          <n-form-item :label="t('tradingRecord.time')">
             <n-date-picker v-model:value="formData.TradingTime" type="datetime" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="止损价">
+          <n-form-item :label="t('tradingRecord.stopLossPrice')">
             <n-input-number v-model:value="formData.StopLossPrice" :precision="2" :min="0" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="止盈价">
+          <n-form-item :label="t('tradingRecord.takeProfitPrice')">
             <n-input-number v-model:value="formData.TakeProfitPrice" :precision="2" :min="0" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="手续费">
+          <n-form-item :label="t('tradingRecord.fee')">
             <n-input-number v-model:value="formData.Fee" :precision="2" :min="0" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item :span="3">
-          <n-form-item label="交易理由">
-            <n-input v-model:value="formData.Reason" type="textarea" placeholder="请输入交易理由" :rows="4"  style="text-align: left" />
+          <n-form-item :label="t('tradingRecord.reason')">
+            <n-input v-model:value="formData.Reason" type="textarea" :placeholder="t('tradingRecord.enterReason')" :rows="4"  style="text-align: left" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item :span="3">
-          <n-form-item label="交易心态/感悟/复盘/备注">
-            <n-input v-model:value="formData.Mindset" type="textarea" placeholder="请输入交易心态" :rows="5" style="text-align: left" />
+          <n-form-item :label="t('tradingRecord.mindset')">
+            <n-input v-model:value="formData.Mindset" type="textarea" :placeholder="t('tradingRecord.enterMindset')" :rows="5" style="text-align: left" />
           </n-form-item>
         </n-grid-item>
       </n-grid>
     </n-form>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="showAddModal = false">取消</n-button>
-        <n-button type="primary" @click="handleAdd">添加</n-button>
+        <n-button @click="showAddModal = false">{{ t('common.cancel') }}</n-button>
+        <n-button type="primary" @click="handleAdd">{{ t('common.add') }}</n-button>
       </n-space>
     </template>
   </n-modal>
 
-  <n-modal v-model:show="showEditModal" preset="card" title="编辑交易日志" style="width: 820px">
+  <n-modal v-model:show="showEditModal" preset="card" :title="t('tradingRecord.editTradingLog')" style="width: 820px">
     <n-form label-placement="top" size="small">
       <n-grid :cols="3" :x-gap="12" :y-gap="2">
         <n-grid-item>
-          <n-form-item label="股票代码">
+          <n-form-item :label="t('tradingRecord.stockCode')">
             <n-auto-complete
               v-model:value="formData.StockCode"
               :options="stockCodeOptions"
-              placeholder="请输入股票代码"
+              :placeholder="t('tradingRecord.enterStockCode')"
               :input-props="{ autocomplete: 'disabled' }"
               clearable
               @update:value="searchStock"
@@ -862,11 +854,11 @@ onUnmounted(() => {
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="股票名称">
+          <n-form-item :label="t('tradingRecord.stockName')">
             <n-auto-complete
               v-model:value="formData.StockName"
               :options="stockNameOptions"
-              placeholder="请输入股票名称"
+              :placeholder="t('tradingRecord.enterStockName')"
               :input-props="{ autocomplete: 'disabled' }"
               clearable
               @update:value="searchStock"
@@ -875,67 +867,67 @@ onUnmounted(() => {
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="交易方向">
+          <n-form-item :label="t('tradingRecord.direction')">
             <n-select
               v-model:value="formData.Direction"
               :options="[
-                { label: '买入', value: '买入' },
-                { label: '卖出', value: '卖出' }
+                { label: t('tradingRecord.buy'), value: 'buy' },
+                { label: t('tradingRecord.sell'), value: 'sell' }
               ]"
             />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="价格">
+          <n-form-item :label="t('tradingRecord.price')">
             <n-input-number v-model:value="formData.Price" :precision="2" :min="0" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="成交数量">
+          <n-form-item :label="t('tradingRecord.volume')">
             <n-input-number v-model:value="formData.Volume" :min="1" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="交易时间">
+          <n-form-item :label="t('tradingRecord.time')">
             <n-date-picker v-model:value="formData.TradingTime" type="datetime" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="止损价">
+          <n-form-item :label="t('tradingRecord.stopLossPrice')">
             <n-input-number v-model:value="formData.StopLossPrice" :precision="2" :min="0" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="止盈价">
+          <n-form-item :label="t('tradingRecord.takeProfitPrice')">
             <n-input-number v-model:value="formData.TakeProfitPrice" :precision="2" :min="0" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="手续费">
+          <n-form-item :label="t('tradingRecord.fee')">
             <n-input-number v-model:value="formData.Fee" :precision="2" :min="0" style="width: 100%" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item :span="3">
-          <n-form-item label="交易理由">
-            <n-input v-model:value="formData.Reason" type="textarea" placeholder="请输入交易理由" :rows="2" />
+          <n-form-item :label="t('tradingRecord.reason')">
+            <n-input v-model:value="formData.Reason" type="textarea" :placeholder="t('tradingRecord.enterReason')" :rows="2" />
           </n-form-item>
         </n-grid-item>
         <n-grid-item :span="3">
-          <n-form-item label="交易心态">
-            <n-input v-model:value="formData.Mindset" type="textarea" placeholder="请输入交易心态" :rows="2" />
+          <n-form-item :label="t('tradingRecord.mindset')">
+            <n-input v-model:value="formData.Mindset" type="textarea" :placeholder="t('tradingRecord.enterMindset')" :rows="2" />
           </n-form-item>
         </n-grid-item>
       </n-grid>
     </n-form>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="showEditModal = false">取消</n-button>
-        <n-button type="primary" @click="handleUpdate">更新</n-button>
+        <n-button @click="showEditModal = false">{{ t('common.cancel') }}</n-button>
+        <n-button type="primary" @click="handleUpdate">{{ t('tradingRecord.update') }}</n-button>
       </n-space>
     </template>
   </n-modal>
 
-  <n-modal v-model:show="showKlineModal" preset="card" :title="'K线 - ' + klineStockName" style="width: 95vw; max-width: 1400px">
+  <n-modal v-model:show="showKlineModal" preset="card" :title="t('tradingRecord.klineTitle')" style="width: 95vw; max-width: 1400px">
     <StockLightweightKlineChart
       :code="klineStockCode"
       :stock-name="klineStockName"
