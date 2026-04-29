@@ -7,6 +7,9 @@ import _ from "lodash";
 import KLineChart from "./KLineChart.vue";
 import MoneyTrend from "./moneyTrend.vue";
 import {useMessage} from "naive-ui";
+import {useI18n} from 'vue-i18n'
+
+const { t } = useI18n()
 
 const {stockCode}=defineProps(
     {
@@ -95,17 +98,17 @@ function getmMarketCode(market,code) {
 
 <template>
   <n-card>
-    <n-auto-complete  :options="options" placeholder="请输入A股名称或者代码"  clearable filterable  :on-select="handleSearch" :on-update:value="findStockList"  />
+    <n-auto-complete  :options="options" :placeholder="t('stock.enterStockCodeOrName')"  clearable filterable  :on-select="handleSearch" :on-update:value="findStockList"  />
   </n-card>
   <n-table striped size="small">
     <n-thead>
       <n-tr>
-        <n-th>股票代码</n-th>
-        <n-th>股票名称</n-th>
-        <n-th>公告标题</n-th>
-        <n-th>公告类型</n-th>
-        <n-th>公告日期</n-th>
-        <n-th><n-flex>数据更新时间<n-icon @click="getNotice('')" color="#409EFF" :size="20"  :component="RefreshCircleSharp"/></n-flex></n-th>
+        <n-th>{{ t('stock.code') }}</n-th>
+        <n-th>{{ t('stock.name') }}</n-th>
+        <n-th>{{ t('stock.noticeTitle') }}</n-th>
+        <n-th>{{ t('stock.noticeType') }}</n-th>
+        <n-th>{{ t('stock.noticeDate') }}</n-th>
+        <n-th><n-flex>{{ t('stock.dataUpdateTime') }}<n-icon @click="getNotice('')" color="#409EFF" :size="20"  :component="RefreshCircleSharp"/></n-flex></n-th>
       </n-tr>
     </n-thead>
     <n-tbody>

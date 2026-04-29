@@ -54,7 +54,7 @@ func (c ChoiceStockByIndicators) InvokableRun(ctx context.Context, argumentsInJS
 	if err != nil {
 		return "", err
 	}
-	content := "无符合条件的数据"
+	content := "No matching data found"
 	words := parms["words"].(string)
 	res := data.NewSearchStockApi(words).SearchStock(random.RandInt(5, 20))
 	if convertor.ToString(res["code"]) == "100" {
@@ -88,7 +88,7 @@ func (c ChoiceStockByIndicators) InvokableRun(ctx context.Context, argumentsInJS
 		jsonData, _ := json.Marshal(*table)
 		markdownTable, _ := JSONToMarkdownTable(jsonData)
 		//logger.SugaredLogger.Infof("markdownTable=\n%s", markdownTable)
-		content = "\r\n### 工具筛选出的股票数据：\r\n" + markdownTable + "\r\n"
+		content = "\r\n### Stock Data from Tool Filter:\r\n" + markdownTable + "\r\n"
 	}
 	return content, nil
 }

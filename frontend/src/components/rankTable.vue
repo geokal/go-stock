@@ -3,13 +3,15 @@
 import {CaretDown, CaretUp, RefreshCircleOutline} from "@vicons/ionicons5";
 import {NText,useMessage} from "naive-ui";
 import {onBeforeUnmount, onMounted, onUnmounted, ref} from "vue";
+import {useI18n} from 'vue-i18n'
 import {GetMoneyRankSina} from "../../wailsjs/go/main/App";
 import KLineChart from "./KLineChart.vue";
 
+const { t } = useI18n()
 const props = defineProps({
   headerTitle: {
     type: String,
-    default: '净流入额排名'
+    default: 'netInflowRanking'
   },
   sort: {
     type: String,
@@ -31,7 +33,7 @@ onBeforeUnmount(()=>{
   clearInterval(interval.value)
 })
 function GetMoneyRankSinaData(){
-  message.loading("正在刷新数据...")
+  message.loading(t('market.refreshingData'))
   GetMoneyRankSina(sort.value).then(result => {
     if(result.length>0){
       dataList.value = result
@@ -44,24 +46,24 @@ function GetMoneyRankSinaData(){
   <n-table striped size="small">
     <n-thead>
       <n-tr>
-        <n-th>代码</n-th>
-        <n-th>名称</n-th>
-        <n-th>最新价</n-th>
-        <n-th>涨跌幅</n-th>
-        <n-th>换手率</n-th>
-        <n-th>成交额/万</n-th>
-        <n-th>流出资金/万</n-th>
-        <n-th>流入资金/万</n-th>
-        <n-th>净流入/万</n-th>
-        <n-th>净流入率</n-th>
-        <n-th v-if="sort === 'r0_net'||sort==='r0_out'">主力流出/万</n-th>
-        <n-th v-if="sort === 'r0_net'">主力流入/万</n-th>
-        <n-th v-if="sort === 'r0_net'">主力净流入/万</n-th>
-        <n-th >主力净流入率</n-th>
-        <n-th v-if="sort === 'r3_net'||sort==='r3_out'">散户流出/万</n-th>
-        <n-th v-if="sort === 'r3_net'">散户流入/万</n-th>
-        <n-th v-if="sort === 'r3_net'">散户净流入/万</n-th>
-        <n-th >散户净流入率</n-th>
+        <n-th>{{ t('market.code') }}</n-th>
+        <n-th>{{ t('market.name') }}</n-th>
+        <n-th>{{ t('market.latestPrice') }}</n-th>
+        <n-th>{{ t('market.changeRate') }}</n-th>
+        <n-th>{{ t('market.turnoverRate') }}</n-th>
+        <n-th>{{ t('market.billboardDeal') }}</n-th>
+        <n-th>{{ t('market.fundOutflow') }}</n-th>
+        <n-th>{{ t('market.fundInflow') }}</n-th>
+        <n-th>{{ t('market.netInflow') }}</n-th>
+        <n-th>{{ t('market.netInflowRate') }}</n-th>
+        <n-th v-if="sort === 'r0_net'||sort==='r0_out'">{{ t('market.mainForceOutflow') }}</n-th>
+        <n-th v-if="sort === 'r0_net'">{{ t('market.mainForceNetInflow') }}</n-th>
+        <n-th v-if="sort === 'r0_net'">{{ t('market.mainForceNetInflow') }}</n-th>
+        <n-th >{{ t('market.mainForceNetInflowRate') }}</n-th>
+        <n-th v-if="sort === 'r3_net'||sort==='r3_out'">{{ t('market.retailOutflow') }}</n-th>
+        <n-th v-if="sort === 'r3_net'">{{ t('market.retailNetInflow') }}</n-th>
+        <n-th v-if="sort === 'r3_net'">{{ t('market.retailNetInflow') }}</n-th>
+        <n-th >{{ t('market.retailNetInflowRate') }}</n-th>
       </n-tr>
     </n-thead>
     <n-tbody>

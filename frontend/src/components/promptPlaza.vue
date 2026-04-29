@@ -1,5 +1,6 @@
 <script setup>
 import {computed, h, onBeforeMount, onMounted, ref, reactive} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {GetConfig} from "../../wailsjs/go/main/App";
 import {useMessage, useDialog} from "naive-ui";
 import {MdPreview, MdEditor} from 'md-editor-v3'
@@ -8,6 +9,7 @@ import 'md-editor-v3/lib/style.css'
 
 const message = useMessage()
 const dialog = useDialog()
+const {t} = useI18n()
 
 const darkTheme = ref(false)
 const editorTheme = ref('light')
@@ -117,7 +119,7 @@ async function apiGet(path, params = {}) {
   const resp = await fetch(url.toString(), {headers: getHeaders()})
   const json = await resp.json()
   if (json.code !== 0) {
-    throw new Error(json.message || '请求失败')
+    throw new Error(json.message || t('promptPlaza.loadFailed'))
   }
   return json.data
 }
@@ -130,7 +132,7 @@ async function apiPost(path, body = null) {
   })
   const json = await resp.json()
   if (json.code !== 0) {
-    throw new Error(json.message || '请求失败')
+    throw new Error(json.message || t('promptPlaza.loadFailed'))
   }
   return json.data
 }
@@ -143,7 +145,7 @@ async function apiPut(path, body) {
   })
   const json = await resp.json()
   if (json.code !== 0) {
-    throw new Error(json.message || '请求失败')
+    throw new Error(json.message || t('promptPlaza.loadFailed'))
   }
   return json.data
 }
@@ -155,7 +157,7 @@ async function apiDelete(path) {
   })
   const json = await resp.json()
   if (json.code !== 0) {
-    throw new Error(json.message || '请求失败')
+    throw new Error(json.message || t('promptPlaza.loadFailed'))
   }
   return json.data
 }
@@ -165,7 +167,7 @@ async function loadCategories() {
     const data = await apiGet('/prompts/categories')
     categories.value = data || []
   } catch (e) {
-    console.warn('加载分类失败', e)
+    console.warn(t('promptPlaza.loadCategoriesFailed'), e)
   }
 }
 
@@ -184,7 +186,7 @@ async function loadPrompts() {
     pagination.itemCount = data.total || 0
     pagination.pageCount = data.totalPages || 1
   } catch (e) {
-    message.error('加载提示词列表失败: ' + e.message)
+    message.error(t('promptPlaza.loadFailed') + e.message)
   } finally {
     loading.value = false
   }
@@ -213,10 +215,10 @@ async function handleLogin() {
     localStorage.setItem('promptPlazaPassword', loginModal.password)
     currentUser.value = data.user
     loginModal.show = false
-    message.success('登录成功')
+    message.success(t('promptPlaza.loginSuccess'))
     loadPrompts()
   } catch (e) {
-    message.error('登录失败: ' + e.message)
+    message.error(t('promptPlaza.loginFailed') + e.message)
   }
 }
 
@@ -236,24 +238,24 @@ async function handleRegister() {
     loginModal.username = ''
     loginModal.password = ''
     loginModal.nickname = ''
-    message.success('注册成功')
+    message.success(t('promptPlaza.registerSuccess'))
     loadPrompts()
   } catch (e) {
-    message.error('注册失败: ' + e.message)
+    message.error(t('promptPlaza.registerFailed') + e.message)
   }
 }
 
 function handleLogout() {
   dialog.warning({
-    title: '提示',
-    content: '确定要退出登录吗？',
-    positiveText: '确定',
-    negativeText: '取消',
+    title: t('promptPlaza.loginRequired'),
+    content: t('promptPlaza.logoutConfirm'),
+    positiveText: t('promptPlaza.confirm'),
+    negativeText: t('promptPlaza.cancel'),
     onPositiveClick: () => {
       token.value = ''
       localStorage.removeItem('promptPlazaToken')
       currentUser.value = null
-      message.success('已退出登录')
+      message.success(t('promptPlaza.logoutSuccess'))
       loadPrompts()
     }
   })
@@ -290,7 +292,7 @@ async function showDetail(id) {
     detailModal.replyTo = null
     loadComments(id)
   } catch (e) {
-    message.error('加载详情失败: ' + e.message)
+    message.error(t('promptPlaza.loadDetailFailed') + e.message)
   }
 }
 
@@ -304,7 +306,7 @@ async function loadComments(promptId) {
     detailModal.comments = data.list || []
     detailModal.commentTotal = data.total || 0
   } catch (e) {
-    console.warn('加载评论失败', e)
+    console.warn(t('promptPlaza.loadCommentsFailed'), e)
   } finally {
     detailModal.commentLoading = false
   }
@@ -312,7 +314,7 @@ async function loadComments(promptId) {
 
 async function handleLike(prompt) {
   if (!isLoggedIn.value) {
-    message.warning('请先登录')
+    message.warning(t('promptPlaza.loginRequired'))
     loginModal.show = true
     return
   }
@@ -325,13 +327,13 @@ async function handleLike(prompt) {
       detailModal.data.likesCount = data.likesCount
     }
   } catch (e) {
-    message.error('操作失败: ' + e.message)
+    message.error(t('promptPlaza.operationFailed') + e.message)
   }
 }
 
 async function handleFavorite(prompt) {
   if (!isLoggedIn.value) {
-    message.warning('请先登录')
+    message.warning(t('promptPlaza.loginRequired'))
     loginModal.show = true
     return
   }
@@ -344,17 +346,17 @@ async function handleFavorite(prompt) {
       detailModal.data.favoritesCount = data.favoritesCount
     }
   } catch (e) {
-    message.error('操作失败: ' + e.message)
+    message.error(t('promptPlaza.operationFailed') + e.message)
   }
 }
 
 async function handleDownload(prompt) {
   try {
     const data = await apiGet(`/prompts/${prompt.id}/download`)
-    const text = `${data.title}\n\n${data.content}\n\n分类: ${data.category || '无'}\n标签: ${data.tags || '无'}\n作者: ${data.author?.nickname || data.author?.username || '匿名'}\n创建时间: ${data.createdAt}`
+    const text = `${data.title}\n\n${data.content}\n\n${t('promptPlaza.category')}: ${data.category || '-'}\n${t('promptPlaza.tags') || 'Tags'}: ${data.tags || '-'}\n${t('promptPlaza.author') || 'Author'}: ${data.author?.nickname || data.author?.username || t('promptPlaza.anonymous')}\n${t('promptPlaza.createdAt') || 'Created'}: ${data.createdAt}`
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(data.content)
-      message.success('提示词内容已复制到剪贴板')
+      message.success(t('promptPlaza.copiedToClipboard'))
     } else {
       const textarea = document.createElement('textarea')
       textarea.value = data.content
@@ -362,11 +364,11 @@ async function handleDownload(prompt) {
       textarea.select()
       document.execCommand('copy')
       document.body.removeChild(textarea)
-      message.success('提示词内容已复制到剪贴板')
+      message.success(t('promptPlaza.copiedToClipboard'))
     }
     prompt.downloadsCount = (prompt.downloadsCount || 0) + 1
   } catch (e) {
-    message.error('下载失败: ' + e.message)
+    message.error(t('promptPlaza.downloadFailed') + e.message)
   }
 }
 
@@ -382,20 +384,20 @@ async function handleCopyContent(content) {
       document.execCommand('copy')
       document.body.removeChild(textarea)
     }
-    message.success('已复制到剪贴板')
+    message.success(t('promptPlaza.copiedToClipboard'))
   } catch (e) {
-    message.error('复制失败')
+    message.error(t('promptPlaza.copyFailed'))
   }
 }
 
 async function submitComment() {
   if (!isLoggedIn.value) {
-    message.warning('请先登录')
+    message.warning(t('promptPlaza.loginRequired'))
     loginModal.show = true
     return
   }
   if (!detailModal.newComment.trim()) {
-    message.warning('请输入评论内容')
+    message.warning(t('promptPlaza.commentContentRequired'))
     return
   }
   try {
@@ -408,26 +410,26 @@ async function submitComment() {
     detailModal.replyTo = null
     detailModal.data.commentsCount = (detailModal.data.commentsCount || 0) + 1
     loadComments(detailModal.data.id)
-    message.success('评论成功')
+    message.success(t('promptPlaza.commentSuccess'))
   } catch (e) {
-    message.error('评论失败: ' + e.message)
+    message.error(t('promptPlaza.commentFailed') + e.message)
   }
 }
 
 async function deleteComment(commentId) {
   dialog.warning({
-    title: '提示',
-    content: '确定要删除这条评论吗？',
-    positiveText: '确定',
-    negativeText: '取消',
+    title: t('promptPlaza.loginRequired'),
+    content: t('promptPlaza.deleteCommentConfirm'),
+    positiveText: t('promptPlaza.confirm'),
+    negativeText: t('promptPlaza.cancel'),
     onPositiveClick: async () => {
       try {
         await apiDelete(`/comments/${commentId}`)
         detailModal.data.commentsCount = Math.max(0, (detailModal.data.commentsCount || 1) - 1)
         loadComments(detailModal.data.id)
-        message.success('删除成功')
+        message.success(t('promptPlaza.deleteSuccess'))
       } catch (e) {
-        message.error('删除失败: ' + e.message)
+        message.error(t('promptPlaza.deleteFailed') + e.message)
       }
     }
   })
@@ -446,7 +448,7 @@ function showEditModal(prompt) {
 
 async function handleEdit() {
   if (!editModal.title || !editModal.content) {
-    message.warning('请填写标题和内容')
+    message.warning(t('promptPlaza.titleContentRequired'))
     return
   }
   editModal.loading = true
@@ -461,11 +463,11 @@ async function handleEdit() {
     })
     editModal.show = false
     detailModal.show = false
-    message.success('修改成功')
+    message.success(t('promptPlaza.modifySuccess'))
     loadPrompts()
     loadCategories()
   } catch (e) {
-    message.error('修改失败: ' + e.message)
+    message.error(t('promptPlaza.modifyFailed') + e.message)
   } finally {
     editModal.loading = false
   }
@@ -473,19 +475,19 @@ async function handleEdit() {
 
 function handleDeletePrompt(prompt) {
   dialog.warning({
-    title: '提示',
-    content: '确定要删除这个提示词吗？删除后不可恢复。',
-    positiveText: '确定',
-    negativeText: '取消',
+    title: t('promptPlaza.loginRequired'),
+    content: t('promptPlaza.deletePromptConfirm'),
+    positiveText: t('promptPlaza.confirm'),
+    negativeText: t('promptPlaza.cancel'),
     onPositiveClick: async () => {
       try {
         await apiDelete(`/prompts/${prompt.id}`)
         detailModal.show = false
-        message.success('删除成功')
+        message.success(t('promptPlaza.deleteSuccess'))
         loadPrompts()
         loadCategories()
       } catch (e) {
-        message.error('删除失败: ' + e.message)
+        message.error(t('promptPlaza.deleteFailed') + e.message)
       }
     }
   })
@@ -493,7 +495,7 @@ function handleDeletePrompt(prompt) {
 
 async function showCreateModal() {
   if (!isLoggedIn.value) {
-    message.warning('请先登录')
+    message.warning(t('promptPlaza.loginRequired'))
     loginModal.show = true
     return
   }
@@ -508,7 +510,7 @@ async function showCreateModal() {
 
 async function handleCreate() {
   if (!createModal.title || !createModal.content) {
-    message.warning('请填写标题和内容')
+    message.warning(t('promptPlaza.titleContentRequired'))
     return
   }
   try {
@@ -521,11 +523,11 @@ async function handleCreate() {
       isPublic: createModal.isPublic
     })
     createModal.show = false
-    message.success('发布成功')
+    message.success(t('promptPlaza.publishSuccess'))
     loadPrompts()
     loadCategories()
   } catch (e) {
-    message.error('发布失败: ' + e.message)
+    message.error(t('promptPlaza.publishFailed') + e.message)
   }
 }
 
@@ -538,7 +540,7 @@ async function showRanking(type = 'hot', range = 'all') {
     const data = await apiGet('/prompts/ranking', {type, range, limit: 50})
     rankingModal.list = data.list || []
   } catch (e) {
-    message.error('加载排行榜失败: ' + e.message)
+    message.error(t('promptPlaza.loadRankingFailed') + e.message)
   } finally {
     rankingModal.loading = false
   }
@@ -554,10 +556,10 @@ function timeAgo(timeStr) {
   const now = new Date()
   const time = new Date(timeStr)
   const diff = Math.floor((now - time) / 1000)
-  if (diff < 60) return '刚刚'
-  if (diff < 3600) return Math.floor(diff / 60) + '分钟前'
-  if (diff < 86400) return Math.floor(diff / 3600) + '小时前'
-  if (diff < 2592000) return Math.floor(diff / 86400) + '天前'
+  if (diff < 60) return t('promptPlaza.justNow')
+  if (diff < 3600) return t('promptPlaza.minutesAgo', { n: Math.floor(diff / 60) })
+  if (diff < 86400) return t('promptPlaza.hoursAgo', { n: Math.floor(diff / 3600) })
+  if (diff < 2592000) return t('promptPlaza.daysAgo', { n: Math.floor(diff / 86400) })
   return formatTime(timeStr)
 }
 </script>
@@ -569,35 +571,35 @@ function timeAgo(timeStr) {
         <n-space align="center">
           <n-input
             v-model:value="keyword"
-            placeholder="搜索提示词..."
+            :placeholder="t('promptPlaza.searchPlaceholder')"
             clearable
             style="width: 260px"
             @keyup.enter="handleSearch"
           />
-          <n-button type="primary" @click="handleSearch">搜索</n-button>
-          <n-button quaternary @click="showRanking('hot')">🏆 排行榜</n-button>
+          <n-button type="primary" @click="handleSearch">{{ t('promptPlaza.search') }}</n-button>
+          <n-button quaternary @click="showRanking('hot')">🏆 {{ t('promptPlaza.ranking') }}</n-button>
         </n-space>
         <n-space>
-          <n-button type="success" @click="showCreateModal">✏️ 发布提示词</n-button>
+          <n-button type="success" @click="showCreateModal">✏️ {{ t('promptPlaza.publishPrompt') }}</n-button>
           <template v-if="isLoggedIn">
             <n-tag type="success" size="medium" round>
-              {{ currentUser?.nickname || currentUser?.username || '已登录' }}
+              {{ currentUser?.nickname || currentUser?.username || t('promptPlaza.loggedIn') }}
             </n-tag>
-            <n-button size="small" quaternary @click="handleLogout">退出</n-button>
+            <n-button size="small" quaternary @click="handleLogout">{{ t('promptPlaza.logout') }}</n-button>
           </template>
           <template v-else>
-            <n-button type="info" size="small" @click="loginModal.show = true; loginModal.tab = 'login'">登录 / 注册</n-button>
+            <n-button type="info" size="small" @click="loginModal.show = true; loginModal.tab = 'login'">{{ t('promptPlaza.loginRegister') }}</n-button>
           </template>
         </n-space>
       </n-space>
 
       <n-space align="center" :size="8">
-        <n-text depth="3" style="font-size: 13px">分类:</n-text>
+        <n-text depth="3" style="font-size: 13px">{{ t('promptPlaza.category') }}</n-text>
         <n-button
           :type="activeCategory === null ? 'primary' : 'default'"
           size="small"
           @click="handleCategoryFilter(null)"
-        >全部</n-button>
+        >{{ t('promptPlaza.all') }}</n-button>
         <n-button
           v-for="cat in categories"
           :key="cat"
@@ -606,11 +608,11 @@ function timeAgo(timeStr) {
           @click="handleCategoryFilter(cat)"
         >{{ cat }}</n-button>
         <n-divider vertical />
-        <n-text depth="3" style="font-size: 13px">排序:</n-text>
-        <n-button :type="activeSort === '' ? 'primary' : 'default'" size="small" @click="handleSortChange('')">最新</n-button>
-        <n-button :type="activeSort === 'likes' ? 'primary' : 'default'" size="small" @click="handleSortChange('likes')">最热</n-button>
-        <n-button :type="activeSort === 'downloads' ? 'primary' : 'default'" size="small" @click="handleSortChange('downloads')">下载</n-button>
-        <n-button :type="activeSort === 'comments' ? 'primary' : 'default'" size="small" @click="handleSortChange('comments')">评论</n-button>
+        <n-text depth="3" style="font-size: 13px">{{ t('promptPlaza.sort') }}</n-text>
+        <n-button :type="activeSort === '' ? 'primary' : 'default'" size="small" @click="handleSortChange('')">{{ t('promptPlaza.latest') }}</n-button>
+        <n-button :type="activeSort === 'likes' ? 'primary' : 'default'" size="small" @click="handleSortChange('likes')">{{ t('promptPlaza.hottest') }}</n-button>
+        <n-button :type="activeSort === 'downloads' ? 'primary' : 'default'" size="small" @click="handleSortChange('downloads')">{{ t('promptPlaza.downloads') }}</n-button>
+        <n-button :type="activeSort === 'comments' ? 'primary' : 'default'" size="small" @click="handleSortChange('comments')">{{ t('promptPlaza.comments') }}</n-button>
       </n-space>
 
       <n-spin :show="loading">
@@ -634,7 +636,7 @@ function timeAgo(timeStr) {
               <template #footer>
                 <n-space justify="space-between" align="center">
                   <n-text depth="3" style="font-size: 12px">
-                    {{ item.user?.nickname || item.user?.username || '匿名' }} · {{ timeAgo(item.createdAt) }}
+                    {{ item.user?.nickname || item.user?.username || t('promptPlaza.anonymous') }} · {{ timeAgo(item.createdAt) }}
                   </n-text>
                   <n-space :size="12" style="font-size: 12px">
                     <n-text :type="item.isLiked ? 'error' : 'default'" style="cursor: pointer" @click.stop="handleLike(item)">
@@ -660,7 +662,7 @@ function timeAgo(timeStr) {
             </n-card>
           </n-gi>
         </n-grid>
-        <n-empty v-if="!loading && prompts.length === 0" description="暂无提示词" style="margin-top: 40px" />
+        <n-empty v-if="!loading && prompts.length === 0" :description="t('promptPlaza.noPrompts')" style="margin-top: 40px" />
       </n-spin>
 
       <n-space justify="center" style="margin-top: 12px" v-if="pagination.pageCount > 1">
@@ -673,16 +675,16 @@ function timeAgo(timeStr) {
       </n-space>
     </n-space>
 
-    <n-modal v-model:show="detailModal.show" preset="card" style="width: 1100px; max-width: 95vw" :title="detailModal.data?.title || '提示词详情'">
+    <n-modal v-model:show="detailModal.show" preset="card" style="width: 1100px; max-width: 95vw" :title="detailModal.data?.title || t('promptPlaza.promptDetail')">
       <template v-if="detailModal.data">
         <n-space align="left" justify="space-between" style="margin-bottom: 12px">
           <n-space align="left" :size="8">
             <n-tag v-if="detailModal.data.category" type="info" size="small">{{ detailModal.data.category }}</n-tag>
             <n-text depth="3" style="font-size: 12px">
-              {{ detailModal.data.user?.nickname || detailModal.data.user?.username || '匿名' }} · {{ formatTime(detailModal.data.createdAt) }}
+              {{ detailModal.data.user?.nickname || detailModal.data.user?.username || t('promptPlaza.anonymous') }} · {{ formatTime(detailModal.data.createdAt) }}
             </n-text>
             <n-text depth="3" style="font-size: 12px" v-if="detailModal.data.updatedAt && detailModal.data.updatedAt !== detailModal.data.createdAt">
-              · 更新于 {{ formatTime(detailModal.data.updatedAt) }}
+              · {{ t('promptPlaza.updatedAt') }} {{ formatTime(detailModal.data.updatedAt) }}
             </n-text>
           </n-space>
           <n-space :size="8">
@@ -692,7 +694,7 @@ function timeAgo(timeStr) {
               type="warning"
               @click="showEditModal(detailModal.data)"
             >
-              ✏️ 编辑
+              ✏️ {{ t('promptPlaza.edit') }}
             </n-button>
             <n-button
               v-if="currentUser && detailModal.data.userId === currentUser.id"
@@ -700,27 +702,27 @@ function timeAgo(timeStr) {
               type="error"
               @click="handleDeletePrompt(detailModal.data)"
             >
-              🗑️ 删除
+              🗑️ {{ t('promptPlaza.delete') }}
             </n-button>
             <n-button
               :type="detailModal.data.isLiked ? 'error' : 'default'"
               size="tiny"
               @click="handleLike(detailModal.data)"
             >
-              {{ detailModal.data.isLiked ? '❤️ 已赞' : '🤍 点赞' }} {{ detailModal.data.likesCount || 0 }}
+              {{ detailModal.data.isLiked ? '❤️ ' + t('promptPlaza.liked') : '🤍 ' + t('promptPlaza.like') }} {{ detailModal.data.likesCount || 0 }}
             </n-button>
             <n-button
               :type="detailModal.data.isFavorited ? 'warning' : 'default'"
               size="tiny"
               @click="handleFavorite(detailModal.data)"
             >
-              {{ detailModal.data.isFavorited ? '⭐ 已收藏' : '☆ 收藏' }} {{ detailModal.data.favoritesCount || 0 }}
+              {{ detailModal.data.isFavorited ? '⭐ ' + t('promptPlaza.favorited') : '☆ ' + t('promptPlaza.favorite') }} {{ detailModal.data.favoritesCount || 0 }}
             </n-button>
             <n-button size="tiny" type="success" @click="handleDownload(detailModal.data)">
-              ⬇️ 下载 {{ detailModal.data.downloadsCount || 0 }}
+              ⬇️ {{ t('promptPlaza.download') }} {{ detailModal.data.downloadsCount || 0 }}
             </n-button>
             <n-button size="tiny" quaternary @click="handleCopyContent(detailModal.data.content)">
-              📋 复制
+              📋 {{ t('promptPlaza.copy') }}
             </n-button>
           </n-space>
         </n-space>
@@ -742,20 +744,20 @@ function timeAgo(timeStr) {
           </div>
           <div style="flex: 1; min-width: 0">
             <n-space vertical :size="8" style="width: 100%">
-              <n-text strong>评论 ({{ detailModal.data.commentsCount || 0 }})</n-text>
+              <n-text strong>{{ t('promptPlaza.commentsTitle', { count: detailModal.data.commentsCount || 0 }) }}</n-text>
               <n-input
                 v-model:value="detailModal.newComment"
                 type="textarea"
-                :placeholder="detailModal.replyTo ? `回复 @${detailModal.replyTo.user?.nickname || detailModal.replyTo.user?.username}...` : '发表评论...'"
+                :placeholder="detailModal.replyTo ? t('promptPlaza.replyTo', { username: detailModal.replyTo.user?.nickname || detailModal.replyTo.user?.username }) : t('promptPlaza.commentPlaceholder')"
                 :rows="2"
               />
               <n-space justify="space-between" style="width: 100%">
                 <n-text v-if="detailModal.replyTo" depth="3" style="font-size: 12px">
-                  回复 @{{ detailModal.replyTo.user?.nickname || detailModal.replyTo.user?.username }}
-                  <n-button text size="tiny" type="error" @click="detailModal.replyTo = null">取消</n-button>
+                  {{ t('promptPlaza.replyTo', { username: detailModal.replyTo.user?.nickname || detailModal.replyTo.user?.username }) }}
+                  <n-button text size="tiny" type="error" @click="detailModal.replyTo = null">{{ t('promptPlaza.cancel') }}</n-button>
                 </n-text>
                 <span v-else />
-                <n-button size="small" type="primary" @click="submitComment">发表评论</n-button>
+                <n-button size="small" type="primary" @click="submitComment">{{ t('promptPlaza.submitComment') }}</n-button>
               </n-space>
               <n-spin :show="detailModal.commentLoading">
                 <div style="max-height: 380px; overflow-y: auto; width: 100%">
@@ -770,18 +772,18 @@ function timeAgo(timeStr) {
                       <n-text style="font-size: 13px; text-align: left; display: block">{{ comment.content }}</n-text>
                       <template #action>
                         <n-space :size="8">
-                          <n-button text size="tiny" @click="detailModal.replyTo = comment">回复</n-button>
+                          <n-button text size="tiny" @click="detailModal.replyTo = comment">{{ t('promptPlaza.reply') }}</n-button>
                           <n-button
                             v-if="currentUser && comment.userId === currentUser.id"
                             text
                             size="tiny"
                             type="error"
                             @click="deleteComment(comment.id)"
-                          >删除</n-button>
+                          >{{ t('promptPlaza.delete') }}</n-button>
                         </n-space>
                       </template>
                     </n-card>
-                    <n-empty v-if="!detailModal.commentLoading && detailModal.comments.length === 0" description="暂无评论" size="small" />
+                    <n-empty v-if="!detailModal.commentLoading && detailModal.comments.length === 0" :description="t('promptPlaza.noComments')" size="small" />
                   </n-space>
                 </div>
               </n-spin>
@@ -791,86 +793,86 @@ function timeAgo(timeStr) {
       </template>
     </n-modal>
 
-    <n-modal v-model:show="loginModal.show" preset="card" style="width: 400px" title="账号">
+    <n-modal v-model:show="loginModal.show" preset="card" style="width: 400px" :title="t('promptPlaza.account')">
       <n-tabs v-model:value="loginModal.tab" type="line">
-        <n-tab-pane name="login" tab="登录">
+        <n-tab-pane name="login" :tab="t('promptPlaza.login')">
           <n-space vertical :size="12">
-            <n-input v-model:value="loginModal.username" placeholder="用户名" />
-            <n-input v-model:value="loginModal.password" type="password" placeholder="密码" show-password-on="click" />
-            <n-button type="primary" block @click="handleLogin">登录</n-button>
+            <n-input v-model:value="loginModal.username" :placeholder="t('promptPlaza.username')" />
+            <n-input v-model:value="loginModal.password" type="password" :placeholder="t('promptPlaza.password')" show-password-on="click" />
+            <n-button type="primary" block @click="handleLogin">{{ t('promptPlaza.login') }}</n-button>
           </n-space>
         </n-tab-pane>
-        <n-tab-pane name="register" tab="注册">
+        <n-tab-pane name="register" :tab="t('promptPlaza.register')">
           <n-space vertical :size="12">
-            <n-input v-model:value="loginModal.username" placeholder="用户名 (3-50字)" />
-            <n-input v-model:value="loginModal.password" type="password" placeholder="密码 (6字以上)" show-password-on="click" />
-            <n-input v-model:value="loginModal.nickname" placeholder="昵称 (可选)" />
-            <n-button type="primary" block @click="handleRegister">注册</n-button>
+            <n-input v-model:value="loginModal.username" :placeholder="t('promptPlaza.usernamePlaceholder')" />
+            <n-input v-model:value="loginModal.password" type="password" :placeholder="t('promptPlaza.passwordPlaceholder')" show-password-on="click" />
+            <n-input v-model:value="loginModal.nickname" :placeholder="t('promptPlaza.nicknamePlaceholder')" />
+            <n-button type="primary" block @click="handleRegister">{{ t('promptPlaza.register') }}</n-button>
           </n-space>
         </n-tab-pane>
       </n-tabs>
     </n-modal>
 
-    <n-modal v-model:show="createModal.show" preset="card" style="width: 1100px; max-width: 95vw" title="发布提示词">
+    <n-modal v-model:show="createModal.show" preset="card" style="width: 1100px; max-width: 95vw" :title="t('promptPlaza.publishPrompt')">
       <n-space vertical :size="12">
-        <n-input v-model:value="createModal.title" placeholder="标题" />
+        <n-input v-model:value="createModal.title" :placeholder="t('promptPlaza.title')" />
         <n-space :size="8">
-          <n-input v-model:value="createModal.category" placeholder="分类 (如: AI编程, 数据分析)" style="width: 240px" />
-          <n-input v-model:value="createModal.tags" placeholder="标签 (逗号分隔)" style="width: 240px" />
+          <n-input v-model:value="createModal.category" :placeholder="t('promptPlaza.categoryPlaceholder')" style="width: 240px" />
+          <n-input v-model:value="createModal.tags" :placeholder="t('promptPlaza.tagsPlaceholder')" style="width: 240px" />
         </n-space>
-        <n-input v-model:value="createModal.description" placeholder="简短描述" type="textarea" :rows="2" />
+        <n-input v-model:value="createModal.description" :placeholder="t('promptPlaza.descriptionPlaceholder')" type="textarea" :rows="2" />
         <MdEditor
           v-model="createModal.content"
           :theme="editorTheme"
-          placeholder="提示词内容"
+          :placeholder="t('promptPlaza.contentPlaceholder')"
           style="height: 400px"
         />
         <n-space justify="end">
-          <n-button @click="createModal.show = false">取消</n-button>
-          <n-button type="primary" @click="handleCreate">发布</n-button>
+          <n-button @click="createModal.show = false">{{ t('promptPlaza.cancel') }}</n-button>
+          <n-button type="primary" @click="handleCreate">{{ t('promptPlaza.publish') }}</n-button>
         </n-space>
       </n-space>
     </n-modal>
 
-    <n-modal v-model:show="editModal.show" preset="card" style="width: 1100px; max-width: 95vw" title="编辑提示词">
+    <n-modal v-model:show="editModal.show" preset="card" style="width: 1100px; max-width: 95vw" :title="t('promptPlaza.edit')">
       <n-space vertical :size="12">
-        <n-input v-model:value="editModal.title" placeholder="标题" />
+        <n-input v-model:value="editModal.title" :placeholder="t('promptPlaza.title')" />
         <n-space :size="8">
-          <n-input v-model:value="editModal.category" placeholder="分类" style="width: 240px" />
-          <n-input v-model:value="editModal.tags" placeholder="标签 (逗号分隔)" style="width: 240px" />
+          <n-input v-model:value="editModal.category" :placeholder="t('promptPlaza.categoryPlaceholder')" style="width: 240px" />
+          <n-input v-model:value="editModal.tags" :placeholder="t('promptPlaza.tagsPlaceholder')" style="width: 240px" />
         </n-space>
-        <n-input v-model:value="editModal.description" placeholder="简短描述" type="textarea" :rows="2" />
+        <n-input v-model:value="editModal.description" :placeholder="t('promptPlaza.descriptionPlaceholder')" type="textarea" :rows="2" />
         <MdEditor
           v-model="editModal.content"
           :theme="editorTheme"
-          placeholder="提示词内容"
+          :placeholder="t('promptPlaza.contentPlaceholder')"
           style="height: 400px"
         />
         <n-space align="center">
-          <n-text>公开</n-text>
+          <n-text>{{ t('promptPlaza.public') }}</n-text>
           <n-switch v-model:value="editModal.isPublic" />
         </n-space>
         <n-space justify="end">
-          <n-button @click="editModal.show = false">取消</n-button>
-          <n-button type="primary" :loading="editModal.loading" @click="handleEdit">保存</n-button>
+          <n-button @click="editModal.show = false">{{ t('promptPlaza.cancel') }}</n-button>
+          <n-button type="primary" :loading="editModal.loading" @click="handleEdit">{{ t('promptPlaza.save') }}</n-button>
         </n-space>
       </n-space>
     </n-modal>
 
-    <n-modal v-model:show="rankingModal.show" preset="card" style="width: 700px; max-width: 95vw" title="🏆 排行榜">
+    <n-modal v-model:show="rankingModal.show" preset="card" style="width: 700px; max-width: 95vw" :title="t('promptPlaza.rankingTitle')">
       <n-space vertical :size="12">
         <n-space :size="8">
-          <n-text depth="3" style="font-size: 13px">类型:</n-text>
-          <n-button :type="rankingModal.type === 'hot' ? 'primary' : 'default'" size="small" @click="showRanking('hot', rankingModal.range)">🔥 综合热度</n-button>
-          <n-button :type="rankingModal.type === 'likes' ? 'primary' : 'default'" size="small" @click="showRanking('likes', rankingModal.range)">❤️ 点赞</n-button>
-          <n-button :type="rankingModal.type === 'downloads' ? 'primary' : 'default'" size="small" @click="showRanking('downloads', rankingModal.range)">⬇️ 下载</n-button>
-          <n-button :type="rankingModal.type === 'favorites' ? 'primary' : 'default'" size="small" @click="showRanking('favorites', rankingModal.range)">⭐ 收藏</n-button>
+          <n-text depth="3" style="font-size: 13px">{{ t('promptPlaza.type') }}</n-text>
+          <n-button :type="rankingModal.type === 'hot' ? 'primary' : 'default'" size="small" @click="showRanking('hot', rankingModal.range)">🔥 {{ t('promptPlaza.comprehensiveHeat') }}</n-button>
+          <n-button :type="rankingModal.type === 'likes' ? 'primary' : 'default'" size="small" @click="showRanking('likes', rankingModal.range)">❤️ {{ t('promptPlaza.hottest') }}</n-button>
+          <n-button :type="rankingModal.type === 'downloads' ? 'primary' : 'default'" size="small" @click="showRanking('downloads', rankingModal.range)">⬇️ {{ t('promptPlaza.downloads') }}</n-button>
+          <n-button :type="rankingModal.type === 'favorites' ? 'primary' : 'default'" size="small" @click="showRanking('favorites', rankingModal.range)">⭐ {{ t('promptPlaza.favorite') }}</n-button>
           <n-divider vertical />
-          <n-text depth="3" style="font-size: 13px">时间:</n-text>
-          <n-button :type="rankingModal.range === 'all' ? 'primary' : 'default'" size="small" @click="showRanking(rankingModal.type, 'all')">全部</n-button>
-          <n-button :type="rankingModal.range === 'daily' ? 'primary' : 'default'" size="small" @click="showRanking(rankingModal.type, 'daily')">今日</n-button>
-          <n-button :type="rankingModal.range === 'weekly' ? 'primary' : 'default'" size="small" @click="showRanking(rankingModal.type, 'weekly')">本周</n-button>
-          <n-button :type="rankingModal.range === 'monthly' ? 'primary' : 'default'" size="small" @click="showRanking(rankingModal.type, 'monthly')">本月</n-button>
+          <n-text depth="3" style="font-size: 13px">{{ t('promptPlaza.time') }}</n-text>
+          <n-button :type="rankingModal.range === 'all' ? 'primary' : 'default'" size="small" @click="showRanking(rankingModal.type, 'all')">{{ t('promptPlaza.all') }}</n-button>
+          <n-button :type="rankingModal.range === 'daily' ? 'primary' : 'default'" size="small" @click="showRanking(rankingModal.type, 'daily')">{{ t('promptPlaza.today') }}</n-button>
+          <n-button :type="rankingModal.range === 'weekly' ? 'primary' : 'default'" size="small" @click="showRanking(rankingModal.type, 'weekly')">{{ t('promptPlaza.thisWeek') }}</n-button>
+          <n-button :type="rankingModal.range === 'monthly' ? 'primary' : 'default'" size="small" @click="showRanking(rankingModal.type, 'monthly')">{{ t('promptPlaza.thisMonth') }}</n-button>
         </n-space>
 
         <n-spin :show="rankingModal.loading">
@@ -885,7 +887,7 @@ function timeAgo(timeStr) {
                 >{{ item.rank }}</n-tag>
                 <n-text strong>{{ item.title }}</n-text>
                 <n-text depth="3" style="font-size: 12px">
-                  {{ item.user?.nickname || item.user?.username || '匿名' }}
+                  {{ item.user?.nickname || item.user?.username || t('promptPlaza.anonymous') }}
                 </n-text>
                 <n-space :size="8" style="font-size: 12px">
                   <n-text depth="3">❤️ {{ item.likesCount || 0 }}</n-text>
@@ -897,7 +899,7 @@ function timeAgo(timeStr) {
               </n-space>
             </n-list-item>
           </n-list>
-          <n-empty v-if="!rankingModal.loading && rankingModal.list.length === 0" description="暂无排行数据" />
+          <n-empty v-if="!rankingModal.loading && rankingModal.list.length === 0" :description="t('promptPlaza.noRankingData')" />
         </n-spin>
       </n-space>
     </n-modal>

@@ -3,10 +3,9 @@ import {computed, h, onBeforeMount, onBeforeUnmount, onMounted,onUnmounted, ref,
 import {GetAIResponseResultList, GetConfig, SaveAsMarkdown, ShareAnalysis,DeleteAIResponseResult} from "../../wailsjs/go/main/App";
 import {NAvatar, NButton, NEllipsis, NText, useMessage} from "naive-ui";
 import {MdEditor, MdPreview} from 'md-editor-v3';
+import { useI18n } from 'vue-i18n'
 
-
-
-onBeforeMount(()=> {
+const { t } = useI18n()(()=> {
   GetConfig().then(result => {
     if (result.darkTheme) {
       editorDataRef.darkTheme = true
@@ -49,7 +48,7 @@ const dataRef = ref([])
 const loadingRef = ref(true)
 const columnsRef = ref([
   {
-    title: '分析时间',
+    title: t('researchReport.analyzeTime'),
     key: 'CreatedAt',
     render(row, index) {
       //2026-01-14T22:13:27.2693252+08:00 格式化为常用时间格式
@@ -57,22 +56,22 @@ const columnsRef = ref([
     }
   },
   {
-    title: '模型名称',
+    title: t('researchReport.modelName'),
     key: 'modelName'
   },
   {
-    title: '分析对象',
+    title: t('researchReport.stockName'),
     key: 'stockName'
   },
   {
-    title: '提示词',
+    title: t('researchReport.prompt'),
     key: 'question',
     render(row, index) {
       return h(NEllipsis, { tooltip: true ,style: "max-width: 240px;"}, {default: () => h(NText,{type: "info"},{default: () => row.question}),})
     }
   },
   {
-    title: '操作',
+    title: t('researchReport.operation'),
     render(row, index) {
       return [h(
           NButton,
@@ -84,7 +83,7 @@ const columnsRef = ref([
             style: 'font-size: 14px; padding: 0 10px;', // 稍微大一点的按钮
             onClick: () => showReport(row)
           },
-          { default: () => '查看分析报告' }
+          { default: () => t('researchReport.viewReport') }
       ),
       h(
           NButton,
@@ -96,7 +95,7 @@ const columnsRef = ref([
             style: 'font-size: 14px; padding: 0 10px;', // 稍微大一点的按钮
             onClick: () => deleteAIResponseResult(row.ID)
           },
-          { default: () => '删除' }
+          { default: () => t('researchReport.delete') }
       ),
       ]
     }
@@ -114,7 +113,7 @@ const paginationReactive = reactive({
     new Date() // 当天
   ],
   prefix({ itemCount }) {
-    return `${itemCount} 条记录`
+    return t('researchReport.recordCount', { count: itemCount })
   }
 })
 const theme = computed(() => {
@@ -213,7 +212,7 @@ function share(code, name) {
             round: false,
             src: icon.value
           }),
-      title: '分享到社区',
+      title: t('researchReport.shareToCommunity'),
       duration: 1000 * 30,
       content: () => {
         return h('div', {
@@ -237,9 +236,9 @@ function saveAsMarkdown(code,name) {
 async function copyToClipboard() {
   try {
     await navigator.clipboard.writeText(editorDataRef.content);
-    message.success('分析结果已复制到剪切板');
+    message.success(t('researchReport.copied'));
   } catch (err) {
-    message.error('复制失败: ' + err);
+    message.error(t('researchReport.copyFailed') + err);
   }
 }
 function formatDate(dateString) {
@@ -267,9 +266,9 @@ function deleteAIResponseResult(id){
 <template>
   <n-input-group>
     <n-date-picker  v-model:value="paginationReactive.range" type="daterange"   style="width: 50%"/>
-    <n-input clearable placeholder="输入关键词搜索" v-model:value="paginationReactive.keyword"/>
+    <n-input clearable :placeholder="t('researchReport.keywordPlaceholder')" v-model:value="paginationReactive.keyword"/>
     <n-button type="primary" ghost @click="handleSearch"  @input="handleSearch">
-      搜索
+      {{ t('researchReport.search') }}
     </n-button>
   </n-input-group>
         <n-data-table
@@ -288,7 +287,7 @@ function deleteAIResponseResult(id){
 
 
   <n-modal transform-origin="center" v-model:show="editorDataRef.show" preset="card" style="width: 800px;"
-           :title="'['+editorDataRef.stockName+']AI分析'">
+           :title="'['+editorDataRef.stockName+']'+t('researchReport.aiAnalysis')">
     <n-spin size="small" :show="editorDataRef.loading">
       <MdPreview  ref="mdPreviewRef" style="height: 540px;text-align: left"
                  :modelValue="editorDataRef.content" :theme="theme"/>
@@ -301,14 +300,14 @@ function deleteAIResponseResult(id){
           </n-tag>
           {{ editorDataRef.CreatedAt }}
         </n-text>
-        <n-text type="error">*AI分析结果仅供参考，请以实际行情为准。投资需谨慎，风险自担。</n-text>
+        <n-text type="error">{{ t('researchReport.disclaimer') }}</n-text>
       </n-flex>
     </template>
     <template #action>
       <n-flex justify="right">
-        <n-button size="tiny" type="success" @click="copyToClipboard">复制到剪切板</n-button>
-        <n-button size="tiny" type="primary" @click="saveAsMarkdown(editorDataRef.stockCode,editorDataRef.stockName)">保存为Markdown文件</n-button>
-        <n-button size="tiny" type="error" @click="share(editorDataRef.stockCode,editorDataRef.stockName)">分享到项目社区</n-button>
+        <n-button size="tiny" type="success" @click="copyToClipboard">{{ t('researchReport.copyToClipboard') }}</n-button>
+        <n-button size="tiny" type="primary" @click="saveAsMarkdown(editorDataRef.stockCode,editorDataRef.stockName)">{{ t('researchReport.saveAsMarkdown') }}</n-button>
+        <n-button size="tiny" type="error" @click="share(editorDataRef.stockCode,editorDataRef.stockName)">{{ t('researchReport.shareToCommunity') }}</n-button>
       </n-flex>
     </template>
   </n-modal>

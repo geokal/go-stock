@@ -5,7 +5,7 @@
       v-if="showButton"
       :class="['edge-trigger', { 'edge-trigger-busy': hasBackgroundTask }]"
       @click="togglePanel"
-      :title="hasBackgroundTask ? 'go-stock AI 助手正在后台分析...' : 'go-stock AI 助手'"
+      :title="hasBackgroundTask ? t('floatingAi.backgroundWorking') : t('floatingAi.title')"
     >
       <div class="edge-trigger-inner">
         <NIcon :component="ChatbubbleEllipsesOutline" size="22" />
@@ -27,17 +27,17 @@
         >
           <template #header>
             <div class="panel-header">
-              <span class="panel-title">go-stock AI 助手</span>
+              <span class="panel-title">{{ t('floatingAi.title') }}</span>
               <div class="panel-actions">
-                <NButton size="small" quaternary @click="startNewChat" title="开始新对话">
-                  新对话
+                <NButton size="small" quaternary @click="startNewChat" :title="t('floatingAi.startNewChat')">
+                  {{ t('floatingAi.newChat') }}
                 </NButton>
-                <NButton quaternary circle size="small" title="分享到社区" :loading="shareLoading" @click="shareAiToCommunity">
+                <NButton quaternary circle size="small" :title="t('floatingAi.shareToCommunity')" :loading="shareLoading" @click="shareAiToCommunity">
                   <template #icon>
                     <NIcon :component="ShareSocialOutline" />
                   </template>
                 </NButton>
-                <NButton quaternary circle size="small" title="关闭" @click="closePanel">
+                <NButton quaternary circle size="small" :title="t('floatingAi.close')" @click="closePanel">
                   <template #icon>
                     <NIcon :component="CloseOutline" />
                   </template>
@@ -49,13 +49,13 @@
           <div class="chat-body">
             <div v-if="shareTipVisible" class="share-tip">
               <div class="share-tip-text">{{ shareTipText }}</div>
-              <NButton size="tiny" quaternary class="share-tip-close" @click="shareTipVisible = false">关闭</NButton>
+              <NButton size="tiny" quaternary class="share-tip-close" @click="shareTipVisible = false">{{ t('floatingAi.close') }}</NButton>
             </div>
             <NScrollbar ref="scrollbarRef" class="chat-scroll">
               <div class="message-list">
                 <div v-if="messages.length > DEFAULT_VISIBLE_COUNT" class="message-list-expand">
                   <NButton quaternary size="small" @click="showMoreHistory">
-                    {{ expandAll ? '收起' : '展开更多历史' }}{{ expandAll ? '' : '（共 ' + hiddenCount + ' 条）' }}
+                    {{ expandAll ? t('floatingAi.collapse') : t('floatingAi.expandMore') }}{{ expandAll ? '' : '(' + t('floatingAi.total') + ' ' + hiddenCount + ' ' + t('floatingAi.items') + ')' }}
                   </NButton>
                 </div>
                 <div
@@ -91,32 +91,32 @@
                           <template #icon>
                             <NIcon :component="ChevronDownOutline" />
                           </template>
-                          展开
+                          {{ t('floatingAi.expand') }}
                         </NButton>
                         <NButton quaternary size="tiny" class="msg-copy-btn" @click="copyAiContent(msg)">
                           <template #icon>
                             <NIcon :component="CopyOutline" />
                           </template>
-                          复制
+                          {{ t('floatingAi.copy') }}
                         </NButton>
                         <NButton
                           quaternary
                           size="tiny"
                           class="msg-export-img-btn"
                           :loading="exportImageKey === (displayFromIndex + '-' + index)"
-                          title="导出为图片"
+                          :title="t('floatingAi.exportImage')"
                           @click="exportAiReplyImage(displayFromIndex, index, $event)"
                         >
                           <template #icon>
                             <NIcon :component="ImageOutline" />
                           </template>
-                          导出图
+                          {{ t('floatingAi.exportImageBtn') }}
                         </NButton>
                         <NButton quaternary size="tiny" class="msg-share-btn" :loading="shareLoading" @click="shareAiContent(msg)">
                           <template #icon>
                             <NIcon :component="ShareSocialOutline" />
                           </template>
-                          分享
+                          {{ t('floatingAi.share') }}
                         </NButton>
                       </div>
                     </template>
@@ -125,7 +125,7 @@
                         <div v-if="msg.reasoning" class="msg-reasoning-wrapper">
                           <div class="msg-reasoning-header" @click="toggleReasoning(displayFromIndex + index)">
                             <NIcon :component="reasoningExpandedMap[displayFromIndex + index] ? ChevronDownOutline : ChevronForwardOutline" size="14" />
-                            <span class="msg-reasoning-title">💭 思考过程</span>
+                            <span class="msg-reasoning-title">💭 {{ t('floatingAi.thinkingProcess') }}</span>
                           </div>
                           <div v-show="reasoningExpandedMap[displayFromIndex + index]" class="msg-reasoning-content">
                             {{ msg.reasoning }}
@@ -160,7 +160,7 @@
                       <div class="msg-bubble-actions" v-if="msg.role === 'assistant'">
                         <div v-if="msg.role === 'assistant' && isStreamLoad && index === displayedMessages.length - 1" class="msg-loading msg-loading-row">
                           <NSpin size="small" />
-                          <span>思考中...</span>
+                          <span>{{ t('floatingAi.thinking') }}</span>
                         </div>
                         <div v-if="msg.modelName || msg.time" class="msg-meta-row-assistant">
                           <span v-if="msg.modelName" class="msg-model-name" :title="msg.modelName">{{ msg.modelName }}</span>
@@ -170,32 +170,32 @@
                           <template #icon>
                             <NIcon :component="ChevronUpOutline" />
                           </template>
-                          收起
+                          {{ t('floatingAi.collapse') }}
                         </NButton>
                         <NButton quaternary size="tiny" class="msg-copy-btn" @click="copyAiContent(msg)">
                           <template #icon>
                             <NIcon :component="CopyOutline" />
                           </template>
-                          复制
+                          {{ t('floatingAi.copy') }}
                         </NButton>
                         <NButton
                           quaternary
                           size="tiny"
                           class="msg-export-img-btn"
                           :loading="exportImageKey === (displayFromIndex + '-' + index)"
-                          title="导出为图片"
+                          :title="t('floatingAi.exportImage')"
                           @click="exportAiReplyImage(displayFromIndex, index, $event)"
                         >
                           <template #icon>
                             <NIcon :component="ImageOutline" />
                           </template>
-                          导出图
+                          {{ t('floatingAi.exportImageBtn') }}
                         </NButton>
                         <NButton quaternary size="tiny" class="msg-share-btn" :loading="shareLoading" @click="shareAiContent(msg)">
                           <template #icon>
                             <NIcon :component="ShareSocialOutline" />
                           </template>
-                          分享
+                          {{ t('floatingAi.share') }}
                         </NButton>
                       </div>
                     </template>
@@ -216,7 +216,7 @@
                   filterable
                   to="body"
                   placement="top-start"
-                  placeholder="选择模型"
+                  :placeholder="t('floatingAi.selectModel')"
                   :consistent-menu-width="false"
                   :menu-props="{ style: { zIndex: 10002 } }"
                   class="chat-footer-select"
@@ -228,7 +228,7 @@
                   clearable
                   to="body"
                   placement="top-start"
-                  placeholder="系统提示词"
+                  :placeholder="t('floatingAi.systemPrompt')"
                   :consistent-menu-width="false"
                   :menu-props="{ style: { zIndex: 10002 } }"
                   class="chat-footer-prompt"
@@ -240,18 +240,18 @@
                   clearable
                   to="body"
                   placement="top-start"
-                  placeholder="用户提示词"
+                  :placeholder="t('floatingAi.userPrompt')"
                   :consistent-menu-width="false"
                   :menu-props="{ style: { zIndex: 10002 } }"
                   class="chat-footer-prompt"
                   @update:value="onUserPromptChange"
                 />
                 <div class="chat-footer-thinking">
-                  <span class="chat-footer-thinking-label">思考模式</span>
+                  <span class="chat-footer-thinking-label">{{ t('floatingAi.thinkingMode') }}</span>
                   <NSwitch v-model:value="thinkingMode" size="small" />
                 </div>
                 <div class="chat-footer-memory">
-                  <span class="chat-footer-thinking-label">记忆模式</span>
+                  <span class="chat-footer-thinking-label">{{ t('floatingAi.memoryMode') }}</span>
                   <NSwitch v-model:value="memoryMode" size="small" />
                   <NSelect
                     v-if="memoryMode"
@@ -270,7 +270,7 @@
                 <NInput
                   v-model:value="inputValue"
                   type="textarea"
-                  placeholder="输入消息，回车发送..."
+                  :placeholder="t('floatingAi.inputPlaceholder')"
                   :autosize="{ minRows: 2, maxRows: 4 }"
                   :disabled="isStreamLoad"
                   @keydown.enter.exact.prevent="sendMessage"
@@ -282,7 +282,7 @@
                   class="chat-footer-abort"
                   @click="abortStream(true)"
                 >
-                  中断
+                  {{ t('floatingAi.abort') }}
                 </NButton>
                 <NButton
                   type="primary"
@@ -290,7 +290,7 @@
                   :disabled="isStreamLoad || !canSend"
                   @click="sendMessage"
                 >
-                  发送
+                  {{ t('floatingAi.send') }}
                 </NButton>
               </div>
             </div>
@@ -303,7 +303,10 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, onBeforeMount, h } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+
+const { t } = useI18n()
 import { NAvatar, NButton, NCard, NIcon, NInput, NScrollbar, NSelect, NSpin, NSwitch, useMessage, useNotification } from 'naive-ui'
 import {
   ChatbubbleEllipsesOutline,
@@ -368,13 +371,13 @@ const userPromptId = ref(null)
 const thinkingMode = ref(false)
 const memoryMode = ref(true)
 const memoryCount = ref(5)
-const memoryCountOptions = [
-  { label: '5 条', value: 5 },
-  { label: '10 条', value: 10 },
-  { label: '20 条', value: 20 },
-  { label: '30 条', value: 30 },
-  { label: '50 条', value: 50 }
-]
+const memoryCountOptions = computed(() => [
+  { label: t('floatingAi.memoryCount5'), value: 5 },
+  { label: t('floatingAi.memoryCount10'), value: 10 },
+  { label: t('floatingAi.memoryCount20'), value: 20 },
+  { label: t('floatingAi.memoryCount30'), value: 30 },
+  { label: t('floatingAi.memoryCount50'), value: 50 }
+])
 
 function onUserPromptChange(id) {
   if (!id) return
@@ -442,21 +445,21 @@ function getLastAssistantContent() {
 function shareAiToCommunity() {
   const text = getLastAssistantContent()
   if (!text) {
-    shareTipText.value = '暂无可分享的 AI 回复内容'
+    shareTipText.value = t('floatingAi.noShareableContent')
     shareTipVisible.value = true
     return
   }
-  shareTextToCommunity(text, 'AI助手')
+  shareTextToCommunity(text, t('floatingAi.aiAssistant'))
 }
 
 function shareAiContent(msg) {
   const text = (msg?.content ?? '').trim()
   if (!text) {
-    shareTipText.value = '暂无可分享的 AI 正文内容'
+    shareTipText.value = t('floatingAi.noShareableContent')
     shareTipVisible.value = true
     return
   }
-  shareTextToCommunity(text, 'AI助手')
+  shareTextToCommunity(text, t('floatingAi.aiAssistant'))
 }
 
 function assistantReplyExportTarget(editorId, bubble) {
@@ -474,7 +477,7 @@ async function exportAiReplyImage(displayFromIndex, index, evt) {
   const msg = messages.value[displayFromIndex + index]
   if (msg?.role !== 'assistant') return
   if (!getBubbleFullText(msg).trim()) {
-    shareTipText.value = '暂无可导出的 AI 回答内容'
+    shareTipText.value = t('floatingAi.noExportableContent')
     shareTipVisible.value = true
     return
   }
@@ -487,7 +490,7 @@ async function exportAiReplyImage(displayFromIndex, index, evt) {
   try {
     const target = assistantReplyExportTarget(editorId, bubble)
     if (!target) {
-      shareTipText.value = '未找到预览区域，请展开回答后重试'
+      shareTipText.value = t('floatingAi.previewNotFound')
       shareTipVisible.value = true
       return
     }
@@ -503,10 +506,10 @@ async function exportAiReplyImage(displayFromIndex, index, evt) {
     link.href = canvas.toDataURL('image/png')
     link.download = `go-stock-ai-${safeTime}.png`
     link.click()
-    shareTipText.value = '已导出为 PNG 图片'
+    shareTipText.value = t('floatingAi.exportedAsPng')
     shareTipVisible.value = true
   } catch (e) {
-    shareTipText.value = '导出图片失败: ' + (e?.message ?? e)
+    shareTipText.value = t('floatingAi.exportImageFailed') + (e?.message ?? e)
     shareTipVisible.value = true
   } finally {
     exportImageKey.value = ''
@@ -516,13 +519,13 @@ async function exportAiReplyImage(displayFromIndex, index, evt) {
 async function copyAiContent(msg) {
   const text = (msg?.content ?? '').trim()
   if (!text) {
-    message.warning('暂无可复制的 AI 正文内容')
+    message.warning(t('floatingAi.noContentToCopy'))
     return
   }
   try {
     if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text)
-      message.success('已复制 AI 回答内容')
+      message.success(t('floatingAi.copiedSuccess'))
     } else {
       // 兜底方案
       const textarea = document.createElement('textarea')
@@ -533,17 +536,17 @@ async function copyAiContent(msg) {
       textarea.select()
       document.execCommand('copy')
       document.body.removeChild(textarea)
-      message.success('已复制 AI 回答内容')
+      message.success(t('floatingAi.copiedSuccess'))
     }
   } catch (e) {
-    message.error('复制失败，请手动选择文本')
+    message.error(t('floatingAi.copyFailed'))
   }
 }
 
 function shareTextToCommunity(text, title) {
   if (shareLoading.value) return
   shareLoading.value = true
-  shareTipText.value = '正在分享到社区...'
+  shareTipText.value = t('floatingAi.sharingToCommunity')
   shareTipVisible.value = true
   ShareText(text, title)
     .then((msg) => {
@@ -551,7 +554,7 @@ function shareTextToCommunity(text, title) {
       shareTipVisible.value = true
     })
     .catch((err) => {
-      shareTipText.value = '分享失败: ' + (err?.message ?? err)
+      shareTipText.value = t('floatingAi.shareFailed') + (err?.message ?? err)
       shareTipVisible.value = true
     })
     .finally(() => {
@@ -564,7 +567,7 @@ function abortStream(showTip = true) {
   isAborted.value = true
   isStreamLoad.value = false
   if (showTip) {
-    shareTipText.value = '已中断本次 AI 回答'
+    shareTipText.value = t('floatingAi.abortedResponse')
     shareTipVisible.value = true
   }
   AbortSummaryStockNews()
@@ -632,7 +635,7 @@ function openPanel() {
     messages.value = [
       {
         role: 'assistant',
-        content: '我是 go-stock AI 助手，可随时在这里提问。支持股票、市场、投资等相关问题。',
+        content: t('floatingAi.introMessage'),
         reasoning: '',
         time: new Date().toLocaleString(),
         modelName: ''
@@ -666,7 +669,7 @@ async function togglePanel() {
     ensureSummaryEvent()
     await ensureVipInfo()
     if ((vipLevel.value ?? 0) < 2) {
-      message.warning('go-stock AI 助手功能仅对 VIP2 及以上赞助用户开放，请前往关于页面查看赞助方式。')
+      message.warning(t('floatingAi.vipRequired'))
       return
     }
     openPanel()
@@ -689,7 +692,7 @@ function sendMessage() {
   }
   const text = inputValue.value.trim()
   if (!text) {
-    message.warning('请输入你的问题（模板仅作辅助，请先输入内容）')
+    message.warning(t('floatingAi.inputWarning'))
     return
   }
 
@@ -768,7 +771,7 @@ function onSummaryStockNews(msg) {
 // 开始新对话：清空当前消息，本地视图重置，但不会删除历史会话记录
 function startNewChat() {
   if (isStreamLoad.value) {
-    message.warning('当前有回答正在生成，请先中断或等待完成')
+    message.warning(t('floatingAi.responseInProgress'))
     return
   }
   messages.value = []

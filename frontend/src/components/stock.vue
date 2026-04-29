@@ -1,5 +1,8 @@
 <script setup>
 import {computed, h, nextTick, onBeforeMount, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import * as echarts from 'echarts';
 import {
   AddGroup,
@@ -277,16 +280,16 @@ function handleTabDrop(event) {
         // 调用后端API更新组排序
         UpdateGroupSort(sourceGroup.ID, newSortPosition).then(result => {
           if (result) {
-            message.success('分组排序更新成功');
+            message.success(t('stock.groupSortUpdateSuccess'));
             // 重新获取分组列表以更新界面
             GetGroupList().then(result => {
               groupList.value = result;
             });
           } else {
-            message.error('分组排序更新失败');
+            message.error(t('stock.groupSortUpdateFailed'));
           }
         }).catch(error => {
-          message.error('分组排序更新失败: ' + error.message);
+          message.error(t('stock.groupSortUpdateFailed') + ': ' + error.message);
         });
       }
     }
@@ -325,7 +328,7 @@ onBeforeMount(() => {
     } else {
       // 没有重复序号，继续正常流程
       if (route.query.groupId) {
-        message.success("切换分组:" + route.query.groupName)
+        message.success(t('stock.switchGroup') + ':' + route.query.groupName)
         currentGroupId.value = Number(route.query.groupId)
       }
     }
@@ -364,7 +367,7 @@ onBeforeMount(() => {
   })
 
   EventsOn("loadingDone", (data) => {
-    message.loading("刷新股票基础数据...")
+    message.loading(t('stock.refreshStockData'))
     GetStockList("").then(result => {
       stockList.value = result
       options.value = result.map(item => {
@@ -397,7 +400,7 @@ onBeforeMount(() => {
     data.loading = false
     if (msg === "DONE") {
       SaveAIResponseResult(data.code, data.name, data.airesult, data.chatId, data.question, data.aiConfigId)
-      message.info("AI分析完成！")
+      message.info(t('stock.aiAnalysisComplete'))
       message.destroyAll()
       data.loading = false
     } else {
@@ -452,7 +455,7 @@ onBeforeMount(() => {
             round: false,
             src: icon.value
           }),
-      title: '发现新版本: ' + msg.tag_name,
+      title: t('stock.newVersionFound') + msg.tag_name,
       content: () => {
         //return h(MdPreview, {theme:'dark',modelValue:msg.commit?.message}, null)
         return h('div', {
@@ -463,7 +466,7 @@ onBeforeMount(() => {
         }, {default: () => msg.commit?.message})
       },
       duration: 5000,
-      meta: "发布时间:" + formattedDate,
+      meta: t('stock.publishTime') + formattedDate,
       action: () => {
         return h(NButton, {
           type: 'primary',
@@ -479,7 +482,7 @@ onBeforeMount(() => {
               }
             })
           }
-        }, {default: () => '查看'})
+        }, {default: () => t('stock.view')})
       }
     })
   })
@@ -492,7 +495,7 @@ onBeforeMount(() => {
             round: false,
             src: icon.value
           }),
-      title: '警告',
+      title: t('stock.warning'),
       duration: 5000,
       content: () => {
         return h('div', {
@@ -669,24 +672,24 @@ function fetchGroupList() {
       GetGroupList().then(result => {
         groupList.value = result
         if (route.query.groupId) {
-          message.success("切换分组:" + route.query.groupName)
+          message.success(t('stock.switchGroup') + ':' + route.query.groupName)
           currentGroupId.value = Number(route.query.groupId)
         }
       })
     } else {
-      message.error("初始化分组序号失败")
+      message.error(t('stock.initializeGroupSortFailed'))
     }
   })
 }
 
 function AddStock() {
   if (!data?.code) {
-    message.error("请输入有效股票代码");
+    message.error(t('stock.enterValidStockCode'));
     return;
   }
   if (!stocks.value.includes(data.code)) {
     Follow(data.code).then(result => {
-      if (result === "关注成功") {
+      if (result === t("stock.followSuccess")) {
         if (data.code.startsWith("us")) {
           data.code = "gb_" + data.code.replace("us", "").toLowerCase()
         }
@@ -701,7 +704,7 @@ function AddStock() {
       }
     })
   } else {
-    message.error("已经关注了")
+    message.error(t('stock.alreadyFollowed'))
   }
 }
 
@@ -951,7 +954,7 @@ function saveTradingPriceToBackend() {
     costPrice
   ).then(result => {
     console.log('[DEBUG saveTradingPriceToBackend] SetTradingPrice result:', result)
-    if (result === '设置成功') {
+    if (result === t('stock.setSuccess')) {
       const emCode = currentStockTradingPrice.value.stockCode
       const internalCode = code
       const followItem = followList.value.find(item => item.StockCode === internalCode || item.StockCode === emCode)
@@ -1027,7 +1030,7 @@ function showFsChart(code, name) {
 
     let option = {
       title: {
-        subtext: "[" + result.date + "] 开盘:" + openprice + " 最新:" + closeprice + " 最高:" + max + " 最低:" + min,
+        subtext: "[" + result.date + "] " + t('stock.todayOpen') + openprice + " 最新:" + closeprice + " 最高:" + max + " 最低:" + min,
         left: 'center',
         top: '10',
         textStyle: {
@@ -1098,7 +1101,7 @@ function showFsChart(code, name) {
           splitLine: {
             show: false
           },
-          name: "股价",
+          name: t('stock.price'),
           min: (min - min * 0.01).toFixed(2),
           max: (max + max * 0.01).toFixed(2),
           minInterval: 0.01,
@@ -1112,7 +1115,7 @@ function showFsChart(code, name) {
           splitLine: {
             show: false
           },
-          name: "成交量",
+          name: t('stock.volume'),
           type: 'value',
         },
       ],
@@ -1127,7 +1130,7 @@ function showFsChart(code, name) {
         },
         pieces: [
           {
-            text: '低于开盘价',
+            text: t('stock.belowOpen'),
             gt: 0,
             lte: openprice,
             color: '#31F113',
@@ -1136,7 +1139,7 @@ function showFsChart(code, name) {
             },
           },
           {
-            text: '大于开盘价小于收盘价',
+            text: t('stock.betweenOpenClose'),
             gt: openprice,
             lte: closeprice,
             color: '#1651EF',
@@ -1145,7 +1148,7 @@ function showFsChart(code, name) {
             },
           },
           {
-            text: '大于收盘价',
+            text: t('stock.aboveClose'),
             gt: closeprice,
             color: '#AC3B2A',
             textStyle: {
@@ -1156,7 +1159,7 @@ function showFsChart(code, name) {
       },
       series: [
         {
-          name: "股价",
+          name: t('stock.price'),
           data: price,
           type: 'line',
           smooth: false,
@@ -1190,7 +1193,7 @@ function showFsChart(code, name) {
                   width: 0.5
                 },
                 yAxis: openprice,
-                name: '开盘价'
+                name: t('stock.todayOpen')
               },
               {
                 yAxis: closeprice,
@@ -1206,7 +1209,7 @@ function showFsChart(code, name) {
         {
           xAxisIndex: 1,
           yAxisIndex: 1,
-          name: "成交量",
+          name: t('stock.volume'),
           data: volume,
           type: 'bar',
         },
@@ -1286,7 +1289,7 @@ function handleKLine() {
       legend: {
         bottom: 10,
         left: 'center',
-        data: ['日K', 'MA5', 'MA10', 'MA20', 'MA30'],
+        data: [t('stock.dayK'), 'MA5', 'MA10', 'MA20', 'MA30'],
         textStyle: {
           color: data.darkTheme ? '#ccc' : '#456'
         },
@@ -1319,15 +1322,15 @@ function handleKLine() {
           let currentItemData = params.data;
 
           return params.name + '<br>' +
-              '开盘:' + currentItemData[1] + '<br>' +
-              '收盘:' + currentItemData[2] + '<br>' +
-              '最低:' + currentItemData[3] + '<br>' +
-              '最高:' + currentItemData[4] + '<br>' +
-              '成交量(万手):' + volum[1] + '<br>' +
-              'MA5日均线:' + ma5 + '<br>' +
-              'MA10日均线:' + ma10 + '<br>' +
-              'MA20日均线:' + ma20 + '<br>' +
-              'MA30日均线:' + ma30
+              t('stock.todayOpen') + ':' + currentItemData[1] + '<br>' +
+              t('stock.yesterdayClose') + ':' + currentItemData[2] + '<br>' +
+              t('stock.todayLow') + ':' + currentItemData[3] + '<br>' +
+              t('stock.todayHigh') + ':' + currentItemData[4] + '<br>' +
+              t('stock.volume') + ':' + volum[1] + '<br>' +
+              'MA5: ' + ma5 + '<br>' +
+              'MA10: ' + ma10 + '<br>' +
+              'MA20: ' + ma20 + '<br>' +
+              'MA30: ' + ma30
         }
         // position: function (pos, params, el, elRect, size) {
         //   const obj = {
@@ -1438,7 +1441,7 @@ function handleKLine() {
 
       series: [
         {
-          name: '日K',
+          name: t('stock.dayK'),
           type: 'candlestick',
           data: values,
           itemStyle: {
@@ -1455,17 +1458,17 @@ function handleKLine() {
             },
             data: [
               {
-                name: '最高',
+                name: t('stock.todayHigh'),
                 type: 'max',
                 valueDim: 'highest'
               },
               {
-                name: '最低',
+                name: t('stock.todayLow'),
                 type: 'min',
                 valueDim: 'lowest'
               },
               {
-                name: '平均收盘价',
+                name: t('stock.avgClose'),
                 type: 'average',
                 valueDim: 'close'
               }
@@ -1634,7 +1637,7 @@ async function refreshEffectiveVip() {
 async function showLightweightKline(code, name) {
   const em = toEastMoneyCode(code)
   if (!em) {
-    message.warning('当前代码暂不支持东方财富多周期K线（美股等请使用「日K」图）')
+    message.warning(t('stock.priceNotSupported'))
     return
   }
   lwKlineCode.value = em
@@ -1677,14 +1680,14 @@ async function showLightweightKline(code, name) {
   await refreshEffectiveVip()
   // 检查 VIP 权限：有效期内 VIP2 及以上（与 AI 助手 Web 端校验一致）
   if (vipLevel.value < 2) {
-    message.warning('多周期 K 线仅限 VIP2 及以上用户使用，您当前权限不足，将在 10 秒后自动关闭')
+    message.warning(t('stock.vipOnlyMultiPeriodKline'))
     lwKlineCode.value = em
     lwKlineName.value = name || ''
     modalShow6.value = true
     // 10 秒后自动关闭
     klineAutoCloseTimer.value = setTimeout(() => {
       modalShow6.value = false
-      message.info('权限不足，多周期 K 线已自动关闭')
+      message.info(t('stock.permissionDenied'))
     }, 10000)
     return
   }
@@ -1871,7 +1874,7 @@ function aiReCheckStock(stock, stockCode) {
   data.code = stockCode
   data.loading = true
   modalShow4.value = true
-  message.loading("ai检测中...", {
+  message.loading(t('stock.aiDetecting'), {
     duration: 0,
   })
   //
@@ -1908,7 +1911,7 @@ function aiCheckStock(stock, stockCode) {
       data.code = stockCode
       data.loading = false
       modalShow4.value = true
-      // message.loading("ai检测中...", {
+      // message.loading(t('stock.aiDetecting'), {
       //   duration: 0,
       // })
       // NewChatStream(stock, stockCode, "", data.sysPromptId)
@@ -1919,11 +1922,11 @@ function aiCheckStock(stock, stockCode) {
 function getTypeName(type) {
   switch (type) {
     case 1:
-      return "涨跌报警"
+      return t('stock.priceAlert')
     case 2:
-      return "股价报警"
+      return t('stock.currentPriceAlert')
     case 3:
-      return "成本价报警"
+      return t('stock.costPriceAlert')
     default:
       return ""
   }
@@ -1950,7 +1953,7 @@ window.onerror = function (msg, source, lineno, colno, error) {
     stocks: stocks,
     formModel: formModel,
   });
-  message.error("发生错误:" + msg)
+  message.error(t('common.error') + ':' + msg)
   return true;
 };
 
@@ -1960,7 +1963,7 @@ function saveAsImage(name, code) {
                   previewEl?.querySelector('.md-editor-preview') ||
                   document.querySelector('.md-editor-preview')
   if (!element) {
-    message.error('无法找到分析结果元素')
+    message.error(t('common.error') + ': analysis element not found')
     return
   }
   const savedStyles = []
@@ -2003,11 +2006,11 @@ function saveAsImage(name, code) {
       })
       const dataUrl = canvas.toDataURL('image/png')
       const base64 = dataUrl.replace(/^data:image\/png;base64,/, '')
-      const result = await SaveImage(name + '[' + code + ']AI分析', base64)
+      const result = await SaveImage(name + '[' + code + ']'+t('stock.aiAnalysis'), base64)
       if (result && !result.includes('异常') && !result.includes('无法')) {
-        message.success('已导出为 PNG 图片：' + result)
+        message.success(t('stock.exportPngSuccess') + result)
       } else {
-        message.info(result || '导出取消')
+        message.info(result || t('stock.exportCancelled'))
       }
     } catch (e) {
       element.style.height = savedTargetStyle.height
@@ -2020,7 +2023,7 @@ function saveAsImage(name, code) {
         el.style.height = height
         el.style.maxHeight = maxHeight
       })
-      message.error('导出图片失败: ' + (e?.message ?? e))
+      message.error(t('stock.exportFailed') + (e?.message ?? e))
     }
   })
 }
@@ -2028,9 +2031,9 @@ function saveAsImage(name, code) {
 async function copyToClipboard() {
   try {
     await navigator.clipboard.writeText(data.airesult);
-    message.success('分析结果已复制到剪切板');
+    message.success(t('stock.analysisResultCopied'));
   } catch (err) {
-    message.error('复制失败: ' + err);
+    message.error(t('stock.copyFailed') + err);
   }
 }
 
@@ -2128,7 +2131,7 @@ function share(code, name) {
             round: false,
             src: icon.value
           }),
-      title: '分享到社区',
+      title: t('stock.shareToCommunity'),
       duration: 1000 * 30,
       content: () => {
         return h('div', {
@@ -2199,11 +2202,11 @@ function updateTab(name) {
 function delTab(groupId) {
   let infos = groupList.value = groupList.value.filter(item => item.ID === Number(groupId))
   dialog.create({
-    title: '删除分组',
+    title: t('stock.deleteGroup'),
     type: 'warning',
-    content: '确定要删除[' + infos[0].name + ']分组吗？分组数据将不能恢复哟！',
-    positiveText: '确定',
-    negativeText: '取消',
+    content: t('stock.confirmDeleteGroup', { name: infos[0].name }),
+    positiveText: t('common.confirm'),
+    negativeText: t('common.cancel'),
     onPositiveClick: () => {
       RemoveGroup(Number(groupId)).then(result => {
         message.info(result)
@@ -2226,7 +2229,7 @@ function searchNotice(stockCode) {
   router.push({
     name: 'market',
     query: {
-      name: '公司公告',
+      name: t('stock.companyAnnouncement'),
       stockCode: stockCode,
     },
   })
@@ -2236,7 +2239,7 @@ function searchStockReport(stockCode) {
   router.push({
     name: 'market',
     query: {
-      name: '个股研报',
+      name: t('stock.stockResearchReport'),
       stockCode: stockCode,
     },
   })
@@ -2290,60 +2293,60 @@ watch(modalShow6, (newVal) => {
             </n-grid>
             <n-grid :cols="2" :y-gap="4" :x-gap="4">
               <n-gi>
-                <n-text :type="'info'">{{ "最高 " + result["今日最高价"] + " " + result.highRate }}%</n-text>
+                <n-text :type="'info'">{{ t('stock.todayHigh') + " " + result["今日最高价"] + " " + result.highRate }}%</n-text>
               </n-gi>
               <n-gi>
-                <n-text :type="'info'">{{ "最低 " + result["今日最低价"] + " " + result.lowRate }}%</n-text>
+                <n-text :type="'info'">{{ t('stock.todayLow') + " " + result["今日最低价"] + " " + result.lowRate }}%</n-text>
               </n-gi>
               <n-gi>
-                <n-text :type="'info'">{{ "昨收 " + result["昨日收盘价"] }}</n-text>
+                <n-text :type="'info'">{{ t('stock.yesterdayClose') + " " + result["昨日收盘价"] }}</n-text>
               </n-gi>
               <n-gi>
-                <n-text :type="'info'">{{ "今开 " + result["今日开盘价"] }}</n-text>
+                <n-text :type="'info'">{{ t('stock.todayOpen') + " " + result["今日开盘价"] }}</n-text>
               </n-gi>
             </n-grid>
             <n-collapse accordion v-if="result['买一报价']>0">
               <n-collapse-item title="盘口" name="1" v-if="result['买一报价']>0">
                 <template #header-extra>
                   <n-flex justify="space-between">
-                    <n-text :type="'info'">{{ "买一 " + result["买一报价"] + '(' + result["买一申报"] + ")" }}</n-text>
-                    <n-text :type="'info'">{{ "卖一 " + result["卖一报价"] + '(' + result["卖一申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyOnePrice') + " " + result["买一报价"] + "(" + result["买一申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellOnePrice') + " " + result["卖一报价"] + "(" + result["卖一申报"] + ")" }}</n-text>
                   </n-flex>
                 </template>
                 <n-grid :cols="2" :y-gap="4" :x-gap="4">
                   <n-gi v-if="result['买一报价']>0">
-                    <n-text :type="'info'">{{ "买一 " + result["买一报价"] + '(' + result["买一申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyOnePrice') + " " + result["买一报价"] + "(" + result["买一申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖一报价']>0">
-                    <n-text :type="'info'">{{ "卖一 " + result["卖一报价"] + '(' + result["卖一申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellOnePrice') + " " + result["卖一报价"] + "(" + result["卖一申报"] + ")" }}</n-text>
                   </n-gi>
 
                   <n-gi v-if="result['买二报价']>0">
-                    <n-text :type="'info'">{{ "买二 " + result["买二报价"] + '(' + result["买二申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyTwoPrice') + " " + result["买二报价"] + "(" + result["买二申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖二报价']>0">
-                    <n-text :type="'info'">{{ "卖二 " + result["卖二报价"] + '(' + result["卖二申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellTwoPrice') + " " + result["卖二报价"] + "(" + result["卖二申报"] + ")" }}</n-text>
                   </n-gi>
 
                   <n-gi v-if="result['买三报价']>0">
-                    <n-text :type="'info'">{{ "买三 " + result["买三报价"] + '(' + result["买三申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyThreePrice') + " " + result["买三报价"] + "(" + result["买三申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖三报价']>0">
                     <n-text :type="'info'">{{ "买三 " + result["卖三报价"] + '(' + result["卖三申报"] + ")" }}</n-text>
                   </n-gi>
 
                   <n-gi v-if="result['买四报价']>0">
-                    <n-text :type="'info'">{{ "买四 " + result["买四报价"] + '(' + result["买四申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyFourPrice') + " " + result["买四报价"] + "(" + result["买四申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖四报价']>0">
-                    <n-text :type="'info'">{{ "卖四 " + result["卖四报价"] + '(' + result["卖四申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellFourPrice') + " " + result["卖四报价"] + "(" + result["卖四申报"] + ")" }}</n-text>
                   </n-gi>
 
                   <n-gi v-if="result['买五报价']>0">
-                    <n-text :type="'info'">{{ "买五 " + result["买五报价"] + '(' + result["买五申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyFivePrice') + " " + result["买五报价"] + "(" + result["买五申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖五报价']>0">
-                    <n-text :type="'info'">{{ "卖五 " + result["卖五报价"] + '(' + result["卖五申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellFivePrice') + " " + result["卖五报价"] + "(" + result["卖五申报"] + ")" }}</n-text>
                   </n-gi>
                 </n-grid>
               </n-collapse-item>
@@ -2358,17 +2361,17 @@ watch(modalShow6, (newVal) => {
 
               <n-button size="tiny" v-if="data.openAiEnable" secondary type="warning"
                         @click="aiCheckStock(result['股票名称'],result['股票代码'])">
-                AI分析
+                {{ t('stock.aiAnalysis') }}
               </n-button>
             </template>
             <template #footer>
               <n-flex vertical :size="8">
                 <n-flex justify="center">
                   <n-text :type="'info'">{{ result["日期"] + " " + result["时间"] }}</n-text>
-                  <n-tag size="small" v-if="result.volume>0" :type="result.profitType">{{ result.volume + "股" }}</n-tag>
+                  <n-tag size="small" v-if="result.volume>0" :type="result.profitType">{{ result.volume + t('stock.shares') }}</n-tag>
                   <n-tag size="small" v-if="result.costPrice>0" :type="result.profitType">
                     {{
-                      "成本:" + result.costPrice + "*" + result.costVolume + " " + result.profit + "%" + " ( " + result.profitAmount + " ¥ )"
+                      t('stock.costPrice') + result.costPrice + "*" + result.costVolume + " " + result.profit + "%" + " ( " + result.profitAmount + " ¥ )"
                     }}
                   </n-tag>
                 </n-flex>
@@ -2402,7 +2405,7 @@ watch(modalShow6, (newVal) => {
                 <n-flex justify="right">
                   <n-dropdown trigger="click" :options="groupList" key-field="ID" label-field="name"
                               @select="(groupId) => AddStockGroupInfo(groupId,result['股票代码'],result['股票名称'])">
-                    <n-button type="warning" size="tiny">设置分组</n-button>
+                    <n-button type="warning" size="tiny">{{ t('stock.setGroup') }}</n-button>
                   </n-dropdown>
                 </n-flex>
               </n-flex>
@@ -2441,60 +2444,60 @@ watch(modalShow6, (newVal) => {
             </n-grid>
             <n-grid :cols="2" :y-gap="4" :x-gap="4">
               <n-gi>
-                <n-text :type="'info'">{{ "最高 " + result["今日最高价"] + " " + result.highRate }}%</n-text>
+                <n-text :type="'info'">{{ t('stock.todayHigh') + " " + result["今日最高价"] + " " + result.highRate }}%</n-text>
               </n-gi>
               <n-gi>
-                <n-text :type="'info'">{{ "最低 " + result["今日最低价"] + " " + result.lowRate }}%</n-text>
+                <n-text :type="'info'">{{ t('stock.todayLow') + " " + result["今日最低价"] + " " + result.lowRate }}%</n-text>
               </n-gi>
               <n-gi>
-                <n-text :type="'info'">{{ "昨收 " + result["昨日收盘价"] }}</n-text>
+                <n-text :type="'info'">{{ t('stock.yesterdayClose') + " " + result["昨日收盘价"] }}</n-text>
               </n-gi>
               <n-gi>
-                <n-text :type="'info'">{{ "今开 " + result["今日开盘价"] }}</n-text>
+                <n-text :type="'info'">{{ t('stock.todayOpen') + " " + result["今日开盘价"] }}</n-text>
               </n-gi>
             </n-grid>
             <n-collapse accordion v-if="result['买一报价']>0">
               <n-collapse-item title="盘口" name="1" v-if="result['买一报价']>0">
                 <template #header-extra>
                   <n-flex justify="space-between">
-                    <n-text :type="'info'">{{ "买一 " + result["买一报价"] + '(' + result["买一申报"] + ")" }}</n-text>
-                    <n-text :type="'info'">{{ "卖一 " + result["卖一报价"] + '(' + result["卖一申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyOnePrice') + " " + result["买一报价"] + "(" + result["买一申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellOnePrice') + " " + result["卖一报价"] + "(" + result["卖一申报"] + ")" }}</n-text>
                   </n-flex>
                 </template>
                 <n-grid :cols="2" :y-gap="4" :x-gap="4">
                   <n-gi v-if="result['买一报价']>0">
-                    <n-text :type="'info'">{{ "买一 " + result["买一报价"] + '(' + result["买一申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyOnePrice') + " " + result["买一报价"] + "(" + result["买一申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖一报价']>0">
-                    <n-text :type="'info'">{{ "卖一 " + result["卖一报价"] + '(' + result["卖一申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellOnePrice') + " " + result["卖一报价"] + "(" + result["卖一申报"] + ")" }}</n-text>
                   </n-gi>
 
                   <n-gi v-if="result['买二报价']>0">
-                    <n-text :type="'info'">{{ "买二 " + result["买二报价"] + '(' + result["买二申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyTwoPrice') + " " + result["买二报价"] + "(" + result["买二申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖二报价']>0">
-                    <n-text :type="'info'">{{ "卖二 " + result["卖二报价"] + '(' + result["卖二申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellTwoPrice') + " " + result["卖二报价"] + "(" + result["卖二申报"] + ")" }}</n-text>
                   </n-gi>
 
                   <n-gi v-if="result['买三报价']>0">
-                    <n-text :type="'info'">{{ "买三 " + result["买三报价"] + '(' + result["买三申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyThreePrice') + " " + result["买三报价"] + "(" + result["买三申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖三报价']>0">
                     <n-text :type="'info'">{{ "买三 " + result["卖三报价"] + '(' + result["卖三申报"] + ")" }}</n-text>
                   </n-gi>
 
                   <n-gi v-if="result['买四报价']>0">
-                    <n-text :type="'info'">{{ "买四 " + result["买四报价"] + '(' + result["买四申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyFourPrice') + " " + result["买四报价"] + "(" + result["买四申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖四报价']>0">
-                    <n-text :type="'info'">{{ "卖四 " + result["卖四报价"] + '(' + result["卖四申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellFourPrice') + " " + result["卖四报价"] + "(" + result["卖四申报"] + ")" }}</n-text>
                   </n-gi>
 
                   <n-gi v-if="result['买五报价']>0">
-                    <n-text :type="'info'">{{ "买五 " + result["买五报价"] + '(' + result["买五申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.buyFivePrice') + " " + result["买五报价"] + "(" + result["买五申报"] + ")" }}</n-text>
                   </n-gi>
                   <n-gi v-if="result['卖五报价']>0">
-                    <n-text :type="'info'">{{ "卖五 " + result["卖五报价"] + '(' + result["卖五申报"] + ")" }}</n-text>
+                    <n-text :type="'info'">{{ t('stock.sellFivePrice') + " " + result["卖五报价"] + "(" + result["卖五申报"] + ")" }}</n-text>
                   </n-gi>
                 </n-grid>
               </n-collapse-item>
@@ -2509,7 +2512,7 @@ watch(modalShow6, (newVal) => {
 
               <n-button size="tiny" v-if="data.openAiEnable" secondary type="warning"
                         @click="aiCheckStock(result['股票名称'],result['股票代码'])">
-                AI分析
+                {{ t('stock.aiAnalysis') }}
               </n-button>
               <n-button secondary type="error" size="tiny"
                         @click="delStockGroup(result['股票代码'],result['股票名称'],group.ID)">移出分组
@@ -2519,10 +2522,10 @@ watch(modalShow6, (newVal) => {
               <n-flex vertical :size="8">
                 <n-flex justify="center">
                   <n-text :type="'info'">{{ result["日期"] + " " + result["时间"] }}</n-text>
-                  <n-tag size="small" v-if="result.volume>0" :type="result.profitType">{{ result.volume + "股" }}</n-tag>
+                  <n-tag size="small" v-if="result.volume>0" :type="result.profitType">{{ result.volume + t('stock.shares') }}</n-tag>
                   <n-tag size="small" v-if="result.costPrice>0" :type="result.profitType">
                     {{
-                      "成本:" + result.costPrice + "*" + result.costVolume + " " + result.profit + "%" + " ( " + result.profitAmount + " ¥ )"
+                      t('stock.costPrice') + result.costPrice + "*" + result.costVolume + " " + result.profit + "%" + " ( " + result.profitAmount + " ¥ )"
                     }}
                   </n-tag>
                 </n-flex>
@@ -2556,7 +2559,7 @@ watch(modalShow6, (newVal) => {
                 <n-flex justify="right">
                   <n-dropdown trigger="click" :options="groupList" key-field="ID" label-field="name"
                               @select="(groupId) => AddStockGroupInfo(groupId,result['股票代码'],result['股票名称'])">
-                    <n-button type="warning" size="tiny">设置分组</n-button>
+                    <n-button type="warning" size="tiny">{{ t('stock.setGroup') }}</n-button>
                   </n-dropdown>
                 </n-flex>
               </n-flex>
@@ -2723,12 +2726,12 @@ watch(modalShow6, (newVal) => {
   </n-modal>
 
   <n-modal transform-origin="center" v-model:show="modalShow4" preset="card" style="width: 800px;"
-           :title="'['+data.name+']AI分析'">
+           :title="'['+data.name+']'+t('stock.aiAnalysis')">
     <n-spin size="small" :show="data.loading">
       <MdEditor v-if="enableEditor" :toolbars="toolbars" ref="mdEditorRef" style="height: 440px;text-align: left"
                 :modelValue="data.airesult" :theme="theme">
         <template #defToolbars>
-          <ExportPDF :file-name="data.name+'['+data.code+']AI分析报告'" style="text-align: left"
+          <ExportPDF :file-name="data.name+'['+data.code+']'+t('stock.aiReport')" style="text-align: left"
                      :modelValue="data.airesult" @onProgress="handleProgress"/>
         </template>
       </MdEditor>
@@ -2743,7 +2746,7 @@ watch(modalShow6, (newVal) => {
           </n-tag>
           {{ data.time }}
         </n-text>
-        <n-text type="error">*AI分析结果仅供参考，请以实际行情为准。投资需谨慎，风险自担。</n-text>
+        <n-text type="error">{{ t('stock.aiDisclaimer') }}</n-text>
       </n-flex>
     </template>
     <template #action>
@@ -2787,10 +2790,10 @@ watch(modalShow6, (newVal) => {
             }"
         />
         <!--        <n-button size="tiny" type="error" @click="enableEditor=!enableEditor">编辑/预览</n-button>-->
-        <n-button size="tiny" type="warning" @click="aiReCheckStock(data.name,data.code)">开始AI分析</n-button>
-        <n-button size="tiny" type="info" @click="saveAsImage(data.name,data.code)">保存为图片</n-button>
-        <n-button size="tiny" type="success" @click="copyToClipboard">复制到剪切板</n-button>
-        <n-button size="tiny" type="primary" @click="saveAsMarkdown">保存为Markdown文件</n-button>
+        <n-button size="tiny" type="warning" @click="aiReCheckStock(data.name,data.code)">{{ t('stock.startAiAnalysis') }}</n-button>
+        <n-button size="tiny" type="info" @click="saveAsImage(data.name,data.code)">{{ t('stock.saveAsImage') }}</n-button>
+        <n-button size="tiny" type="success" @click="copyToClipboard">{{ t('stock.copyToClipboard') }}</n-button>
+        <n-button size="tiny" type="primary" @click="saveAsMarkdown">{{ t('stock.saveAsMarkdown') }}</n-button>
         <n-button size="tiny" type="primary" @click="saveAsWord">保存为Word文件</n-button>
         <n-button size="tiny" type="error" @click="share(data.code,data.name)">分享到项目社区</n-button>
       </n-flex>

@@ -44,6 +44,7 @@ type Settings struct {
 	WindowWidth            int    `json:"windowWidth"`
 	WindowHeight           int    `json:"windowHeight"`
 	PromptPlazaApiBase     string `json:"promptPlazaApiBase" gorm:"column:prompt_plaza_api_base"`
+	Language               string `json:"language" gorm:"column:language"`
 }
 
 func (receiver Settings) TableName() string {
@@ -125,6 +126,7 @@ func UpdateConfig(s *SettingConfig) string {
 			"em_api_key":                 s.EmApiKey,
 			"window_width":               s.WindowWidth,
 			"window_height":              s.WindowHeight,
+			"language":                    s.Language,
 		})
 
 		//更新AiConfig

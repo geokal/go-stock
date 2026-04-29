@@ -14,11 +14,13 @@ import MCPServiceManager from "./mcp-server-manager.vue";
 import SkillManager from "./skill-manager.vue";
 import UplimitLadder from "./uplimitLadder.vue";
 import PromptPlaza from "./promptPlaza.vue";
+import {useI18n} from 'vue-i18n'
 import {EventsOff, EventsOn} from "../../wailsjs/runtime";
 import {useRoute} from 'vue-router'
 
+const { t } = useI18n()
 
-const nowTab = ref("AI分析报告")
+const nowTab = ref("aiAnalysisReport")
 const route = useRoute()
 onBeforeMount(() => {
   nowTab.value = route.query.name
@@ -44,37 +46,37 @@ function updateTab(name) {
 <template>
   <n-card>
     <n-tabs type="line" animated @update-value="updateTab" :value="nowTab" style="--wails-draggable:no-drag">
-      <n-tab-pane name="AI分析报告">
+      <n-tab-pane name="aiAnalysisReport" :tab="t('menu.aiAnalysisReport')">
         <ResearchReport/>
       </n-tab-pane>
-      <n-tab-pane name="股票推荐记录">
+      <n-tab-pane name="stockRecommendRecord" :tab="t('menu.stockRecommendRecord')">
         <AiRecommendStocksList/>
       </n-tab-pane>
-      <n-tab-pane name="异动监控">
+      <n-tab-pane name="stockChangesMonitor" :tab="t('menu.stockChangesMonitor')">
         <StockChangesMonitor/>
       </n-tab-pane>
-      <n-tab-pane name="涨停梯队">
+      <n-tab-pane name="uplimitLadder" :tab="t('menu.uplimitLadder')">
         <UplimitLadder/>
       </n-tab-pane>
-      <n-tab-pane name="提示词模板">
+      <n-tab-pane name="promptTemplate" :tab="t('menu.promptTemplate')">
         <PromptTemplateList/>
       </n-tab-pane>
-      <n-tab-pane name="提示词广场">
+      <n-tab-pane name="promptPlaza" :tab="t('menu.promptPlaza')">
         <PromptPlaza/>
       </n-tab-pane>
-      <n-tab-pane name="股票信息筛选">
+      <n-tab-pane name="stockInfoFilter" :tab="t('menu.stockInfoFilter')">
         <AllStockList/>
       </n-tab-pane>
-      <n-tab-pane name="定时任务">
+      <n-tab-pane name="scheduledTask" :tab="t('menu.scheduledTask')">
         <CronTaskManager />
       </n-tab-pane>
-      <n-tab-pane name="交易日志">
+      <n-tab-pane name="tradingLog" :tab="t('menu.tradingLog')">
         <TradingRecordManager />
       </n-tab-pane>
 <!--      <n-tab-pane name="全部股票信息">-->
 <!--        <AllStockInfoList/>-->
 <!--      </n-tab-pane>-->
-      <n-tab-pane name="MCP服务">
+      <n-tab-pane name="mcpService" :tab="t('menu.mcpService')">
         <MCPServiceManager/>
       </n-tab-pane>
 <!--      <n-tab-pane name="技能管理">-->

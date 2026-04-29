@@ -707,6 +707,7 @@ export namespace data {
 	    windowWidth: number;
 	    windowHeight: number;
 	    promptPlazaApiBase: string;
+	    language: string;
 	    aiConfigs: AIConfig[];
 	
 	    static createFrom(source: any = {}) {
@@ -750,6 +751,7 @@ export namespace data {
 	        this.windowWidth = source["windowWidth"];
 	        this.windowHeight = source["windowHeight"];
 	        this.promptPlazaApiBase = source["promptPlazaApiBase"];
+	        this.language = source["language"];
 	        this.aiConfigs = this.convertValues(source["aiConfigs"], AIConfig);
 	    }
 	
@@ -2683,6 +2685,65 @@ export namespace models {
 	        this.INDUSTRY = source["INDUSTRY"];
 	        this.MAX_TRADE_DATE = source["MAX_TRADE_DATE"];
 	    }
+	}
+	export class StockInfoEU {
+	    ID: number;
+	    // Go type: time
+	    CreatedAt: any;
+	    // Go type: time
+	    UpdatedAt: any;
+	    // Go type: gorm
+	    DeletedAt: any;
+	    code: string;
+	    name: string;
+	    eName: string;
+	    isin: string;
+	    exchange: string;
+	    currency: string;
+	    type: string;
+	    IsDel: number;
+	    bk_name: string;
+	    bk_code: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new StockInfoEU(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
+	        this.CreatedAt = this.convertValues(source["CreatedAt"], null);
+	        this.UpdatedAt = this.convertValues(source["UpdatedAt"], null);
+	        this.DeletedAt = this.convertValues(source["DeletedAt"], null);
+	        this.code = source["code"];
+	        this.name = source["name"];
+	        this.eName = source["eName"];
+	        this.isin = source["isin"];
+	        this.exchange = source["exchange"];
+	        this.currency = source["currency"];
+	        this.type = source["type"];
+	        this.IsDel = source["IsDel"];
+	        this.bk_name = source["bk_name"];
+	        this.bk_code = source["bk_code"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 	export class TechnicalIndicators {
 	    MACD_GOLDEN_FORK: boolean;

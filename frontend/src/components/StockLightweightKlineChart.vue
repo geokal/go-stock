@@ -10,6 +10,8 @@ import {
 } from 'lightweight-charts'
 import { NButton, NFlex, NInput, NSpin, NText } from 'naive-ui'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 /** A 股配色：涨红跌绿 */
 const CLR_RISE = '#ef5350'
@@ -30,16 +32,16 @@ const DEFAULT_RIGHT_LOGICAL_GAP = 18
 const SHOW_CHIP_TOOLBAR_BUTTON = false
 
 const INTERVALS = [
-  { klt: '1', label: '1分', limit: 1000 },
-  { klt: '5', label: '5分', limit: 600 },
-  { klt: '15', label: '15分', limit: 500 },
-  { klt: '30', label: '30分', limit: 500 },
-  { klt: '60', label: '60分', limit: 500 },
-  { klt: '101', label: '日K', limit: 800 },
-  { klt: '102', label: '周K', limit: 520 },
-  { klt: '103', label: '月K', limit: 240 },
-  { klt: '104', label: '季K', limit: 120 },
-  { klt: '106', label: '年K', limit: 40 },
+  { klt: '1', label: '1min', limit: 1000 },
+  { klt: '5', label: '5min', limit: 600 },
+  { klt: '15', label: '15min', limit: 500 },
+  { klt: '30', label: '30min', limit: 500 },
+  { klt: '60', label: '60min', limit: 500 },
+  { klt: '101', label: 'Day K', limit: 800 },
+  { klt: '102', label: 'Week K', limit: 520 },
+  { klt: '103', label: 'Month K', limit: 240 },
+  { klt: '104', label: 'Quarter K', limit: 120 },
+  { klt: '106', label: 'Year K', limit: 40 },
 ]
 
 const props = defineProps({
@@ -1005,7 +1007,7 @@ const crosshairPanel = computed(() => {
   const showLatestTag = !hoverRawRow.value && defaultLatestRawRow.value
   const titleDay = formatPanelTitleDay(r)
   return {
-    title: showLatestTag ? `${titleDay} · 最新` : titleDay,
+    title: showLatestTag ? `${titleDay} · ${t('stock.latest')}` : titleDay,
     open: formatPrice2(r.open),
     close: formatPrice2(r.close),
     high: formatPrice2(r.high),
@@ -1073,7 +1075,7 @@ function syncLongPositionPriceLines() {
     pushLine(entry, 'entry', {
       color: '#3b82f6',
       lineStyle: LineStyle.Solid,
-      title: '开仓',
+      title: t('stock.openPositionPrice'),
     })
   }
   if (Number.isFinite(cost)) {
@@ -1087,14 +1089,14 @@ function syncLongPositionPriceLines() {
     pushLine(stop, 'stop', {
       color: CLR_FALL,
       lineStyle: LineStyle.Dashed,
-      title: '止损',
+      title: t('stock.stopLossPrice'),
     })
   }
   if (Number.isFinite(tp)) {
     pushLine(tp, 'takeProfit', {
       color: CLR_RISE,
       lineStyle: LineStyle.Dashed,
-      title: '止盈',
+      title: t('stock.stopProfitPrice'),
     })
   }
   console.log('[DEBUG syncLongPositionPriceLines] done, created', longPositionPriceLines.length, 'lines')
@@ -1283,7 +1285,7 @@ const longPositionStats = computed(() => {
 const longPositionHint = computed(() => {
   if (!showLongPosition.value) return ''
   if (!Number.isFinite(parseNumStr(longEntryStr.value))) {
-    return '输入开仓价后显示线；止损低于开仓、止盈高于开仓为典型多单'
+    return t("lw.inputHint")
   }
   const s = longPositionStats.value
   if (!s) return ''
@@ -1316,15 +1318,15 @@ function fillLongEntryFromLatestClose() {
 }
 
 const longClickNextLabel = computed(() => {
-  const m = { entry: '开仓价', stop: '止损价', takeProfit: '止盈价' }
-  return m[longClickNextField.value] || '开仓价'
+  const m = { entry: t('stock.openPositionPrice'), stop: t('stock.stopLossPrice'), takeProfit: t('stock.stopProfitPrice') }
+  return m[longClickNextField.value] || t('stock.openPositionPrice')
 })
 
 const longFocusChartHint = computed(() => {
   const k = longFocusedPriceField.value
   if (!k) return ''
-  const m = { entry: '开仓', stop: '止损', takeProfit: '止盈' }
-  return `已选「${m[k] || ''}」：请在 K 线主图（非成交量）点击纵轴位置写入价格`
+  const m = { entry: t('stock.openPositionPrice'), stop: t('stock.stopLossPrice'), takeProfit: t('stock.stopProfitPrice') }
+  return `Selected: ${m[k] || ''}: click on K-line main area Y-axis to set price`
 })
 
 function cancelLongFocusBlurTimer() {
@@ -1862,7 +1864,7 @@ function ensureChart() {
 
 async function loadData() {
   if (!props.code) {
-    errorText.value = '未设置股票代码'
+    errorText.value = t('lw.noStockCode')
     mergedRawRows = []
     syncDefaultLatestPanelRow()
     hasMoreOlder.value = true
@@ -1898,7 +1900,7 @@ async function loadData() {
     const { candles } = toSeriesData(mergedRawRows)
     if (!candles.length) {
       errorText.value =
-        '暂无 K 线数据（需东方财富或新浪支持的代码，如 600519.SH、000001.SZ）'
+        t("lw.noKlineDataTip")
       candleSeries?.setData([])
       volSeries?.setData([])
       syncIndicators()
@@ -2165,7 +2167,7 @@ watch(showLongPosition, (newVal) => {
         <div class="lw-kline-toolbar__main">
           <NFlex vertical :size="8">
             <NFlex :size="6" wrap style="row-gap: 6px">
-              <NText depth="3" style="font-size: 12px; margin-right: 4px">周期</NText>
+              <NText depth="3" style="font-size: 12px; margin-right: 4px">{{ t('lw.period') }}</NText>
               <NButton
                 v-for="it in INTERVALS"
                 :key="it.klt"
@@ -2178,14 +2180,14 @@ watch(showLongPosition, (newVal) => {
               </NButton>
             </NFlex>
             <NFlex :size="6" wrap style="row-gap: 6px; align-items: center">
-              <NText depth="3" style="font-size: 12px; margin-right: 4px">指标</NText>
+              <NText depth="3" style="font-size: 12px; margin-right: 4px">{{ t('lw.indicators') }}</NText>
               <NButton
                 size="tiny"
                 :type="showMA ? 'primary' : 'default'"
                 :secondary="!showMA"
                 @click="toggleMA"
               >
-                均线 MA5/10/20/60
+                {{ t('lw.maLines') }}
               </NButton>
               <NButton
                 size="tiny"
@@ -2234,23 +2236,23 @@ watch(showLongPosition, (newVal) => {
                 :secondary="!showChip"
                 @click="toggleChip"
               >
-                筹码分布
+                {{ t('lw.chipDistribution') }}
               </NButton>
             </NFlex>
             <NFlex :size="6" wrap style="row-gap: 6px; align-items: center">
-              <NText depth="3" style="font-size: 12px; margin-right: 4px">多单</NText>
+              <NText depth="3" style="font-size: 12px; margin-right: 4px">{{ t('lw.longPositions') }}</NText>
               <NButton
                 size="tiny"
                 :type="showLongPosition ? 'primary' : 'default'"
                 :secondary="!showLongPosition"
                 @click="toggleLongPosition"
               >
-                价位线
+                {{ t('lw.priceLine') }}
               </NButton>
               <NInput
                 v-model:value="longEntryStr"
                 size="tiny"
-                placeholder="开仓"
+                :placeholder="t('stock.openPositionPrice')"
                 style="width: 88px"
                 clearable
                 @focus="onLongPriceInputFocus('entry')"
@@ -2259,7 +2261,7 @@ watch(showLongPosition, (newVal) => {
               <NInput
                 v-model:value="longStopStr"
                 size="tiny"
-                placeholder="止损"
+                :placeholder="t('stock.stopLossPrice')"
                 style="width: 88px"
                 clearable
                 @focus="onLongPriceInputFocus('stop')"
@@ -2268,14 +2270,14 @@ watch(showLongPosition, (newVal) => {
               <NInput
                 v-model:value="longTakeProfitStr"
                 size="tiny"
-                placeholder="止盈"
+                :placeholder="t('stock.stopProfitPrice')"
                 style="width: 88px"
                 clearable
                 @focus="onLongPriceInputFocus('takeProfit')"
                 @blur="onLongPriceInputBlur"
               />
               <NButton size="tiny" secondary @click="fillLongEntryFromLatestClose">
-                最新收盘
+                {{ t('lw.latestClosePrice') }}
               </NButton>
               <NButton
                 size="tiny"
@@ -2283,7 +2285,7 @@ watch(showLongPosition, (newVal) => {
                 :secondary="!longClickPickEnabled"
                 @click="toggleLongClickPick"
               >
-                设置价位线(预警)
+                {{ t('lw.setPriceAlert') }}
               </NButton>
               <NButton
                 v-if="longClickPickEnabled"
@@ -2291,7 +2293,7 @@ watch(showLongPosition, (newVal) => {
                 quaternary
                 @click="resetLongClickSequence"
               >
-                重置点击顺序
+                {{ t('lw.resetClickOrder') }}
               </NButton>
               <NText
                 v-if="longFocusChartHint"
@@ -2316,12 +2318,12 @@ watch(showLongPosition, (newVal) => {
                 {{ stockName || code }} ·
                 {{ 
                   realtimeIntervalMs > 0
-                    ? `每 ${Math.round(realtimeIntervalMs / 1000)} 秒刷新`
-                    : '切换周期后加载'
+                    ? t('lw.refreshInterval', { seconds: Math.round(realtimeIntervalMs / 1000) })
+                    : t('lw.loadAfterPeriodSwitch')
                 }}
-                · 按住拖动查看左侧历史时会自动加载更早 K 线
+                · {{ t('lw.dragToViewHistory') }}
                 <span v-if="activeDataSource" class="lw-kline-source-tag" :class="{ 'lw-kline-source-tag--fallback': activeDataSource !== 'eastmoney' }">
-                  {{ activeDataSource === 'eastmoney' ? '东方财富' : activeDataSource === 'sina' ? '新浪财经' : activeDataSource === 'tencent' ? '腾讯财经' : activeDataSource === 'tdx' ? '通达信' : activeDataSource }}
+                  {{ activeDataSource === 'eastmoney' ? t('lw.eastmoney') : activeDataSource === 'sina' ? t('lw.sinaFinance') : activeDataSource === 'tencent' ? t('lw.tencentFinance') : activeDataSource === 'tdx' ? t('lw.tdx') : activeDataSource }}
                 </span>
               </NText>
               <NSpin v-if="loading || loadingHistory" size="small" />
@@ -2338,61 +2340,61 @@ watch(showLongPosition, (newVal) => {
             </div>
             <div class="lw-kline-crosshair-strip__grid">
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">开盘</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.todayOpen') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cOpenClose }">{{
                   crosshairPanel.open
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">收盘</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.yesterdayClose') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cOpenClose }">{{
                   crosshairPanel.close
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">最高</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.todayHigh') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cHigh }">{{
                   crosshairPanel.high
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">最低</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.todayLow') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cLow }">{{
                   crosshairPanel.low
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">涨跌幅</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.changeRate') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cChg }">{{
                   crosshairPanel.changePercent
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">涨跌额</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.price') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cChg }">{{
                   crosshairPanel.changeValue
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">成交量</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.volume') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cNeu }">{{
                   crosshairPanel.volume
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">成交额</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.turnover') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cNeu }">{{
                   crosshairPanel.amount
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">振幅</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.amplitude') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cNeu }">{{
                   crosshairPanel.amplitude
                 }}</span>
               </span>
               <span class="lw-kline-kv">
-                <span class="lw-kline-crosshair-strip__k">换手率</span>
+                <span class="lw-kline-crosshair-strip__k">{{ t('stock.turnoverRate') }}</span>
                 <span class="lw-kline-crosshair-strip__v" :style="{ color: crosshairPanel.cNeu }">{{
                   crosshairPanel.turnoverRate
                 }}</span>
@@ -2400,7 +2402,7 @@ watch(showLongPosition, (newVal) => {
             </div>
           </template>
           <NText v-else depth="3" style="font-size: 11px; line-height: 1.5">
-            {{ loading ? '加载中…' : '暂无 K 线数据' }}
+            {{ loading ? t("common.loading") : t("common.noData") }}
           </NText>
         </div>
       </div>
@@ -2418,17 +2420,16 @@ watch(showLongPosition, (newVal) => {
           :style="{ height: chartHeight + 'px', minHeight: chartHeight + 'px' }"
         >
           <div class="lw-chip__head">
-            <span class="lw-chip__title">筹码分布</span>
+            <span class="lw-chip__title">{{ t('lw.chipDistribution') }}</span>
             <span v-if="chipMeta.hoverDate" class="lw-chip__meta">
               {{ chipMeta.hoverDate }}
             </span>
             <span v-if="chipItems.length" class="lw-chip__meta">
-              均成本 {{ chipMeta.avgCost.toFixed(2) }} · 获利
-              {{ (chipMeta.profitRatio * 100).toFixed(1) }}%
+              {{ t('lw.chipAvgCost', { avgCost: chipMeta.avgCost.toFixed(2) }) }} · {{ t('lw.chipProfit', { pct: (chipMeta.profitRatio * 100).toFixed(1) }) }}
             </span>
           </div>
           <div v-if="!chipItems.length" class="lw-chip__empty">
-            {{ mergedRawRows.length ? '移动鼠标到K线查看' : '暂无K线数据' }}
+            {{ mergedRawRows.length ? t("lw.moveMouseToKline") : t("common.noData") }}
           </div>
           <canvas
             v-show="chipItems.length"

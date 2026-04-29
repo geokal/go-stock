@@ -3,7 +3,7 @@
     <n-space>
       <n-input
         v-model:value="searchKeyword"
-        placeholder="搜索技能名称..."
+        :placeholder="t('skill.searchPlaceholder')"
         style="width: 200px"
         clearable
         @keyup.enter="handleSearch"
@@ -16,7 +16,7 @@
       <n-select
         v-model:value="filterCategory"
         :options="categoryOptions"
-        placeholder="技能分类"
+        :placeholder="t('skill.category')"
         style="width: 120px"
         clearable
         filterable
@@ -25,20 +25,20 @@
       <n-select
         v-model:value="filterEnable"
         :options="enableOptions"
-        placeholder="启用状态"
+        :placeholder="t('skill.enableStatus')"
         style="width: 100px"
         clearable
       />
 
       <n-button type="primary" @click="handleSearch">
-        搜索
+        {{ t('common.search') }}
       </n-button>
 
       <n-button type="warning" @click="handleCreate">
         <template #icon>
           <n-icon :component="AddOutline" />
         </template>
-        添加技能
+        {{ t('skill.addSkill') }}
       </n-button>
     </n-space>
 
@@ -56,7 +56,7 @@
   <n-modal
     v-model:show="showCreateModal"
     preset="card"
-    :title="editingSkill ? '编辑技能' : '添加技能'"
+    :title="editingSkill ? t('skill.editSkill') : t('skill.addSkill')"
     style="width: 900px; max-height: 85vh"
     :mask-closable="false"
   >
@@ -69,80 +69,80 @@
       label-align="left"
     >
       <n-grid :cols="4" :x-gap="16">
-        <n-form-item-gi label="技能名称" path="name" :span="2">
-          <n-input v-model:value="formData.name" placeholder="请输入技能名称" clearable />
+        <n-form-item-gi :label="t('skill.name')" path="name" :span="2">
+          <n-input v-model:value="formData.name" :placeholder="t('skill.enterName')" clearable />
         </n-form-item-gi>
 
-        <n-form-item-gi label="分类" path="category">
+        <n-form-item-gi :label="t('skill.category')" path="category">
           <n-select
             v-model:value="formData.category"
             :options="categoryOptions"
-            placeholder="选择或输入分类"
+            :placeholder="t('skill.selectOrEnterCategory')"
             clearable
             filterable
             tag
           />
         </n-form-item-gi>
 
-        <n-form-item-gi label="排序" path="sortOrder">
+        <n-form-item-gi :label="t('skill.sortOrder')" path="sortOrder">
           <n-input-number v-model:value="formData.sortOrder" :min="0" :max="999" style="width: 100%" />
         </n-form-item-gi>
       </n-grid>
 
       <n-grid :cols="4" :x-gap="16">
-        <n-form-item-gi label="启用" path="enable" :span="1">
+        <n-form-item-gi :label="t('skill.enable')" path="enable" :span="1">
           <n-switch v-model:value="formData.enable" />
         </n-form-item-gi>
 
-        <n-form-item-gi label="触发关键词" path="triggerKeywords" :span="3">
+        <n-form-item-gi :label="t('skill.triggerKeywords')" path="triggerKeywords" :span="3">
           <n-input
             v-model:value="formData.triggerKeywords"
-            placeholder="关键词用逗号分隔，例如：技术分析,K线,MACD"
+            :placeholder="t('skill.triggerKeywordsPlaceholder')"
             clearable
           />
         </n-form-item-gi>
       </n-grid>
 
-      <n-form-item label="技能描述" path="description">
+      <n-form-item :label="t('skill.description')" path="description">
         <n-input
           v-model:value="formData.description"
           type="textarea"
           :autosize="{ minRows: 1, maxRows: 3 }"
-          placeholder="请输入技能描述"
+          :placeholder="t('skill.enterDescription')"
           show-count
           maxlength="500"
         />
       </n-form-item>
 
-      <n-form-item label="绑定MCP服务" path="mcpServerIds">
+      <n-form-item :label="t('skill.bindMcp')" path="mcpServerIds">
         <n-select
           v-model:value="formData.mcpServerIds"
           :options="mcpServerOptions"
-          placeholder="选择绑定的MCP服务器"
+          :placeholder="t('skill.selectMcpServer')"
           multiple
           clearable
         />
       </n-form-item>
 
-      <n-form-item label="系统提示词" path="systemPrompt">
+      <n-form-item :label="t('skill.systemPrompt')" path="systemPrompt">
         <MdEditor
           v-model="formData.systemPrompt"
           style="height: 200px"
           :theme="editorTheme"
           :preview="true"
           :toolbarsExclude="['github', 'htmlPreview', 'catalog', 'save']"
-          placeholder="当此技能激活时，将追加到系统提示词中，指导 Agent 如何使用此技能"
+          :placeholder="t('skill.systemPromptPlaceholder')"
         />
       </n-form-item>
 
-      <n-form-item label="示例对话" path="examples">
+      <n-form-item :label="t('skill.examples')" path="examples">
         <MdEditor
           v-model="formData.examples"
           style="height: 160px"
           :theme="editorTheme"
           :preview="true"
           :toolbarsExclude="['github', 'htmlPreview', 'catalog', 'save']"
-          placeholder="提供示例对话，帮助 Agent 理解如何使用此技能"
+          :placeholder="t('skill.examplesPlaceholder')"
         />
       </n-form-item>
     </n-form>
@@ -150,9 +150,9 @@
 
     <template #footer>
       <n-space justify="end">
-        <n-button @click="showCreateModal = false">取消</n-button>
+        <n-button @click="showCreateModal = false">{{ t('common.cancel') }}</n-button>
         <n-button type="primary" :loading="submitting" @click="handleSubmit">
-          {{ editingSkill ? '保存' : '创建' }}
+          {{ editingSkill ? t('common.save') : t('common.add') }}
         </n-button>
       </n-space>
     </template>
@@ -162,6 +162,7 @@
 
 <script setup>
 import { ref, reactive, h, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NButton, NSpace, NInput, NDataTable, NModal, NForm, NFormItem,
   NFormItemGi, NGrid, NTag, NSwitch, NIcon, NSelect, NInputNumber, NPopconfirm, NScrollbar, useMessage
@@ -172,6 +173,7 @@ import 'md-editor-v3/lib/style.css'
 import { CreateSkill, UpdateSkill, DeleteSkill, GetSkillList, EnableSkill, GetSkillByID, GetAllSkills } from '../../wailsjs/go/main/App.js'
 import { GetMCPServerList, GetConfig } from '../../wailsjs/go/main/App.js'
 
+const { t } = useI18n()
 const message = useMessage()
 const loading = ref(false)
 const submitting = ref(false)
@@ -197,7 +199,7 @@ const pagination = reactive({
   itemCount: 0,
   showSizePicker: true,
   pageSizes: [10, 20, 50],
-  prefix: ({ itemCount }) => `共 ${itemCount} 条`,
+  prefix: ({ itemCount }) => `${t('common.total')} ${itemCount} ${t('common.records')}`,
   onChange: (page) => {
     handlePageChange(page)
   },
@@ -224,68 +226,68 @@ const formData = reactive({
 })
 
 const formRules = {
-  name: { required: true, message: '请输入技能名称', trigger: ['input', 'blur'] }
+  name: { required: true, message: t('skill.enterName'), trigger: ['input', 'blur'] }
 }
 
 const categoryOptions = [
-  { label: '股票分析', value: '股票分析' },
-  { label: '技术分析', value: '技术分析' },
-  { label: '基本面分析', value: '基本面分析' },
-  { label: '量化策略', value: '量化策略' },
-  { label: '风险管理', value: '风险管理' },
-  { label: '资讯研究', value: '资讯研究' },
-  { label: '通用', value: '通用' }
+  { label: t('skill.categoryStockAnalysis'), value: t('skill.categoryStockAnalysis') },
+  { label: t('skill.categoryTechAnalysis'), value: t('skill.categoryTechAnalysis') },
+  { label: t('skill.categoryFundamentalAnalysis'), value: t('skill.categoryFundamentalAnalysis') },
+  { label: t('skill.categoryQuantStrategy'), value: t('skill.categoryQuantStrategy') },
+  { label: t('skill.categoryRiskManagement'), value: t('skill.categoryRiskManagement') },
+  { label: t('skill.categoryInfoResearch'), value: t('skill.categoryInfoResearch') },
+  { label: t('skill.categoryGeneral'), value: t('skill.categoryGeneral') }
 ]
 
 const enableOptions = [
-  { label: '已启用', value: true },
-  { label: '已禁用', value: false }
+  { label: t('skill.enabled'), value: true },
+  { label: t('skill.disabled'), value: false }
 ]
 
 const columns = [
   {
-    title: 'ID',
+    title: t('skill.id'),
     key: 'id',
     width: 50
   },
   {
-    title: '技能名称',
+    title: t('skill.name'),
     key: 'name',
     width: 120,
     ellipsis: { tooltip: true }
   },
   {
-    title: '分类',
+    title: t('skill.category'),
     key: 'category',
     width: 90,
     render(row) {
-      if (!row.category) return h(NTag, { type: 'default' }, { default: () => '未分类' })
+      if (!row.category) return h(NTag, { type: 'default' }, { default: () => t('skill.uncategorized') })
       return h(NTag, { type: 'info' }, { default: () => row.category })
     }
   },
   {
-    title: '描述',
+    title: t('skill.description'),
     key: 'description',
     width: 200,
     ellipsis: { tooltip: { style: { maxWidth: '400px', wordBreak: 'break-all' } } }
   },
   {
-    title: '绑定MCP',
+    title: t('skill.bindMcp'),
     key: 'mcpServerIds',
     width: 100,
     render(row) {
-      if (!row.mcpServerIds) return h(NTag, { type: 'default' }, { default: () => '无' })
+      if (!row.mcpServerIds) return h(NTag, { type: 'default' }, { default: () => t('skill.none') })
       const ids = row.mcpServerIds.split(',').filter(s => s.trim())
-      return h(NTag, { type: 'info' }, { default: () => `${ids.length} 个` })
+      return h(NTag, { type: 'info' }, { default: () => `${ids.length} ${t('skill.count')}` })
     }
   },
   {
-    title: '排序',
+    title: t('skill.sortOrder'),
     key: 'sortOrder',
     width: 60
   },
   {
-    title: '启用',
+    title: t('skill.enable'),
     key: 'enable',
     width: 70,
     render(row) {
@@ -296,7 +298,7 @@ const columns = [
     }
   },
   {
-    title: '操作',
+    title: t('common.actions'),
     key: 'actions',
     width: 140,
     render(row) {
@@ -307,7 +309,7 @@ const columns = [
             onClick: () => handleEdit(row)
           }, {
             icon: () => h(NIcon, null, { default: () => h(CreateOutline) }),
-            default: () => '编辑'
+            default: () => t('common.edit')
           }),
           h(NPopconfirm, {
             onPositiveClick: () => handleDelete(row)
@@ -316,9 +318,9 @@ const columns = [
               size: 'small', type: 'error', quaternary: true
             }, {
               icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
-              default: () => '删除'
+              default: () => t('common.delete')
             }),
-            default: () => '确定删除此技能？'
+            default: () => t('skill.confirmDelete')
           })
         ]
       })
@@ -343,7 +345,7 @@ const loadData = async () => {
       pagination.pageCount = Math.ceil(total.value / pageSize.value) || 1
     }
   } catch (error) {
-    message.error('加载数据失败: ' + error)
+    message.error(t('skill.loadFailed') + error)
   } finally {
     loading.value = false
   }
@@ -365,7 +367,7 @@ const loadMCPServers = async () => {
       }))
     }
   } catch (error) {
-    console.error('加载MCP服务器列表失败:', error)
+    console.error(t('skill.loadMcpFailed'), error)
   }
 }
 
@@ -406,35 +408,35 @@ const handleEdit = async (row) => {
       showCreateModal.value = true
     }
   } catch (error) {
-    message.error('获取技能信息失败: ' + error)
+    message.error(t('skill.getSkillFailed') + error)
   }
 }
 
 const handleDelete = async (row) => {
   try {
     const result = await DeleteSkill(row.id)
-    if (result.includes('成功')) {
+    if (result.includes(t('common.success'))) {
       message.success(result)
       loadData()
     } else {
       message.error(result)
     }
   } catch (error) {
-    message.error('删除失败: ' + error)
+    message.error(t('common.delete') + t('common.failed') + error)
   }
 }
 
 const handleEnable = async (row, enable) => {
   try {
     const result = await EnableSkill(row.id, enable)
-    if (result.includes('成功') || result.includes('启用') || result.includes('禁用')) {
+    if (result.includes(t('common.success')) || result.includes(t('skill.enabled')) || result.includes(t('skill.disabled'))) {
       message.success(result)
       loadData()
     } else {
       message.error(result)
     }
   } catch (error) {
-    message.error('操作失败: ' + error)
+    message.error(t('common.operation') + t('common.failed') + error)
   }
 }
 
@@ -467,7 +469,7 @@ const handleSubmit = async () => {
       result = await CreateSkill(skillData)
     }
 
-    if (result.includes('成功')) {
+    if (result.includes(t('common.success'))) {
       message.success(result)
       showCreateModal.value = false
       loadData()
@@ -475,7 +477,7 @@ const handleSubmit = async () => {
       message.error(result)
     }
   } catch (error) {
-    message.error('操作失败: ' + error)
+    message.error(t('common.operation') + t('common.failed') + error)
   } finally {
     submitting.value = false
   }

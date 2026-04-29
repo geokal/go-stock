@@ -144,6 +144,8 @@ export function GetDailyDimensionStats(arg1:string,arg2:string,arg3:number):Prom
 
 export function GetEffectiveSponsorVip():Promise<Record<string, any>>;
 
+export function GetEuronextStocks():Promise<Array<models.StockInfoEU>>;
+
 export function GetFollowList(arg1:number):Promise<any>;
 
 export function GetFollowedFund():Promise<Array<data.FollowedFund>>;
@@ -246,8 +248,6 @@ export function GlobalStockIndexesReadable():Promise<string>;
 
 export function Greet(arg1:string):Promise<data.StockInfo>;
 
-export function HideToTray():Promise<void>;
-
 export function HotEvent(arg1:number):Promise<any>;
 
 export function HotStock(arg1:string):Promise<any>;
@@ -317,8 +317,6 @@ export function SetTradingPrice(arg1:string,arg2:number,arg3:number,arg4:number,
 export function ShareAnalysis(arg1:string,arg2:string):Promise<string>;
 
 export function ShareText(arg1:string,arg2:string):Promise<string>;
-
-export function ShowFromTray():Promise<void>;
 
 export function StockNotice(arg1:string):Promise<Array<any>>;
 

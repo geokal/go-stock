@@ -3,7 +3,9 @@
 import {GetStockKLine} from "../../wailsjs/go/main/App";
 import * as echarts from "echarts";
 import {onMounted, ref} from "vue";
+import { useI18n } from 'vue-i18n'
 import _ from "lodash";
+const { t } = useI18n()
 const { code,stockName,darkTheme,kDays ,chartHeight} = defineProps({
   code: {
     type: String,
@@ -79,7 +81,7 @@ function  handleKLine(code,stockName){
       legend: {
         right: 20,
         top: 0,
-        data: ['日K', 'MA5', 'MA10', 'MA20', 'MA30'],
+        data: [t('stock.dayK'), 'MA5', 'MA10', 'MA20', 'MA30'],
         textStyle: {
           color: darkTheme?'#ccc':'#456'
         },
@@ -101,7 +103,7 @@ function  handleKLine(code,stockName){
         textStyle: {
           color: darkTheme?'#ccc':'#456'
         },
-        formatter: function (params) {//修改鼠标划过显示为中文
+        formatter: function (params) {// tooltip labels
           //console.log("params",params)
           let currentItemData =  _.filter(params,  (param) => param.seriesIndex === 0)[0].data;
           let ma5=_.filter(params,  (param) => param.seriesIndex === 1)[0].data;//ma5的值
@@ -110,15 +112,15 @@ function  handleKLine(code,stockName){
           let ma30=_.filter(params,  (param) => param.seriesIndex === 4)[0].data;//ma30的值
           let volum=_.filter(params,  (param) => param.seriesIndex === 5)[0].data;
           return _.filter(params,  (param) => param.seriesIndex === 0)[0].name + '<br>' +
-              '开盘:' + currentItemData[1] + '<br>' +
-              '收盘:' + currentItemData[2] + '<br>' +
-              '最低:' + currentItemData[3] + '<br>' +
-              '最高:' + currentItemData[4] + '<br>' +
-              '成交量(万手):' + volum[1] + '<br>' +
-              'MA5日均线:' + ma5 + '<br>' +
-              'MA10日均线:' + ma10 + '<br>' +
-              'MA20日均线:' + ma20 + '<br>' +
-              'MA30日均线:' + ma30
+              t('stock.todayOpen') + ':' + currentItemData[1] + '<br>' +
+              t('stock.yesterdayClose') + ':' + currentItemData[2] + '<br>' +
+              t('stock.todayLow') + ':' + currentItemData[3] + '<br>' +
+              t('stock.todayHigh') + ':' + currentItemData[4] + '<br>' +
+              t('stock.volume') + '(10K lots):' + volum[1] + '<br>' +
+              'MA5: ' + ma5 + '<br>' +
+              'MA10: ' + ma10 + '<br>' +
+              'MA20: ' + ma20 + '<br>' +
+              'MA30: ' + ma30
         }
       },
       axisPointer: {
@@ -225,7 +227,7 @@ function  handleKLine(code,stockName){
 
       series: [
         {
-          name: '日K',
+          name: t('stock.dayK'),
           type: 'candlestick',
           data: values,
           itemStyle: {
@@ -243,17 +245,17 @@ function  handleKLine(code,stockName){
             },
             data: [
               {
-                name: '最高',
+                name: t('stock.todayHigh'),
                 type: 'max',
                 valueDim: 'highest'
               },
               {
-                name: '最低',
+                name: t('stock.todayLow'),
                 type: 'min',
                 valueDim: 'lowest'
               },
               {
-                name: '平均收盘价',
+                name: t('stock.avgClose'),
                 type: 'average',
                 valueDim: 'close'
               }
@@ -352,7 +354,7 @@ function  handleKLine(code,stockName){
           }
         },
         {
-          name: '成交量(手)',
+          name: t('stock.volume') + '(lots)',
           type: 'bar',
           xAxisIndex: 1,
           yAxisIndex: 1,

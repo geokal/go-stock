@@ -33,13 +33,14 @@ func InitSystray(a *App) {
 	go func() {
 		defer PanicHandler()
 
+		ts := data.GetTrayStrings()
 		systray.Run(func() {
 			systray.SetIcon(icon2)
-			systray.SetTitle("go-stock")
-			systray.SetTooltip("go-stock：AI赋能股票分析")
+			systray.SetTitle(ts.AppTitle)
+			systray.SetTooltip(ts.AppTooltip)
 
-			mShow := systray.AddMenuItem("显示窗口", "显示主窗口")
-			mQuit := systray.AddMenuItem("退出程序", "退出应用程序")
+			mShow := systray.AddMenuItem(ts.MenuShowWindow, ts.MenuShowWindow)
+			mQuit := systray.AddMenuItem(ts.MenuQuit, ts.MenuQuit)
 
 			go func() {
 				for {
@@ -96,10 +97,11 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func OnSecondInstanceLaunch(secondInstanceData options.SecondInstanceData) {
+	ts := data.GetTrayStrings()
 	notification := toast.Notification{
-		AppID:    "go-stock",
-		Title:    "go-stock",
-		Message:  "程序已经在运行了",
+		AppID:    ts.AppTitle,
+		Title:    ts.AppTitle,
+		Message:  ts.NotifyRunning,
 		Icon:     "",
 		Duration: "short",
 		Audio:    toast.Default,
@@ -192,19 +194,20 @@ func (a *App) beforeClose(ctx context.Context) (prevent bool) {
 			data.UpdateConfig(cfg)
 		}
 
+		ts := data.GetTrayStrings()
 		dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
 			Type:         runtime.QuestionDialog,
-			Title:        "go-stock",
-			Message:      "确定关闭吗？",
-			Buttons:      []string{"确定", "取消"},
+			Title:        ts.AppTitle,
+			Message:      ts.DialogClose,
+			Buttons:      []string{ts.ButtonOK, ts.ButtonCancel},
 			Icon:         icon2,
-			CancelButton: "取消",
+			CancelButton: ts.ButtonCancel,
 		})
 		if err != nil {
 			return true
 		}
 		logger.SugaredLogger.Debugf("dialog:%s", dialog)
-		if dialog == "确定" || dialog == "Yes" {
+		if dialog == ts.ButtonOK || dialog == "Yes" {
 			if a.cron != nil {
 				a.cron.Stop() // 停止定时任务
 			}

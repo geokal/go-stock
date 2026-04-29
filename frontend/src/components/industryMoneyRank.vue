@@ -3,13 +3,15 @@
 import {CaretDown, CaretUp, RefreshCircleOutline} from "@vicons/ionicons5";
 import {NText,useMessage} from "naive-ui";
 import {onBeforeUnmount, onMounted, onUnmounted, ref} from "vue";
+import {useI18n} from 'vue-i18n'
+const { t } = useI18n()
 import {GetIndustryMoneyRankSina} from "../../wailsjs/go/main/App";
 import KLineChart from "./KLineChart.vue";
 
 const props = defineProps({
   headerTitle: {
     type: String,
-    default: '行业资金排名(净流入)'
+    default: 'Industry Fund Ranking (Net Inflow)'
   },
   fenlei: {
     type: String,
@@ -38,7 +40,7 @@ onBeforeUnmount(()=>{
   clearInterval(interval.value)
 })
 function GetRankData(){
-  message.loading("正在刷新数据...")
+  message.loading(t('industryMoneyRank.refreshingData'))
   GetIndustryMoneyRankSina(fenlei.value,sort.value).then(result => {
     if(result.length>0){
       dataList.value = result
@@ -52,16 +54,16 @@ function GetRankData(){
   <n-table striped size="small">
     <n-thead>
       <n-tr>
-        <n-th>板块名称</n-th>
-        <n-th>涨跌幅</n-th>
-        <n-th>流入资金/万</n-th>
-        <n-th>流出资金/万</n-th>
-        <n-th>净流入/万<n-icon v-if="sort==='0'" :component="CaretDown"/><n-icon  v-if="sort==='1'" :component="CaretUp"/></n-th>
-        <n-th>净流入率</n-th>
-        <n-th>领涨股</n-th>
-        <n-th>涨跌幅</n-th>
-        <n-th>最新价</n-th>
-        <n-th>净流入率</n-th>
+        <n-th>{{ t('industryMoneyRank.sectorName') }}</n-th>
+        <n-th>{{ t('hotStockList.changeRate') }}</n-th>
+        <n-th>{{ t('industryMoneyRank.inflowFund') }}</n-th>
+        <n-th>{{ t('industryMoneyRank.outflowFund') }}</n-th>
+        <n-th>{{ t('industryMoneyRank.netInflow') }}<n-icon v-if="sort==='0'" :component="CaretDown"/><n-icon  v-if="sort==='1'" :component="CaretUp"/></n-th>
+        <n-th>{{ t('industryMoneyRank.netInflowRate') }}</n-th>
+        <n-th>{{ t('industryMoneyRank.leadingStock') }}</n-th>
+        <n-th>{{ t('hotStockList.changeRate') }}</n-th>
+        <n-th>{{ t('stock.price') }}</n-th>
+        <n-th>{{ t('industryMoneyRank.netInflowRate') }}</n-th>
       </n-tr>
     </n-thead>
     <n-tbody>

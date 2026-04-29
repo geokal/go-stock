@@ -1,5 +1,6 @@
 <script setup>
 import { h, onBeforeMount, onMounted, ref, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   GetAllStockInfoList,
   GetAllMarkets,
@@ -26,6 +27,7 @@ import {
 } from "naive-ui";
 import sparkLine from "./stockSparkLine.vue"
 
+const { t } = useI18n()
 const notify = useNotification()
 const message = useMessage()
 
@@ -55,7 +57,7 @@ const conceptsRef = ref([])
 
 const columnsRef = ref([
   {
-    title: '股票代码',
+    title: () => t('stock.code'),
     key: 'SECUCODE',
     width: 120,
     render(row) {
@@ -63,7 +65,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '股票名称',
+    title: () => t('stock.name'),
     key: 'SECURITY_NAME_ABBR',
     width: 120,
     render(row) {
@@ -71,7 +73,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '最新价',
+    title: () => t('stock.price'),
     key: 'NEW_PRICE',
     width: 100,
     render(row) {
@@ -80,7 +82,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '涨跌幅(%)',
+    title: () => t('stock.changeRate'),
     key: 'CHANGE_RATE',
     width: 120,
     render(row) {
@@ -173,31 +175,31 @@ const columnsRef = ref([
   //   }
   // },
   {
-    title: '所属行业',
+    title: () => t('stock.industry'),
     key: 'INDUSTRY',
     width: 120,
     render(row) {
-      return h(NTag, { type: "primary", size: "small" }, { default: () => row.INDUSTRY || '无' })
+      return h(NTag, { type: "primary", size: "small" }, { default: () => row.INDUSTRY || '-' })
     }
   },
   {
-    title: '所属概念',
+    title: () => t('stock.concept'),
     key: 'CONCEPT',
     width: 150,
     render(row) {
-      return h(NText, { type: "info", size: "small" }, { default: () => row.CONCEPT || '无' })
+      return h(NText, { type: "info", size: "small" }, { default: () => row.CONCEPT || '-' })
     }
   },
   {
-    title: '交易所',
+    title: () => t('stock.exchange'),
     key: 'MARKET',
     width: 100,
     render(row) {
-      return h(NTag, { type: "warning", size: "small" }, { default: () => row.MARKET || '未知' })
+      return h(NTag, { type: "warning", size: "small" }, { default: () => row.MARKET || '-' })
     }
   },
   {
-    title: '数据日期',
+    title: () => t('stock.dataDate'),
     key: 'MAX_TRADE_DATE',
     width: 120,
     render(row) {
@@ -212,7 +214,7 @@ const paginationReactive = reactive({
   pageSize: 12,
   itemCount: 0,
   prefix({ itemCount }) {
-    return `${itemCount} 只股票`
+    return t('stock.stockCount', { count: itemCount })
   }
 })
 
@@ -253,11 +255,11 @@ function loadStocks(page, pageSize) {
         paginationReactive.page = 1
         paginationReactive.pageCount = 1
         paginationReactive.itemCount = 0
-        message.error('获取股票数据失败: ' + (res?.message || '未知错误'))
+        message.error(t('allStockInfoList.getStockDataFailed') + (res?.message || 'Unknown error'))
       }
       loadingRef.value = false
     }).catch(err => {
-      message.error('获取股票数据失败: ' + err.message)
+      message.error(t('allStockInfoList.getStockDataFailed') + err.message)
       loadingRef.value = false
     })
   }
@@ -320,49 +322,49 @@ function handleReset() {
     <n-card  size="small" style="margin-bottom: 16px;text-align: left">
       <n-grid :cols="5" :x-gap="12" :y-gap="12">
         <n-grid-item>
-          <n-form-item label="交易所" label-placement="left">
+          <n-form-item :label="t('allStockInfoList.exchange')" label-placement="left">
             <n-select
                 v-model:value="searchFormRef.market"
                 :options="marketsRef"
-                placeholder="请选择交易所"
+                :placeholder="t('allStockList.selectExchange')"
                 clearable
             />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="所属行业" label-placement="left">
+          <n-form-item :label="t('allStockInfoList.industry')" label-placement="left">
             <n-select
                 v-model:value="searchFormRef.industry"
                 :options="industriesRef"
-                placeholder="请选择行业"
+                :placeholder="t('allStockList.selectIndustry')"
                 clearable
                 style="width: 200px"
             />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="股票名称/代码" label-placement="left">
-            <n-input 
-              v-model:value="searchFormRef.securityName" 
-              placeholder="请输入股票名称/代码"
+          <n-form-item :label="t('allStockInfoList.stockNameCode')" label-placement="left">
+            <n-input
+              v-model:value="searchFormRef.securityName"
+              :placeholder="t('allStockList.enterStockNameCode')"
               clearable
             />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
-          <n-form-item label="所属概念" label-placement="left">
+          <n-form-item :label="t('allStockInfoList.concept')" label-placement="left">
             <n-input
               v-model:value="searchFormRef.concept"
               :options="conceptsRef"
-              placeholder="请输入概念关键词"
+              :placeholder="t('allStockList.enterConceptKeyword')"
               clearable
             />
           </n-form-item>
         </n-grid-item>
         <n-grid-item>
           <n-space>
-            <n-button type="primary" @click="handleSearch">搜索</n-button>
-            <n-button @click="handleReset">重置</n-button>
+            <n-button type="primary" @click="handleSearch">{{ t('allStockInfoList.search') }}</n-button>
+            <n-button @click="handleReset">{{ t('allStockInfoList.reset') }}</n-button>
           </n-space>
         </n-grid-item>
       </n-grid>

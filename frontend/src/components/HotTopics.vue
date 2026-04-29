@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import {onBeforeMount, onUnmounted, ref} from 'vue'
+import {nextTick, onBeforeMount, onMounted, onUnmounted, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {HotTopic, OpenURL} from "../../wailsjs/go/main/App";
 import {Environment} from "../../wailsjs/runtime";
+const { t } = useI18n()
 const list  = ref([])
 const task =ref()
 
@@ -41,9 +43,6 @@ function showPage(htid) {
 
 <template>
   <n-list bordered hoverable clickable>
-<!--    <template #header>-->
-<!--      股吧热门-->
-<!--    </template>-->
     <n-list-item v-for="(item, index) in list" :key="index">
         <n-thing :title="item.nickname" :description="item.desc" :description-style="'font-size: 14px;'"  @click="showPage(item.htid)">
           <template v-if="item.squareImg" #avatar>
@@ -59,13 +58,13 @@ function showPage(htid) {
           </template>
           <template v-if="item.clickNumber" #header-extra>
             <n-flex>
-            <n-button secondary  type="warning" size="tiny">讨论数：<n-number-animation
+            <n-button secondary  type="warning" size="tiny">{{ t('topHot.discussionCount') }}：<n-number-animation
                 show-separator
                 :from="0"
                 :to="item.postNumber"
             />
             </n-button >
-            <n-tag :bordered="false" type="warning" size="small">浏览量：<n-number-animation
+            <n-tag :bordered="false" type="warning" size="small">{{ t('topHot.browseCount') }}：<n-number-animation
                   show-separator
                   :from="0"
                   :to="item.clickNumber"

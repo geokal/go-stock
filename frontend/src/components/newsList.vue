@@ -2,11 +2,14 @@
 import {ReFleshTelegraphList} from "../../wailsjs/go/main/App";
 import {RefreshCircle, RefreshCircleSharp, RefreshOutline} from "@vicons/ionicons5";
 import {computed, h, onBeforeMount, onBeforeUnmount, onMounted,onUnmounted, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
+
+const { t } = useI18n()
 
 const { headerTitle,newsList } = defineProps({
   headerTitle: {
     type: String,
-    default: '市场资讯'
+    default: 'Market News'
   },
   newsList: {
     type: Array,
@@ -15,6 +18,8 @@ const { headerTitle,newsList } = defineProps({
 })
 
 const emits = defineEmits(['update:message'])
+
+const isCaixiangTelegraph = computed(() => headerTitle === '财联社电报' || headerTitle === 'CLS Telegraph')
 
 const updateMessage = () => {
   emits('update:message', headerTitle)
@@ -31,8 +36,7 @@ let timer = null
 
 // 组件挂载时启动定时器
 onMounted(() => {
-  if (headerTitle === '财联社电报') {
-    // 每秒更新一次时间
+  if (isCaixiangTelegraph.value) {
     timer = setInterval(updateTime, 1000)
   }
 })
@@ -50,7 +54,7 @@ onUnmounted(() => {
     <template #header>
       <n-flex justify="space-between">
         <n-tag :bordered="false" size="large" type="success" >{{ headerTitle }}</n-tag>
-        <n-tag :bordered="false" size="large" type="info"  v-if="headerTitle==='财联社电报'"> <n-time :time="time"/></n-tag>
+        <n-tag :bordered="false" size="large" type="info"  v-if="isCaixiangTelegraph"> <n-time :time="time"/></n-tag>
         <n-button  :bordered="false" @click="updateMessage"><n-icon color="#409EFF" size="25" :component="RefreshCircleSharp"/></n-button>
       </n-flex>
     </template>
@@ -88,7 +92,7 @@ onUnmounted(() => {
         </n-space>
         <n-tag v-if="item.url" :bordered="false" type="warning" size="small">
           <a :href="item.url" target="_blank">
-            <n-text type="warning">查看原文</n-text>
+            <n-text type="warning">{{ t('market.viewOriginal') }}</n-text>
           </a>
         </n-tag>
         <n-tag v-if="item.sentimentResult" :bordered="false" :type="item.sentimentResult==='看涨'?'error':item.sentimentResult==='看跌'?'success':'info'" size="small">

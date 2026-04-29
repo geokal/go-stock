@@ -2,6 +2,9 @@
 import {onMounted, ref} from "vue";
 import {GetStockMoneyTrendByDay} from "../../wailsjs/go/main/App";
 import * as echarts from "echarts";
+import {useI18n} from 'vue-i18n'
+
+const { t } = useI18n()
 
 const {code, name, darkTheme, days, chartHeight} = defineProps({
   code: {
@@ -109,12 +112,12 @@ const handleLine = (code, days) => {
       },
       legend: {
         show: true,
-        data: ['当日净流入', '主力当日净流入','累计净流入',  '股价'],
+        data: [t('moneyTrend.todayNetInflow'), t('moneyTrend.mainForceNetInflow'), t('moneyTrend.cumulativeNetInflow'), t('moneyTrend.stockPrice')],
         selected: {
-          '当日净流入': true,
-          '主力当日净流入': true,
-          '累计净流入': true,
-          '股价': true,
+          [t('moneyTrend.todayNetInflow')]: true,
+          [t('moneyTrend.mainForceNetInflow')]: true,
+          [t('moneyTrend.cumulativeNetInflow')]: true,
+          [t('moneyTrend.stockPrice')]: true,
         },
         //orient: 'vertical',
         textStyle: {
@@ -178,7 +181,7 @@ const handleLine = (code, days) => {
       ],
       yAxis: [
         {
-          name: '当日净流入/万',
+          name: t('moneyTrend.todayNetInflow') + '/10k',
           type: 'value',
           axisLine: {
             show: true
@@ -188,7 +191,7 @@ const handleLine = (code, days) => {
           },
         },
         {
-          name: '股价',
+          name: t('moneyTrend.stockPrice'),
           type: 'value',
           min: min - 1,
           max: max + 1,
@@ -202,7 +205,7 @@ const handleLine = (code, days) => {
         },
         {
           gridIndex: 1,
-          name: '累计净流入/万',
+          name: t('moneyTrend.cumulativeNetInflow') + '/10k',
           type: 'value',
           axisLine: {
             show: true
@@ -215,7 +218,7 @@ const handleLine = (code, days) => {
       series: [
         {
           yAxisIndex: 0,
-          name: '当日净流入',
+          name: t('moneyTrend.todayNetInflow'),
           data: netamount_values,
           smooth: false,
           showSymbol: false,
@@ -254,7 +257,7 @@ const handleLine = (code, days) => {
         },
         {
           yAxisIndex: 0,
-          name: '主力当日净流入',
+          name: t('moneyTrend.mainForceNetInflow'),
           data: r0_net_values,
           smooth: false,
           showSymbol: false,
@@ -293,7 +296,7 @@ const handleLine = (code, days) => {
         },
         {
           yAxisIndex: 1,
-          name: '股价',
+          name: t('moneyTrend.stockPrice'),
           type: 'line',
           data: trades_values,
           smooth: true,
@@ -334,7 +337,7 @@ const handleLine = (code, days) => {
           type: 'bar',
           xAxisIndex: 1,
           yAxisIndex: 2,
-          name: '累计净流入',
+          name: t('moneyTrend.cumulativeNetInflow'),
           data: volume,
           smooth: true,
           showSymbol: false,

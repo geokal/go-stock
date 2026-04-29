@@ -15,7 +15,7 @@
     </div>
     <div v-if="loading" class="loading-indicator">
       <div class="spinner"></div>
-      <p>加载中...</p>
+      <p>{{ t('embeddedUrl.loading') }}</p>
     </div>
     <p v-if="error" class="error-message">{{ error }}</p>
   </div>
@@ -23,6 +23,9 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   url: {
@@ -35,7 +38,7 @@ const props = defineProps({
   },
   iframeTitle: {
     type: String,
-    default: '外部内容'
+    default: 'externalContent'
   },
   width: {
     type: String,
@@ -57,7 +60,7 @@ const onLoad = () => {
 
 const onError = (event) => {
   loading.value = false
-  error.value = `加载失败: ${event.message || '无法加载该 URL'}`
+  error.value = t('embeddedUrl.loadFailed')
 }
 
 // 监听 URL 变化，重新加载

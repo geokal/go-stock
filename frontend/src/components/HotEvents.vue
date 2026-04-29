@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {onBeforeMount, onUnmounted, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
+const { t } = useI18n()
 import {HotEvent} from "../../wailsjs/go/main/App";
 const list  = ref([])
 
@@ -19,7 +21,7 @@ onUnmounted(async ()=>{
 <template>
   <n-list bordered>
     <template #header>
-      雪球热门
+      {{ t('hotEvents.xueqiuHot') }}
     </template>
     <n-list-item v-for="(item, index) in list" :key="index">
         <n-thing :title="item.tag" :description="item.content"  >

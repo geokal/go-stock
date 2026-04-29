@@ -65,8 +65,8 @@ func (a *App) startup(ctx context.Context) {
 
 	// 创建 macOS 托盘
 	go func() {
-		// 使用 Beeep 库替代 Windows 的托盘库
-		err := beeep.Notify("go-stock", "应用程序已启动", "")
+		ts := data.GetTrayStrings()
+		err := beeep.Notify(ts.AppTitle, ts.NotifyStarted, "")
 		if err != nil {
 			log.Fatalf("系统通知失败: %v", err)
 		}
@@ -98,7 +98,8 @@ func setUpScreen(a *App) {
 
 // OnSecondInstanceLaunch 处理第二实例启动时的通知
 func OnSecondInstanceLaunch(secondInstanceData options.SecondInstanceData) {
-	err := beeep.Notify("go-stock", "程序已经在运行了", "")
+	ts := data.GetTrayStrings()
+	err := beeep.Notify(ts.AppTitle, ts.NotifyRunning, "")
 	if err != nil {
 		logger.SugaredLogger.Error(err)
 	}
@@ -166,7 +167,8 @@ func onReady(a *App) {
 	logger.SugaredLogger.Infof("onReady")
 
 	// 使用 Beeep 发送通知
-	err := beeep.Notify("go-stock", "应用程序已准备就绪", "")
+	ts := data.GetTrayStrings()
+	err := beeep.Notify(ts.AppTitle, ts.NotifyStarted, "")
 	if err != nil {
 		log.Fatalf("系统通知失败: %v", err)
 	}
@@ -195,13 +197,14 @@ func (a *App) beforeClose(ctx context.Context) (prevent bool) {
 	}
 
 	// 在 macOS 上使用 MessageDialog 显示确认窗口
+	ts := data.GetTrayStrings()
 	dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
 		Type:         runtime.QuestionDialog,
-		Title:        "go-stock",
-		Message:      "确定关闭吗？",
-		Buttons:      []string{"确定", "取消"},
+		Title:        ts.AppTitle,
+		Message:      ts.DialogClose,
+		Buttons:      []string{ts.ButtonOK, ts.ButtonCancel},
 		Icon:         icon2,
-		CancelButton: "取消",
+		CancelButton: ts.ButtonCancel,
 	})
 
 	if err != nil {
@@ -210,7 +213,7 @@ func (a *App) beforeClose(ctx context.Context) (prevent bool) {
 	}
 
 	logger.SugaredLogger.Debugf("dialog:%s", dialog)
-	if dialog == "取消" || dialog == "No" {
+	if dialog == ts.ButtonCancel || dialog == "No" {
 		return true // 如果选择了取消，不关闭应用
 	} else {
 		// 在 macOS 上应用退出时执行清理工作

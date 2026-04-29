@@ -42,7 +42,7 @@ func (q QueryMarketNews) InvokableRun(ctx context.Context, argumentsInJSON strin
 		}
 		//logger.SugaredLogger.Debugf("value: %+v", string(bytes))
 		date := gjson.Get(string(bytes), "calendar_day")
-		md.WriteString("\n### 事件/会议日期：" + date.String())
+		md.WriteString("\n### Event/Conference Date: " + date.String())
 		list := gjson.Get(string(bytes), "items")
 		//logger.SugaredLogger.Debugf("value: %+v,list: %+v", date.String(), list)
 		list.ForEach(func(key, value gjson.Result) bool {
@@ -58,7 +58,7 @@ func (q QueryMarketNews) InvokableRun(ctx context.Context, argumentsInJSON strin
 		messageText.WriteString("## " + telegraph.Time + ":" + "\n")
 		messageText.WriteString("### " + telegraph.Content + "\n")
 	}
-	md.WriteString("\n### 市场资讯：\n" + messageText.String())
+	md.WriteString("\n### Market News:\n" + messageText.String())
 
 	//resp := data.NewMarketNewsApi().TradingViewNews()
 	//var newsText strings.Builder

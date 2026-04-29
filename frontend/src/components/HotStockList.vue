@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {onBeforeMount, onBeforeUnmount, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
+const { t } = useI18n()
 import {HotStock, IsTradingTime} from "../../wailsjs/go/main/App";
 import KLineChart from "./KLineChart.vue";
 import {ArrowDown, ArrowUp} from "@vicons/ionicons5";
@@ -93,12 +95,12 @@ function getMarketCode(item) {
   <n-table striped size="small">
     <n-thead>
       <n-tr>
-        <n-th>股票名称</n-th>
-        <n-th>涨跌幅</n-th>
-        <n-th>当前价格</n-th>
-        <n-th>热度</n-th>
-        <n-th>热度变化</n-th>
-        <n-th>排名变化</n-th>
+        <n-th>{{ t('hotStockList.stockName') }}</n-th>
+        <n-th>{{ t('hotStockList.changeRate') }}</n-th>
+        <n-th>{{ t('hotStockList.currentPrice') }}</n-th>
+        <n-th>{{ t('hotStockList.heat') }}</n-th>
+        <n-th>{{ t('hotStockList.heatChange') }}</n-th>
+        <n-th>{{ t('hotStockList.rankChange') }}</n-th>
       </n-tr>
     </n-thead>
     <n-tbody>

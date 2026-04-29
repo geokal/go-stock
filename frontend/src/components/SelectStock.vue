@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import {h, onBeforeMount, onMounted, onUnmounted, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {SearchStock, GetHotStrategy, OpenURL, Follow, GetFollowList} from "../../wailsjs/go/main/App";
 import {useMessage, NText, NTag, NButton} from 'naive-ui'
 import {Environment} from "../../wailsjs/runtime"
 import {RefreshCircleSharp} from "@vicons/ionicons5";
 import {EventsEmit} from "../../wailsjs/runtime";
 
+const { t } = useI18n()
 const message = useMessage()
 const search = ref('')
 const columns = ref([])
@@ -41,11 +43,11 @@ function calculateTableWidth(cols) {
 
 function Search() {
   if (!search.value) {
-    message.warning('请输入选股指标或者要求')
+    message.warning(t('market.selectStockIndicator'))
     return
   }
 
-  const loading = message.loading("正在获取选股数据...", {duration: 0});
+  const loading = message.loading(t('market.refreshingData'), {duration: 0});
   SearchStock(search.value).then(res => {
     loading.destroy()
     // console.log(res)
@@ -101,7 +103,7 @@ function Search() {
         }
       })
       columns.value.push({
-        title: '操作',
+        title: t('market.operation'),
         key: 'actions',
         width: 80,
         fixed: 'right', // 固定在右侧
@@ -116,7 +118,7 @@ function Search() {
                 style: 'font-size: 14px; padding: 0 10px;', // 稍微大一点的按钮
                 onClick: () => handleFollow(row)
               },
-              { default: () => '关注' }
+              { default: () => t('market.follow') }
           )
         }
       });
@@ -228,14 +230,14 @@ function openCenteredWindow(url, width, height) {
     <n-gi :span="20">
       <n-flex style="--wails-draggable:no-drag">
         <n-input-group style="text-align: left">
-          <n-input :rows="1" clearable v-model:value="search" placeholder="请输入选股指标或者要求"/>
-          <n-button type="primary" @click="Search">搜索A股</n-button>
+          <n-input :rows="1" clearable v-model:value="search" :placeholder="t('market.selectStockIndicator')"/>
+          <n-button type="primary" @click="Search">{{ t('market.searchAShares') }}</n-button>
         </n-input-group>
       </n-flex>
       <n-flex justify="start" v-if="traceInfo" style="margin: 5px 0;--wails-draggable:no-drag">
 
         <n-ellipsis line-clamp="1" :tooltip="true">
-          <n-text type="info" :bordered="false">选股条件：</n-text>
+          <n-text type="info" :bordered="false">{{ t('market.stockSelectionCondition') }}</n-text>
           <n-text type="warning" :bordered="true">{{ traceInfo }}</n-text>
           <template #tooltip>
             <div style="text-align: center;max-width: 580px">
@@ -283,9 +285,7 @@ function openCenteredWindow(url, width, height) {
           }
       }"
       />
-      <div style="margin-top: -25px">共找到
-        <n-tag type="info" :bordered="false">{{ dataList.length }}</n-tag>
-        只股
+      <div style="margin-top: -25px">{{ t('market.stockCount', { count: dataList.length }) }}
       </div>
     </n-gi>
   </n-grid>

@@ -5,6 +5,9 @@ import {ArrowDownOutline, CaretDown, CaretUp, PulseOutline, Refresh, RefreshCirc
 
 import {useMessage} from "naive-ui";
 import {BrowserOpenURL} from "../../wailsjs/runtime";
+import {useI18n} from 'vue-i18n'
+
+const { t } = useI18n()
 
 const message=useMessage()
 const list  = ref([])
@@ -12,7 +15,7 @@ const list  = ref([])
 const options =  ref([])
 
 function getIndustryResearchReport(value) {
-  message.loading("正在刷新数据...")
+  message.loading(t('stockResearchReportList.loadingData'))
   IndustryResearchReport(value).then(result => {
     console.log(result)
     list.value = result
@@ -25,15 +28,15 @@ onBeforeMount(()=>{
 
 function ratingChangeName(ratingChange){
   if(ratingChange===0){
-    return '调高'
+    return t('stockResearchReportList.adjustUp')
   }else if(ratingChange===1){
-    return '调低'
+    return t('stockResearchReportList.adjustDown')
   }else if(ratingChange===2){
-    return '首次'
+    return t('stockResearchReportList.first')
   }else if(ratingChange===3){
-    return '维持'
+    return t('stockResearchReportList.maintain')
   }else if (ratingChange===4){
-    return '无变化'
+    return t('stockResearchReportList.noChange')
   }else{
     return ''
   }
@@ -65,21 +68,21 @@ function handleSearch(value) {
 
 <template>
   <n-card>
-    <n-auto-complete  :options="options" placeholder="请输入行业名称关键词搜索"  clearable filterable  :on-select="handleSearch"   :on-update:value="EMDictCodeList" />
+    <n-auto-complete  :options="options" :placeholder="t('stockResearchReportList.industryKeyword')"  clearable filterable  :on-select="handleSearch"   :on-update:value="EMDictCodeList" />
   </n-card>
   <n-table striped size="small">
     <n-thead>
       <n-tr>
 <!--        <n-th>代码</n-th>-->
 <!--        <n-th>名称</n-th>-->
-        <n-th>行业</n-th>
-        <n-th>标题</n-th>
-        <n-th>东财评级</n-th>
-        <n-th>评级变动</n-th>
-        <n-th>机构评级</n-th>
-        <n-th>分析师</n-th>
-        <n-th>机构</n-th>
-        <n-th> <n-flex justify="space-between">日期<n-icon @click="getIndustryResearchReport" color="#409EFF" :size="20"  :component="RefreshCircleSharp"/></n-flex></n-th>
+        <n-th>{{ t('stock.industry') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.title') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.emRating') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.ratingChange') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.orgRating') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.analyst') }}</n-th>
+        <n-th>{{ t('stockResearchReportList.organization') }}</n-th>
+        <n-th> <n-flex justify="space-between">{{ t('stockResearchReportList.date') }}<n-icon @click="getIndustryResearchReport" color="#409EFF" :size="20"  :component="RefreshCircleSharp"/></n-flex></n-th>
       </n-tr>
     </n-thead>
     <n-tbody>

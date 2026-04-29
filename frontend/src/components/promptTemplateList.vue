@@ -11,6 +11,9 @@ import { EventsEmit } from "../../wailsjs/runtime";
 import {NButton, NInput, NTag, NText, NSwitch, useMessage, useNotification,useDialog, NModal, NCard, NForm, NFormItem, NSpace, NPopover} from "naive-ui";
 import { MdEditor, MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const notify = useNotification()
 const message = useMessage()
@@ -47,7 +50,7 @@ const loadingRef = ref(true)
 
 const columnsRef = ref([
   {
-    title: '模板名称',
+    title: t('promptTemplateList.name'),
     key: 'name',
     render(row) {
       if (row.type === '模型系统Prompt') {
@@ -58,32 +61,33 @@ const columnsRef = ref([
     }
   },
   {
-    title: '模板类型',
+    title: t('promptTemplateList.type'),
     key: 'type',
     render(row) {
+      const label = row.type === '模型系统Prompt' ? t('promptTemplateList.systemPromptType') : t('promptTemplateList.userPromptType')
       if (row.type === '模型系统Prompt') {
-        return h(NTag, { type: "success" }, { default: () => row.type })
+        return h(NTag, { type: "success" }, { default: () => label })
       }else{
-        return h(NTag, { type: "info" }, { default: () => row.type })
+        return h(NTag, { type: "info" }, { default: () => label })
       }
     }
   },
   {
-    title: '创建时间',
+    title: t('promptTemplateList.createdAt'),
     key: 'CreatedAt',
     render(row) {
       return row.CreatedAt.substring(0, 19).replace('T', ' ')
     }
   },
   {
-    title: '更新时间',
+    title: t('promptTemplateList.updatedAt'),
     key: 'UpdatedAt',
     render(row) {
       return row.UpdatedAt.substring(0, 19).replace('T', ' ')
     }
   },
   {
-    title: '模板内容',
+    title: t('promptTemplateList.content'),
     key: 'content',
     width: 200,
     render(row) {
@@ -106,7 +110,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '操作',
+    title: t('promptTemplateList.operation'),
     width: 260,
     render(row) {
       return [
@@ -118,7 +122,7 @@ const columnsRef = ref([
             style: 'margin-right: 5px',
             onClick: () => showEditModal(row)
           },
-          { default: () => '编辑' }
+          { default: () => t('promptTemplateList.edit') }
         ),
         h(
           NButton,
@@ -128,7 +132,7 @@ const columnsRef = ref([
             style: 'margin-right: 5px',
             onClick: () => showShareModal(row)
           },
-          { default: () => '分享' }
+          { default: () => t('promptTemplateList.share') }
         ),
         h(
           NButton,
@@ -137,7 +141,7 @@ const columnsRef = ref([
             type: 'error',
             onClick: () => deletePromptTemplate(row.ID)
           },
-          { default: () => '删除' }
+          { default: () => t('promptTemplateList.delete') }
         )
       ]
     }
@@ -150,7 +154,7 @@ const paginationReactive = reactive({
   pageSize: 12,
   itemCount: 0,
   prefix({ itemCount }) {
-    return `${itemCount} 条记录`
+    return t('promptTemplateList.recordCount', { count: itemCount })
   }
 })
 
@@ -215,8 +219,8 @@ function handlePageChange(currentPage) {
   }
 }
 const promptTypeOptions = [
-  {label: "模型系统Prompt", value: '模型系统Prompt'},
-  {label: "模型用户Prompt", value: '模型用户Prompt'},]
+  {label: t('promptTemplateList.systemPromptType'), value: '模型系统Prompt'},
+  {label: t('promptTemplateList.userPromptType'), value: '模型用户Prompt'},]
 const searchFormRef = reactive({
   name: "",
   type: null,
@@ -266,7 +270,7 @@ function showEditModal(row) {
 
 function savePromptTemplate() {
   if (!modalDataRef.formData.name || !modalDataRef.formData.type || !modalDataRef.formData.content) {
-    message.warning('请填写完整信息' )
+    message.warning(t('promptTemplateList.fillCompleteInfo') )
     return
   }
 
@@ -282,10 +286,10 @@ function savePromptTemplate() {
 function deletePromptTemplate(id) {
 
   dialog.warning({
-    title: '提示',
-    content: '确定要删除这个模板吗？',
-    positiveText: '确定',
-    negativeText: '取消',
+    title: t('promptTemplateList.tip'),
+    content: t('promptTemplateList.deleteConfirm'),
+    positiveText: t('promptTemplateList.confirm'),
+    negativeText: t('promptTemplateList.cancel'),
     onPositiveClick: () => {
       DeletePromptTemplate(id).then((res) => {
         message.info( res )
@@ -313,12 +317,12 @@ function showShareModal(row) {
 
 async function handleShare() {
   if (!shareDataRef.title || !shareDataRef.content) {
-    message.warning('标题和内容不能为空')
+    message.warning(t('promptTemplateList.titleContentRequired'))
     return
   }
   const token = localStorage.getItem('promptPlazaToken')
   if (!token) {
-    message.warning('请先在"提示词广场"登录后再分享')
+    message.warning(t('promptTemplateList.loginFirst'))
     return
   }
   shareDataRef.loading = true
@@ -341,16 +345,16 @@ async function handleShare() {
     const json = await resp.json()
     if (json.code !== 0) {
       if (json.code === 401) {
-        message.error('登录已过期，请先在"提示词广场"重新登录')
+        message.error(t('promptTemplateList.loginExpired'))
       } else {
-        message.error('分享失败: ' + (json.message || '未知错误'))
+        message.error(t('promptTemplateList.shareFailed') + (json.message || t('promptTemplateList.unknownError')))
       }
       return
     }
-    message.success('分享成功！')
+    message.success(t('promptTemplateList.shareSuccess'))
     shareDataRef.visible = false
   } catch (e) {
-    message.error('分享失败: ' + e.message)
+    message.error(t('promptTemplateList.shareFailed') + e.message)
   } finally {
     shareDataRef.loading = false
   }
@@ -362,11 +366,11 @@ async function handleShare() {
     <!-- 搜索区域 -->
     <n-space vertical style="margin-bottom: 16px">
       <n-space>
-        <n-input v-model:value="searchFormRef.name" placeholder="模板名称" clearable />
-        <n-select style="width: 200px" v-model:value="searchFormRef.type" :options="promptTypeOptions" placeholder="请选择提示词类型" clearable/>
-        <n-input v-model:value="searchFormRef.content" placeholder="内容关键词" clearable />
-        <n-button type="success" @click="handleSearch">搜索</n-button>
-        <n-button type="warning" @click="showAddModal">新增模板</n-button>
+        <n-input v-model:value="searchFormRef.name" :placeholder="t('promptTemplateList.namePlaceholder')" clearable />
+        <n-select style="width: 200px" v-model:value="searchFormRef.type" :options="promptTypeOptions" :placeholder="t('promptTemplateList.typePlaceholder')" clearable/>
+        <n-input v-model:value="searchFormRef.content" :placeholder="t('promptTemplateList.contentPlaceholder')" clearable />
+        <n-button type="success" @click="handleSearch">{{ t('promptTemplateList.search') }}</n-button>
+        <n-button type="warning" @click="showAddModal">{{ t('promptTemplateList.addTemplate') }}</n-button>
       </n-space>
     </n-space>
 
@@ -385,60 +389,60 @@ async function handleShare() {
     />
 
     <!-- 编辑/新增模态框 -->
-    <n-modal v-model:show="modalDataRef.visible" preset="card" style="width: 1100px;text-align: left" :title="modalDataRef.formData.ID>0?'修改':'新增'+'Prompt模板'">
+    <n-modal v-model:show="modalDataRef.visible" preset="card" style="width: 1100px;text-align: left" :title="modalDataRef.formData.ID>0? t('promptTemplateList.modify') : t('promptTemplateList.add') + t('promptTemplateList.promptTemplate')">
       <n-form :model="modalDataRef.formData" label-placement="left" label-width="80">
-        <n-form-item label="模板名称" required>
-          <n-input v-model:value="modalDataRef.formData.name" placeholder="请输入模板名称" />
+        <n-form-item :label="t('promptTemplateList.name')" required>
+          <n-input v-model:value="modalDataRef.formData.name" :placeholder="t('promptTemplateList.nameInputPlaceholder')" />
         </n-form-item>
-        <n-form-item label="模板类型" required>
-          <n-select v-model:value="modalDataRef.formData.type" :options="promptTypeOptions" placeholder="请选择提示词类型"/>
+        <n-form-item :label="t('promptTemplateList.type')" required>
+          <n-select v-model:value="modalDataRef.formData.type" :options="promptTypeOptions" :placeholder="t('promptTemplateList.typeSelectPlaceholder')"/>
         </n-form-item>
-        <n-form-item label="模板内容" required>
+        <n-form-item :label="t('promptTemplateList.content')" required>
           <MdEditor
             v-model="modalDataRef.formData.content"
             style="height: 400px"
             :theme="editorTheme"
             :preview="true"
             :toolbarsExclude="['github', 'htmlPreview', 'catalog', 'save']"
-            placeholder="请输入模板内容"
+            :placeholder="t('promptTemplateList.contentInputPlaceholder')"
           />
         </n-form-item>
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="modalDataRef.visible = false">取消</n-button>
-          <n-button type="primary" @click="savePromptTemplate">保存</n-button>
+          <n-button @click="modalDataRef.visible = false">{{ t('promptTemplateList.cancel') }}</n-button>
+          <n-button type="primary" @click="savePromptTemplate">{{ t('promptTemplateList.save') }}</n-button>
         </n-space>
       </template>
     </n-modal>
 
-    <n-modal v-model:show="shareDataRef.visible" preset="card" style="width: 700px;text-align: left" title="分享到提示词广场">
+    <n-modal v-model:show="shareDataRef.visible" preset="card" style="width: 700px;text-align: left" :title="t('promptTemplateList.shareToPlaza')">
       <n-form :model="shareDataRef" label-placement="left" label-width="80">
-        <n-form-item label="标题" required>
-          <n-input v-model:value="shareDataRef.title" placeholder="提示词标题" />
+        <n-form-item :label="t('promptTemplateList.title')" required>
+          <n-input v-model:value="shareDataRef.title" :placeholder="t('promptTemplateList.titleInputPlaceholder')" />
         </n-form-item>
         <n-space :size="8">
-          <n-form-item label="分类" label-placement="left" style="width: 300px">
-            <n-input v-model:value="shareDataRef.category" placeholder="如: AI编程, 数据分析" />
+          <n-form-item :label="t('promptTemplateList.category')" label-placement="left" style="width: 300px">
+            <n-input v-model:value="shareDataRef.category" :placeholder="t('promptTemplateList.categoryPlaceholder')" />
           </n-form-item>
-          <n-form-item label="标签" label-placement="left" style="width: 300px">
-            <n-input v-model:value="shareDataRef.tags" placeholder="逗号分隔" />
+          <n-form-item :label="t('promptTemplateList.tags')" label-placement="left" style="width: 300px">
+            <n-input v-model:value="shareDataRef.tags" :placeholder="t('promptTemplateList.tagsPlaceholder')" />
           </n-form-item>
         </n-space>
-        <n-form-item label="描述">
-          <n-input v-model:value="shareDataRef.description" type="textarea" :rows="2" placeholder="简短描述提示词用途" />
+        <n-form-item :label="t('promptTemplateList.description')">
+          <n-input v-model:value="shareDataRef.description" type="textarea" :rows="2" :placeholder="t('promptTemplateList.descriptionPlaceholder')" />
         </n-form-item>
-        <n-form-item label="内容" required>
-          <n-input v-model:value="shareDataRef.content" type="textarea" :rows="6" placeholder="提示词内容" />
+        <n-form-item :label="t('promptTemplateList.content')" required>
+          <n-input v-model:value="shareDataRef.content" type="textarea" :rows="6" :placeholder="t('promptTemplateList.contentInputPlaceholder')" />
         </n-form-item>
-        <n-form-item label="公开">
+        <n-form-item :label="t('promptTemplateList.public')">
           <n-switch v-model:value="shareDataRef.isPublic" />
         </n-form-item>
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="shareDataRef.visible = false">取消</n-button>
-          <n-button type="primary" :loading="shareDataRef.loading" @click="handleShare">分享</n-button>
+          <n-button @click="shareDataRef.visible = false">{{ t('promptTemplateList.cancel') }}</n-button>
+          <n-button type="primary" :loading="shareDataRef.loading" @click="handleShare">{{ t('promptTemplateList.share') }}</n-button>
         </n-space>
       </template>
     </n-modal>

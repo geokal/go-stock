@@ -3,7 +3,10 @@
 import {AnalyzeSentimentWithFreqWeight,GlobalStockIndexes,GetTodayMarketStatistic,GetRecentDaysMarketStatistic,GetDailyChangeStats,GetChangeTypeDailyStats,GetChangeRank,GetDailyDimensionStats,GetTypeStatsByDate,IsTradingTime} from "../../wailsjs/go/main/App";
 import * as echarts from "echarts";
 import {onMounted,onUnmounted, ref, watch, nextTick} from "vue";
+import { useI18n } from 'vue-i18n'
 import _ from "lodash";
+
+const { t } = useI18n()
 const { name,darkTheme,kDays ,chartHeight} = defineProps({
   name: {
     type: String,
@@ -185,7 +188,7 @@ function renderUpDownChart(data) {
   const option = {
     darkMode: darkTheme,
     title: {
-      text: '涨跌家数比',
+      text: t('analyzeMarket.upDownCountRatio'),
       left: 'center',
       textStyle: {
         color: darkTheme ? '#ccc' : '#333',
@@ -205,14 +208,14 @@ function renderUpDownChart(data) {
         const idx = params[0].dataIndex
         if (idx < data.length) {
           const d = data[idx]
-          result += `<span style="color:#666">红盘率: ${d.upRatio.toFixed(1)}%</span><br/>`
-          result += `<span style="color:#666">情绪指标: ${d.upDownRatio.toFixed(2)} (${d.sentimentDesc || ''})</span>`
+          result += `<span style="color:#666">${t('analyzeMarket.redPlateRate')}: ${d.upRatio.toFixed(1)}%</span><br/>`
+          result += `<span style="color:#666">${t('analyzeMarket.sentimentIndicator')}: ${d.upDownRatio.toFixed(2)} (${d.sentimentDesc || ''})</span>`
         }
         return result
       }
     },
     legend: {
-      data: ['上涨家数', '下跌家数', '红盘率(%)', '情绪指标'],
+      data: ['analyzeMarket.upCount', 'analyzeMarket.downCount', 'analyzeMarket.redPlateRate', 'analyzeMarket.sentimentIndicator'],
       top: 25,
       textStyle: {
         color: darkTheme ? '#ccc' : '#333'
@@ -241,7 +244,7 @@ function renderUpDownChart(data) {
     yAxis: [
       {
         type: 'value',
-        name: '家数',
+        name: 'analyzeMarket.count',
         position: 'left',
         axisLabel: {
           color: darkTheme ? '#999' : '#666'
@@ -259,7 +262,7 @@ function renderUpDownChart(data) {
       },
       {
         type: 'value',
-        name: '红盘率(%)',
+        name: 'analyzeMarket.redPlateRatePercent',
         position: 'right',
         min: 0,
         max: 100,
@@ -278,7 +281,7 @@ function renderUpDownChart(data) {
       },
       {
         type: 'value',
-        name: '情绪指标',
+        name: 'analyzeMarket.sentimentIndicator',
         position: 'right',
         offset: 60,
         axisLabel: {
@@ -296,7 +299,7 @@ function renderUpDownChart(data) {
     ],
     series: [
       {
-        name: '上涨家数',
+        name: t('analyzeMarket.upCount'),
         type: 'bar',
         stack: 'total',
         data: upCounts,
@@ -305,7 +308,7 @@ function renderUpDownChart(data) {
         }
       },
       {
-        name: '下跌家数',
+        name: t('analyzeMarket.downCount'),
         type: 'bar',
         stack: 'total',
         data: downCounts,
@@ -314,7 +317,7 @@ function renderUpDownChart(data) {
         }
       },
       {
-        name: '红盘率(%)',
+        name: 'analyzeMarket.redPlateRatePercent',
         type: 'line',
         yAxisIndex: 1,
         data: ratios,
@@ -335,12 +338,12 @@ function renderUpDownChart(data) {
         markLine: {
           silent: true,
           data: [
-            { yAxis: 50, name: '平衡线', lineStyle: { color: '#888', type: 'dashed' } }
+            { yAxis: 50, name: t('analyzeMarket.balanceLine'), lineStyle: { color: '#888', type: 'dashed' } }
           ]
         }
       },
       {
-        name: '情绪指标',
+        name: 'analyzeMarket.sentimentIndicator',
         type: 'line',
         yAxisIndex: 2,
         data: upDownRatios,
@@ -355,15 +358,15 @@ function renderUpDownChart(data) {
         markLine: {
           silent: true,
           data: [
-            { yAxis: 1, name: '平衡线', lineStyle: { color: '#8b5cf6', type: 'dashed' } },
-            { yAxis: 2, name: '极强线', lineStyle: { color: '#ef4444', type: 'dotted' } },
-            { yAxis: 0.5, name: '冰点线', lineStyle: { color: '#22c55e', type: 'dotted' } }
+            { yAxis: 1, name: t('analyzeMarket.balanceLine'), lineStyle: { color: '#8b5cf6', type: 'dashed' } },
+            { yAxis: 2, name: t('analyzeMarket.extremelyStrongLine'), lineStyle: { color: '#ef4444', type: 'dotted' } },
+            { yAxis: 0.5, name: t('analyzeMarket.icePointLine'), lineStyle: { color: '#22c55e', type: 'dotted' } }
           ]
         }
       }
     ]
   }
-  
+
   chart.setOption(option)
 }
 
@@ -380,7 +383,7 @@ function renderLimitChart(data) {
   const option = {
     darkMode: darkTheme,
     title: {
-      text: '涨跌停家数比',
+      text: t('analyzeMarket.limitUpDownRatio'),
       left: 'center',
       textStyle: {
         color: darkTheme ? '#ccc' : '#333',
@@ -400,13 +403,13 @@ function renderLimitChart(data) {
         const idx = params[0].dataIndex
         if (idx < data.length) {
           const d = data[idx]
-          result += `<span style="color:#666">涨跌停比: ${d.limitRatio.toFixed(2)}</span><br/>`
+          result += `<span style="color:#666">${t('analyzeMarket.limitRatio')}: ${d.limitRatio.toFixed(2)}</span><br/>`
         }
         return result
       }
     },
     legend: {
-      data: ['涨停家数', '跌停家数', '涨跌停比'],
+      data: [t('analyzeMarket.limitUpCount'), t('analyzeMarket.limitDownCount'), t('analyzeMarket.limitRatio')],
       top: 25,
       textStyle: {
         color: darkTheme ? '#ccc' : '#333'
@@ -435,7 +438,7 @@ function renderLimitChart(data) {
     yAxis: [
       {
         type: 'value',
-        name: '家数',
+        name: 'analyzeMarket.count',
         position: 'left',
         axisLabel: {
           color: darkTheme ? '#999' : '#666'
@@ -470,7 +473,7 @@ function renderLimitChart(data) {
     ],
     series: [
       {
-        name: '涨停家数',
+        name: t('analyzeMarket.limitUpCount'),
         type: 'bar',
         stack: 'total',
         data: limitUps,
@@ -479,7 +482,7 @@ function renderLimitChart(data) {
         }
       },
       {
-        name: '跌停家数',
+        name: t('analyzeMarket.limitDownCount'),
         type: 'bar',
         stack: 'total',
         data: limitDowns,
@@ -488,7 +491,7 @@ function renderLimitChart(data) {
         }
       },
       {
-        name: '涨跌停比',
+        name: t('analyzeMarket.limitRatio'),
         type: 'line',
         yAxisIndex: 1,
         data: ratios,
@@ -509,13 +512,13 @@ function renderLimitChart(data) {
         markLine: {
           silent: true,
           data: [
-            { yAxis: 1, name: '平衡线', lineStyle: { color: '#888', type: 'dashed' } }
+            { yAxis: 1, name: t('analyzeMarket.balanceLine'), lineStyle: { color: '#888', type: 'dashed' } }
           ]
         }
       }
     ]
   }
-  
+
   chart.setOption(option)
 }
 
@@ -558,7 +561,7 @@ function renderDailyUpDownChart(data) {
   const option = {
     darkMode: darkTheme,
     title: {
-      text: '近30日涨跌家数趋势',
+      text: t('analyzeMarket.recent30DaysTrend'),
       left: 'center',
       textStyle: {
         color: darkTheme ? '#ccc' : '#333',
@@ -578,14 +581,14 @@ function renderDailyUpDownChart(data) {
         const idx = params[0].dataIndex
         if (idx < data.length) {
           const d = data[idx]
-          result += `<span style="color:#666">红盘率: ${d.upRatio.toFixed(1)}%</span><br/>`
-          result += `<span style="color:#666">情绪指标: ${d.upDownRatio.toFixed(2)} (${d.sentimentDesc || ''})</span>`
+          result += `<span style="color:#666">${t('analyzeMarket.redPlateRate')}: ${d.upRatio.toFixed(1)}%</span><br/>`
+          result += `<span style="color:#666">${t('analyzeMarket.sentimentIndicator')}: ${d.upDownRatio.toFixed(2)} (${d.sentimentDesc || ''})</span>`
         }
         return result
       }
     },
     legend: {
-      data: ['上涨家数', '下跌家数', '红盘率(%)', '情绪指标'],
+      data: ['analyzeMarket.upCount', 'analyzeMarket.downCount', 'analyzeMarket.redPlateRate', 'analyzeMarket.sentimentIndicator'],
       top: 25,
       textStyle: {
         color: darkTheme ? '#ccc' : '#333'
@@ -614,7 +617,7 @@ function renderDailyUpDownChart(data) {
     yAxis: [
       {
         type: 'value',
-        name: '家数',
+        name: 'analyzeMarket.count',
         position: 'left',
         axisLabel: {
           color: darkTheme ? '#999' : '#666'
@@ -632,7 +635,7 @@ function renderDailyUpDownChart(data) {
       },
       {
         type: 'value',
-        name: '红盘率(%)',
+        name: 'analyzeMarket.redPlateRatePercent',
         position: 'right',
         min: 0,
         max: 100,
@@ -651,7 +654,7 @@ function renderDailyUpDownChart(data) {
       },
       {
         type: 'value',
-        name: '情绪指标',
+        name: 'analyzeMarket.sentimentIndicator',
         position: 'right',
         offset: 60,
         axisLabel: {
@@ -669,7 +672,7 @@ function renderDailyUpDownChart(data) {
     ],
     series: [
       {
-        name: '上涨家数',
+        name: t('analyzeMarket.upCount'),
         type: 'bar',
         data: upCounts,
         itemStyle: {
@@ -677,7 +680,7 @@ function renderDailyUpDownChart(data) {
         }
       },
       {
-        name: '下跌家数',
+        name: t('analyzeMarket.downCount'),
         type: 'bar',
         data: downCounts,
         itemStyle: {
@@ -685,7 +688,7 @@ function renderDailyUpDownChart(data) {
         }
       },
       {
-        name: '红盘率(%)',
+        name: 'analyzeMarket.redPlateRatePercent',
         type: 'line',
         yAxisIndex: 1,
         data: ratios,
@@ -706,12 +709,12 @@ function renderDailyUpDownChart(data) {
         markLine: {
           silent: true,
           data: [
-            { yAxis: 50, name: '平衡线', lineStyle: { color: '#888', type: 'dashed' } }
+            { yAxis: 50, name: t('analyzeMarket.balanceLine'), lineStyle: { color: '#888', type: 'dashed' } }
           ]
         }
       },
       {
-        name: '情绪指标',
+        name: 'analyzeMarket.sentimentIndicator',
         type: 'line',
         yAxisIndex: 2,
         data: upDownRatios,
@@ -726,9 +729,9 @@ function renderDailyUpDownChart(data) {
         markLine: {
           silent: true,
           data: [
-            { yAxis: 1, name: '平衡线', lineStyle: { color: '#8b5cf6', type: 'dashed' } },
-            { yAxis: 2, name: '极强线', lineStyle: { color: '#ef4444', type: 'dotted' } },
-            { yAxis: 0.5, name: '冰点线', lineStyle: { color: '#22c55e', type: 'dotted' } }
+            { yAxis: 1, name: t('analyzeMarket.balanceLine'), lineStyle: { color: '#8b5cf6', type: 'dashed' } },
+            { yAxis: 2, name: t('analyzeMarket.extremelyStrongLine'), lineStyle: { color: '#ef4444', type: 'dotted' } },
+            { yAxis: 0.5, name: t('analyzeMarket.icePointLine'), lineStyle: { color: '#22c55e', type: 'dotted' } }
           ]
         }
       }
@@ -751,7 +754,7 @@ function renderDailyLimitChart(data) {
   const option = {
     darkMode: darkTheme,
     title: {
-      text: '近30日涨跌停趋势',
+      text: t('analyzeMarket.recent30DaysLimitTrend'),
       left: 'center',
       textStyle: {
         color: darkTheme ? '#ccc' : '#333',
@@ -771,14 +774,14 @@ function renderDailyLimitChart(data) {
         const idx = params[0].dataIndex
         if (idx < data.length) {
           const d = data[idx]
-          result += `<span style="color:#666">涨跌停比: ${d.limitRatio.toFixed(2)}</span><br/>`
-          result += `<span style="color:#666">涨停: ${d.limitUp} 跌停: ${d.limitDown}</span>`
+          result += `<span style="color:#666">${t('analyzeMarket.limitRatio')}: ${d.limitRatio.toFixed(2)}</span><br/>`
+          result += `<span style="color:#666">${t('analyzeMarket.limitUpCount')}: ${d.limitUp} ${t('analyzeMarket.limitDownCount')}: ${d.limitDown}</span>`
         }
         return result
       }
     },
     legend: {
-      data: ['涨停家数', '跌停家数', '涨跌停比'],
+      data: [t('analyzeMarket.limitUpCount'), t('analyzeMarket.limitDownCount'), t('analyzeMarket.limitRatio')],
       top: 25,
       textStyle: {
         color: darkTheme ? '#ccc' : '#333'
@@ -807,7 +810,7 @@ function renderDailyLimitChart(data) {
     yAxis: [
       {
         type: 'value',
-        name: '家数',
+        name: 'analyzeMarket.count',
         position: 'left',
         axisLabel: {
           color: darkTheme ? '#999' : '#666'
@@ -842,7 +845,7 @@ function renderDailyLimitChart(data) {
     ],
     series: [
       {
-        name: '涨停家数',
+        name: t('analyzeMarket.limitUpCount'),
         type: 'bar',
         data: limitUps,
         itemStyle: {
@@ -850,7 +853,7 @@ function renderDailyLimitChart(data) {
         }
       },
       {
-        name: '跌停家数',
+        name: t('analyzeMarket.limitDownCount'),
         type: 'bar',
         data: limitDowns,
         itemStyle: {
@@ -858,7 +861,7 @@ function renderDailyLimitChart(data) {
         }
       },
       {
-        name: '涨跌停比',
+        name: t('analyzeMarket.limitRatio'),
         type: 'line',
         yAxisIndex: 1,
         data: ratios,
@@ -879,7 +882,7 @@ function renderDailyLimitChart(data) {
         markLine: {
           silent: true,
           data: [
-            { yAxis: 1, name: '平衡线', lineStyle: { color: '#888', type: 'dashed' } }
+            { yAxis: 1, name: t('analyzeMarket.balanceLine'), lineStyle: { color: '#888', type: 'dashed' } }
           ]
         }
       }
@@ -921,7 +924,7 @@ function renderChangeStatsChart(data) {
   const option = {
     darkMode: darkTheme,
     title: {
-      text: '近30日异动统计趋势',
+      text: t('analyzeMarket.changeStatsTrend'),
       left: 'center',
       textStyle: {
         color: darkTheme ? '#ccc' : '#333',
@@ -941,13 +944,13 @@ function renderChangeStatsChart(data) {
         const idx = params[0].dataIndex
         if (idx < data.length) {
           const d = data[idx]
-          result += `<span style="color:#666">封涨停: ${d.limitUp} 封跌停: ${d.limitDown}</span>`
+          result += `<span style="color:#666">${t('analyzeMarket.sealLimitUp')}: ${d.limitUp} ${t('analyzeMarket.sealLimitDown')}: ${d.limitDown}</span>`
         }
         return result
       }
     },
     legend: {
-      data: ['上涨异动', '下跌异动', '封涨停', '封跌停', '总异动数'],
+      data: ['analyzeMarket.favorableUp', 'analyzeMarket.unfavorableDown', 'analyzeMarket.sealLimitUp', 'analyzeMarket.sealLimitDown', t('analyzeMarket.total')],
       top: 25,
       textStyle: {
         color: darkTheme ? '#ccc' : '#333'
@@ -976,7 +979,7 @@ function renderChangeStatsChart(data) {
     yAxis: [
       {
         type: 'value',
-        name: '家数',
+        name: 'analyzeMarket.count',
         position: 'left',
         axisLabel: {
           color: darkTheme ? '#999' : '#666'
@@ -994,7 +997,7 @@ function renderChangeStatsChart(data) {
       },
       {
         type: 'value',
-        name: '总异动数',
+        name: t('analyzeMarket.total'),
         position: 'right',
         axisLabel: {
           color: darkTheme ? '#999' : '#666'
@@ -1011,7 +1014,7 @@ function renderChangeStatsChart(data) {
     ],
     series: [
       {
-        name: '上涨异动',
+        name: 'analyzeMarket.favorableUp',
         type: 'bar',
         stack: 'direction',
         data: upCounts,
@@ -1020,7 +1023,7 @@ function renderChangeStatsChart(data) {
         }
       },
       {
-        name: '下跌异动',
+        name: 'analyzeMarket.unfavorableDown',
         type: 'bar',
         stack: 'direction',
         data: downCounts,
@@ -1029,7 +1032,7 @@ function renderChangeStatsChart(data) {
         }
       },
       {
-        name: '封涨停',
+        name: 'analyzeMarket.sealLimitUp',
         type: 'bar',
         data: limitUps,
         itemStyle: {
@@ -1037,7 +1040,7 @@ function renderChangeStatsChart(data) {
         }
       },
       {
-        name: '封跌停',
+        name: 'analyzeMarket.sealLimitDown',
         type: 'bar',
         data: limitDowns,
         itemStyle: {
@@ -1045,7 +1048,7 @@ function renderChangeStatsChart(data) {
         }
       },
       {
-        name: '总异动数',
+        name: t('analyzeMarket.total'),
         type: 'line',
         yAxisIndex: 1,
         data: totalCounts,
@@ -1083,28 +1086,28 @@ function renderChangeTypeChart(data) {
 
   const dateSet = [...new Set(data.map(d => d.changeDate))].sort()
 
-  const upTypes = ['封涨停板', '打开涨停板', '火箭发射', '快速反弹', '大笔买入', '有大买盘', '竞价上涨', '高开5日线', '向上缺口', '60日新高', '60日大幅上涨']
-  const downTypes = ['封跌停板', '打开跌停板', '高台跳水', '加速下跌', '大笔卖出', '有大卖盘', '竞价下跌', '低开5日线', '向下缺口', '60日新低', '60日大幅下跌']
+  const upTypes = ['封涨停板', 'analyzeMarket.openLimitUp', 'analyzeMarket.rocketLaunch', 'analyzeMarket.quickRebound', 'analyzeMarket.largeBuy', 'analyzeMarket.hasBigBuy', 'analyzeMarket.auctionRise', '高开5日线', 'analyzeMarket.upGap', '60日新高', '60日大幅上涨']
+  const downTypes = ['封跌停板', 'analyzeMarket.openLimitDown', 'analyzeMarket.highDive', 'analyzeMarket.acceleratedFall', 'analyzeMarket.largeSell', 'analyzeMarket.hasBigSell', 'analyzeMarket.auctionFall', '低开5日线', 'analyzeMarket.downGap', '60日新低', '60日大幅下跌']
 
   const typeColorMap = {
     '封涨停板': '#ef4444',
     '封跌停板': '#22c55e',
-    '打开涨停板': '#f97316',
-    '打开跌停板': '#06b6d4',
-    '火箭发射': '#dc2626',
-    '快速反弹': '#f59e0b',
-    '高台跳水': '#10b981',
-    '加速下跌': '#14b8a6',
-    '大笔买入': '#e11d48',
-    '大笔卖出': '#059669',
-    '有大买盘': '#db2777',
-    '有大卖盘': '#0d9488',
-    '竞价上涨': '#f43f5e',
-    '竞价下跌': '#0891b2',
+    'analyzeMarket.openLimitUp': '#f97316',
+    'analyzeMarket.openLimitDown': '#06b6d4',
+    'analyzeMarket.rocketLaunch': '#dc2626',
+    'analyzeMarket.quickRebound': '#f59e0b',
+    'analyzeMarket.highDive': '#10b981',
+    'analyzeMarket.acceleratedFall': '#14b8a6',
+    'analyzeMarket.largeBuy': '#e11d48',
+    'analyzeMarket.largeSell': '#059669',
+    'analyzeMarket.hasBigBuy': '#db2777',
+    'analyzeMarket.hasBigSell': '#0d9488',
+    'analyzeMarket.auctionRise': '#f43f5e',
+    'analyzeMarket.auctionFall': '#0891b2',
     '高开5日线': '#fb923c',
     '低开5日线': '#2dd4bf',
-    '向上缺口': '#f87171',
-    '向下缺口': '#34d399',
+    'analyzeMarket.upGap': '#f87171',
+    'analyzeMarket.downGap': '#34d399',
     '60日新高': '#c026d3',
     '60日新低': '#0ea5e9',
     '60日大幅上涨': '#a855f7',
@@ -1146,7 +1149,7 @@ function renderChangeTypeChart(data) {
   const option = {
     darkMode: darkTheme,
     title: {
-      text: '近30日异动类型分布(利好↑/利空↓)',
+      text: t('analyzeMarket.changeTypeDistribution'),
       left: 'center',
       textStyle: {
         color: darkTheme ? '#ccc' : '#333',
@@ -1193,7 +1196,7 @@ function renderChangeTypeChart(data) {
     },
     yAxis: {
       type: 'value',
-      name: '次数',
+      name: t('analyzeMarket.count'),
       axisLabel: {
         color: darkTheme ? '#999' : '#666'
       },
@@ -1226,8 +1229,8 @@ let currentDimensionName = ''
 function openDimensionDetail(dimension, name) {
   currentDimension = dimension
   currentDimensionName = name
-  const labels = { stock: '股票', industry: '行业', concept: '概念', type: '异动类型' }
-  dimensionModalTitle.value = `${name} - 近30日${labels[dimension] || ''}异动趋势`
+  const labels = { stock: t('stock.stock'), industry: t('stock.industry'), concept: t('stock.concept'), type: t('analyzeMarket.changeType') }
+  dimensionModalTitle.value = `${name} - ${t('analyzeMarket.recent30Days')} ${labels[dimension] || ''} ${t('analyzeMarket.changeMonitor')}`
   showDimensionModal.value = true
 }
 
@@ -1282,7 +1285,7 @@ function renderDimensionDetailChart(data) {
       }
     },
     legend: {
-      data: ['利好异动', '利空异动', '总异动数'],
+      data: [t('analyzeMarket.favorableUp'), t('analyzeMarket.unfavorableDown'), t('analyzeMarket.total')],
       top: 25,
       textStyle: { color: darkTheme ? '#ccc' : '#333' }
     },
@@ -1305,7 +1308,7 @@ function renderDimensionDetailChart(data) {
     yAxis: [
       {
         type: 'value',
-        name: '次数',
+        name: t('analyzeMarket.count'),
         position: 'left',
         axisLabel: { color: darkTheme ? '#999' : '#666' },
         axisLine: { lineStyle: { color: darkTheme ? '#444' : '#ccc' } },
@@ -1313,7 +1316,7 @@ function renderDimensionDetailChart(data) {
       },
       {
         type: 'value',
-        name: '总异动数',
+        name: t('analyzeMarket.total'),
         position: 'right',
         axisLabel: { color: darkTheme ? '#999' : '#666' },
         axisLine: { lineStyle: { color: darkTheme ? '#444' : '#ccc' } },
@@ -1322,21 +1325,21 @@ function renderDimensionDetailChart(data) {
     ],
     series: [
       {
-        name: '利好异动',
+        name: t('analyzeMarket.favorableUp'),
         type: 'bar',
         stack: 'direction',
         data: upCounts,
         itemStyle: { color: '#ef4444' }
       },
       {
-        name: '利空异动',
+        name: t('analyzeMarket.unfavorableDown'),
         type: 'bar',
         stack: 'direction',
         data: downCounts,
         itemStyle: { color: '#22c55e' }
       },
       {
-        name: '总异动数',
+        name: t('analyzeMarket.total'),
         type: 'line',
         yAxisIndex: 1,
         data: totalCounts,
@@ -1403,7 +1406,7 @@ function renderDateTypeChart(data) {
     },
     xAxis: {
       type: 'value',
-      name: '次数',
+      name: t('analyzeMarket.count'),
       axisLabel: { color: darkTheme ? '#999' : '#666' },
       axisLine: { lineStyle: { color: darkTheme ? '#444' : '#ccc' } },
       splitLine: { lineStyle: { color: darkTheme ? '#333' : '#eee' } }
@@ -1421,14 +1424,14 @@ function renderDateTypeChart(data) {
     },
     series: [
       {
-        name: '利好异动',
+        name: t('analyzeMarket.favorableUp'),
         type: 'bar',
         stack: 'total',
         data: upValues,
         itemStyle: { color: '#ef4444' }
       },
       {
-        name: '利空异动',
+        name: t('analyzeMarket.unfavorableDown'),
         type: 'bar',
         stack: 'total',
         data: downValues,
@@ -1465,15 +1468,15 @@ async function handleChangeRank() {
           return
         }
       }
-      const periodLabel = days === 1 ? '当日' : `近${days}日`
+      const periodLabel = days === 1 ? t('analyzeMarket.today') : t('analyzeMarket.last' + days + 'Days')
       if (result.topStocks && result.topStocks.length > 0) {
-        renderRankChart(changeRankStockRef, `${periodLabel}异动次数最多的股票`, result.topStocks, 'stock')
+        renderRankChart(changeRankStockRef, `${periodLabel} ${t('analyzeMarket.mostChangedStocks')}`, result.topStocks, 'stock')
       }
       if (result.topIndustries && result.topIndustries.length > 0) {
-        renderRankChart(changeRankIndustryRef, `${periodLabel}异动次数最多的行业`, result.topIndustries, 'industry')
+        renderRankChart(changeRankIndustryRef, `${periodLabel} ${t('analyzeMarket.mostChangedIndustries')}`, result.topIndustries, 'industry')
       }
       if (result.topConcepts && result.topConcepts.length > 0) {
-        renderRankChart(changeRankConceptRef, `${periodLabel}异动次数最多的概念`, result.topConcepts, 'concept')
+        renderRankChart(changeRankConceptRef, `${periodLabel} ${t('analyzeMarket.mostChangedConcepts')}`, result.topConcepts, 'concept')
       }
     }
   } catch (error) {
@@ -1512,12 +1515,12 @@ function renderRankChart(chartRef, title, items, dimension) {
           result += param.marker + ' ' + param.seriesName + ': ' + param.value + '<br/>'
           total += param.value
         })
-        result += '<b>合计: ' + total + '</b><br/><span style="color:#888">点击查看按天趋势</span>'
+        result += `<b>${t('analyzeMarket.total')}: ` + total + `</b><br/><span style="color:#888">${t('analyzeMarket.clickToViewDailyTrend')}</span>`
         return result
       }
     },
     legend: {
-      data: ['利好异动', '利空异动'],
+      data: [t('analyzeMarket.favorableUp'), t('analyzeMarket.unfavorableDown')],
       top: 25,
       textStyle: {
         color: darkTheme ? '#ccc' : '#333'
@@ -1532,7 +1535,7 @@ function renderRankChart(chartRef, title, items, dimension) {
     },
     xAxis: {
       type: 'value',
-      name: '异动次数',
+      name: t('analyzeMarket.changeCount'),
       axisLabel: {
         color: darkTheme ? '#999' : '#666'
       },
@@ -1564,7 +1567,7 @@ function renderRankChart(chartRef, title, items, dimension) {
     },
     series: [
       {
-        name: '利好异动',
+        name: t('analyzeMarket.favorableUp'),
         type: 'bar',
         stack: 'total',
         data: upValues,
@@ -1583,7 +1586,7 @@ function renderRankChart(chartRef, title, items, dimension) {
         }
       },
       {
-        name: '利空异动',
+        name: t('analyzeMarket.unfavorableDown'),
         type: 'bar',
         stack: 'total',
         data: downValues,
@@ -1635,20 +1638,20 @@ async function handleBullBearRank() {
       if (result.topStocks && result.topStocks.length > 0) {
         const upStocks = [...result.topStocks].sort((a, b) => b.upCount - a.upCount).slice(0, 15)
         const downStocks = [...result.topStocks].sort((a, b) => b.downCount - a.downCount).slice(0, 15)
-        renderBullBearChart(bullBearStockUpRef, '利好异动最多的股票', upStocks, 'up', 'stock')
-        renderBullBearChart(bullBearStockDownRef, '利空异动最多的股票', downStocks, 'down', 'stock')
+        renderBullBearChart(bullBearStockUpRef, t('analyzeMarket.mostFavorableStocks'), upStocks, 'up', 'stock')
+        renderBullBearChart(bullBearStockDownRef, t('analyzeMarket.mostUnfavorableStocks'), downStocks, 'down', 'stock')
       }
       if (result.topIndustries && result.topIndustries.length > 0) {
         const upIndustries = [...result.topIndustries].sort((a, b) => b.upCount - a.upCount).slice(0, 15)
         const downIndustries = [...result.topIndustries].sort((a, b) => b.downCount - a.downCount).slice(0, 15)
-        renderBullBearChart(bullBearIndustryUpRef, '利好异动最多的行业', upIndustries, 'up', 'industry')
-        renderBullBearChart(bullBearIndustryDownRef, '利空异动最多的行业', downIndustries, 'down', 'industry')
+        renderBullBearChart(bullBearIndustryUpRef, t('analyzeMarket.mostFavorableIndustries'), upIndustries, 'up', 'industry')
+        renderBullBearChart(bullBearIndustryDownRef, t('analyzeMarket.mostUnfavorableIndustries'), downIndustries, 'down', 'industry')
       }
       if (result.topConcepts && result.topConcepts.length > 0) {
         const upConcepts = [...result.topConcepts].sort((a, b) => b.upCount - a.upCount).slice(0, 15)
         const downConcepts = [...result.topConcepts].sort((a, b) => b.downCount - a.downCount).slice(0, 15)
-        renderBullBearChart(bullBearConceptUpRef, '利好异动最多的概念', upConcepts, 'up', 'concept')
-        renderBullBearChart(bullBearConceptDownRef, '利空异动最多的概念', downConcepts, 'down', 'concept')
+        renderBullBearChart(bullBearConceptUpRef, t('analyzeMarket.mostFavorableConcepts'), upConcepts, 'up', 'concept')
+        renderBullBearChart(bullBearConceptDownRef, t('analyzeMarket.mostUnfavorableConcepts'), downConcepts, 'down', 'concept')
       }
     }
   } catch (error) {
@@ -1671,8 +1674,8 @@ function renderBullBearChart(chartRefVal, title, items, direction, dimension) {
 
   const mainColor = direction === 'up' ? '#ef4444' : '#22c55e'
   const subColor = direction === 'up' ? '#22c55e' : '#ef4444'
-  const mainLabel = direction === 'up' ? '利好次数' : '利空次数'
-  const subLabel = direction === 'up' ? '利空次数' : '利好次数'
+  const mainLabel = direction === 'up' ? t('analyzeMarket.favorableCount') : t('analyzeMarket.unfavorableCount')
+  const subLabel = direction === 'up' ? t('analyzeMarket.unfavorableCount') : t('analyzeMarket.favorableCount')
 
   const option = {
     darkMode: darkTheme,
@@ -1697,8 +1700,8 @@ function renderBullBearChart(chartRefVal, title, items, direction, dimension) {
         const idx = params[0].dataIndex
         const d = items[items.length - 1 - idx]
         if (d) {
-          result += `<b>利好: ${d.upCount} 利空: ${d.downCount} 合计: ${d.count}</b><br/>`
-          result += '<span style="color:#888">点击查看按天趋势</span>'
+          result += `<b>${t('analyzeMarket.favorable')}: ${d.upCount} ${t('analyzeMarket.unfavorable')}: ${d.downCount} ${t('analyzeMarket.total')}: ${d.count}</b><br/>`
+          result += `<span style="color:#888">${t('analyzeMarket.clickToViewDailyTrend')}</span>`
         }
         return result
       }
@@ -1719,7 +1722,7 @@ function renderBullBearChart(chartRefVal, title, items, direction, dimension) {
     },
     xAxis: {
       type: 'value',
-      name: '次数',
+      name: t('analyzeMarket.count'),
       axisLabel: {
         color: darkTheme ? '#999' : '#666'
       },
@@ -1837,13 +1840,13 @@ function handleTreemap() {
           }
         },
         feature: {
-          saveAsImage: {title: '保存图片'},
+          saveAsImage: {title: t('analyzeMarket.saveImage')},
           restore: {
-            title: '默认',
+            title: t('analyzeMarket.default'),
           },
           myTool2: {
             show: true,
-            title: '按权重',
+            title: t('analyzeMarket.byWeight'),
             icon:"path://M393.8816 148.1216a29.3376 29.3376 0 0 1-15.2576 38.0928c-43.776 17.152-81.92 43.8272-114.2784 76.2368A345.7536 345.7536 0 0 0 159.5392 512 352.8704 352.8704 0 0 0 512 864.4608a351.744 351.744 0 0 0 249.5488-102.912 353.536 353.536 0 0 0 76.2368-114.2784c5.6832-15.2576 22.8352-20.992 38.0928-15.2576 15.2576 5.7344 20.992 22.8864 15.2576 38.0928a421.2224 421.2224 0 0 1-89.6 133.376A412.6208 412.6208 0 0 1 512 921.6c-226.7136 0-409.6-182.8864-409.6-409.6 0-108.544 41.9328-211.456 120.0128-289.5872A421.2224 421.2224 0 0 1 355.84 132.864a29.3376 29.3376 0 0 1 38.0928 15.2576zM512 102.4c226.7136 0 409.6 182.8864 409.6 409.6 0 15.2576-13.312 28.5696-28.5696 28.5696H512A29.2864 29.2864 0 0 1 483.4304 512V130.9696c0-15.2576 13.312-28.5696 28.5696-28.5696z m28.5696 59.0336v321.9968h321.9968a350.976 350.976 0 0 0-321.9968-321.9968z",
             onclick: function (){
               treemapchart.setOption( {series:{
@@ -1853,7 +1856,7 @@ function handleTreemap() {
           },
           myTool1: {
             show: true,
-            title: '按频次',
+            title: t('analyzeMarket.byFrequency'),
             icon:"path://M895.466667 476.8l-87.424-87.424v-123.626667a49.770667 49.770667 0 0 0-49.770667-49.770666h-123.626667L547.2 128.533333a49.792 49.792 0 0 0-70.4 0l-87.424 87.424h-123.626667a49.770667 49.770667 0 0 0-49.770666 49.770667v123.626667L128.533333 476.8a49.792 49.792 0 0 0 0 70.4l87.424 87.424v123.626667a49.770667 49.770667 0 0 0 49.770667 49.770666h123.626667l87.424 87.424a49.792 49.792 0 0 0 70.4 0l87.424-87.424h123.626666a49.770667 49.770667 0 0 0 49.770667-49.770666v-123.626667l87.424-87.424a49.749333 49.749333 0 0 0 0.042667-70.4z m-137.216 137.194667v144.256h-144.256L512 860.266667l-101.994667-101.994667h-144.256v-144.256L163.733333 512l101.994667-101.994667v-144.256h144.256L512 163.733333l101.994667 101.994667h144.256v144.256L860.266667 512l-102.016 101.994667z M414.378667 514.730667l28.672 10.922666c-18.090667 47.445333-38.229333 92.16-60.757334 133.802667l-30.037333-13.653333a1042.133333 1042.133333 0 0 0 62.122667-131.072zM381.952 367.616L355.669333 384c25.258667 26.282667 45.056 50.176 60.074667 72.021333l25.6-17.749333c-13.994667-20.48-33.792-44.032-59.392-70.656zM537.258667 455.338667c-0.682667 43.690667-6.144 79.189333-16.725334 106.837333-14.336 32.768-44.373333 60.416-89.429333 82.944l21.162667 25.941333c52.224-26.624 85.333333-60.074667 99.328-100.693333 1.706667-5.12 3.413333-10.24 4.778666-15.36 21.504 45.738667 52.906667 83.968 93.866667 115.370667l21.504-24.917334c-51.2-34.474667-86.357333-81.237333-105.813333-140.288 1.706667-15.701333 2.730667-32.085333 2.730666-49.834666h-31.402666z M508.586667 434.858667h115.712c-6.826667 25.258667-15.018667 47.786667-24.917334 66.901333l31.744 8.874667a627.008 627.008 0 0 0 27.989334-85.674667v-21.162667H517.12c3.413333-14.336 6.144-29.354667 8.874667-45.738666l-32.426667-5.12c-7.850667 59.392-25.6 105.813333-52.906667 139.264l26.965334 19.114666c16.725333-19.114667 30.378667-44.373333 40.96-76.458666z",
             onclick: function (){
               treemapchart.setOption( {series:{
@@ -1871,8 +1874,8 @@ function handleTreemap() {
           return [
             '<div class="tooltip-title">' + info.name+ '</div>',
             '热度: ' + formatUtil.addCommas(value) + '',
-            '<div class="tooltip-title">频次: ' +  formatUtil.addCommas(frequency)+ '</div>',
-            '<div class="tooltip-title">权重: ' +  formatUtil.addCommas(weight)+ '</div>',
+            '<div class="tooltip-title">' + t('stockHotmap.frequency') + ': ' +  formatUtil.addCommas(frequency)+ '</div>',
+            '<div class="tooltip-title">' + t('stockHotmap.weight') + ': ' +  formatUtil.addCommas(weight)+ '</div>',
           ].join('');
         }
       },
@@ -1912,14 +1915,14 @@ function handleTreemap() {
           </n-flex>
       </template>
       <template #header-extra>
-        主要股指
+        {{ t('analyzeMarket.majorIndexes') }}
       </template>
       <n-flex justify="end" style="margin-bottom: 4px">
         <n-button-group size="tiny">
-          <n-button :type="changeRankDays===1?'primary':'default'" @click="changeRankDays=1">当日</n-button>
-          <n-button :type="changeRankDays===3?'primary':'default'" @click="changeRankDays=3">近3日</n-button>
-          <n-button :type="changeRankDays===5?'primary':'default'" @click="changeRankDays=5">近5日</n-button>
-          <n-button :type="changeRankDays===10?'primary':'default'" @click="changeRankDays=10">近10日</n-button>
+          <n-button :type="changeRankDays===1?'primary':'default'" @click="changeRankDays=1">{{ t('analyzeMarket.today') }}</n-button>
+          <n-button :type="changeRankDays===3?'primary':'default'" @click="changeRankDays=3">{{ t('analyzeMarket.last3Days') }}</n-button>
+          <n-button :type="changeRankDays===5?'primary':'default'" @click="changeRankDays=5">{{ t('analyzeMarket.last5Days') }}</n-button>
+          <n-button :type="changeRankDays===10?'primary':'default'" @click="changeRankDays=10">{{ t('analyzeMarket.last10Days') }}</n-button>
         </n-button-group>
       </n-flex>
       <n-grid :cols="24" :y-gap="0">
@@ -1935,23 +1938,23 @@ function handleTreemap() {
       </n-grid>
       <n-flex justify="center" style="margin: 8px 0" :wrap="false">
         <n-button text @click="showTreemap = !showTreemap" :type="showTreemap?'primary':''">
-          {{ showTreemap ? '隐藏热词' : '查看热词' }}
+          {{ showTreemap ? t('analyzeMarket.hideHotWords') : t('analyzeMarket.viewHotWords') }}
         </n-button>
         <n-divider vertical />
         <n-button text @click="showDailyChart = !showDailyChart" :type="showDailyChart?'primary':''">
-          {{ showDailyChart ? '隐藏按天分析' : '按天涨跌/涨跌停分析' }}
+          {{ showDailyChart ? t('analyzeMarket.hideDailyAnalysis') : t('analyzeMarket.dailyUpDownLimitAnalysis') }}
         </n-button>
         <n-divider vertical />
         <n-button text @click="showChangeStats = !showChangeStats" :type="showChangeStats?'primary':''">
-          {{ showChangeStats ? '隐藏异动分析' : '历史异动分析' }}
+          {{ showChangeStats ? t('analyzeMarket.hideChangeAnalysis') : t('analyzeMarket.historicalChangeAnalysis') }}
         </n-button>
         <n-divider vertical />
         <n-button text @click="showChangeRank = !showChangeRank" :type="showChangeRank?'primary':''">
-          {{ showChangeRank ? '隐藏异动排行' : '异动排行' }}
+          {{ showChangeRank ? t('analyzeMarket.hideChangeRank') : t('analyzeMarket.changeRank') }}
         </n-button>
         <n-divider vertical />
         <n-button text @click="showBullBearRank = !showBullBearRank" :type="showBullBearRank?'primary':''">
-          {{ showBullBearRank ? '隐藏利好/利空排行' : '利好/利空排行' }}
+          {{ showBullBearRank ? t('analyzeMarket.hideFavorableUnfavorableRank') : t('analyzeMarket.favorableUnfavorableRank') }}
         </n-button>
       </n-flex>
       <n-collapse-transition :show="showTreemap">
@@ -1990,11 +1993,11 @@ function handleTreemap() {
       <n-collapse-transition :show="showBullBearRank">
         <n-flex justify="end" style="margin-bottom: 4px">
           <n-button-group size="tiny">
-            <n-button :type="bullBearDays===1?'primary':'default'" @click="bullBearDays=1">当日</n-button>
-            <n-button :type="bullBearDays===3?'primary':'default'" @click="bullBearDays=3">近3日</n-button>
-            <n-button :type="bullBearDays===5?'primary':'default'" @click="bullBearDays=5">近5日</n-button>
-            <n-button :type="bullBearDays===10?'primary':'default'" @click="bullBearDays=10">近10日</n-button>
-            <n-button :type="bullBearDays===30?'primary':'default'" @click="bullBearDays=30">近30日</n-button>
+            <n-button :type="bullBearDays===1?'primary':'default'" @click="bullBearDays=1">{{ t('analyzeMarket.today') }}</n-button>
+            <n-button :type="bullBearDays===3?'primary':'default'" @click="bullBearDays=3">{{ t('analyzeMarket.last3Days') }}</n-button>
+            <n-button :type="bullBearDays===5?'primary':'default'" @click="bullBearDays=5">{{ t('analyzeMarket.last5Days') }}</n-button>
+            <n-button :type="bullBearDays===10?'primary':'default'" @click="bullBearDays=10">{{ t('analyzeMarket.last10Days') }}</n-button>
+            <n-button :type="bullBearDays===30?'primary':'default'" @click="bullBearDays=30">{{ t('analyzeMarket.last30Days') }}</n-button>
           </n-button-group>
         </n-flex>
         <n-grid :cols="24" :y-gap="0">

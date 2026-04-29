@@ -69,24 +69,24 @@ func (q QueryStockKLine) InvokableRun(ctx context.Context, argumentsInJSON strin
 		Kmap := &[]map[string]any{}
 		for _, kline := range *K {
 			mapk := make(map[string]any, 6)
-			mapk["日期"] = kline.Day
-			mapk["开盘价"] = kline.Open
-			mapk["最高价"] = kline.High
-			mapk["最低价"] = kline.Low
-			mapk["收盘价"] = kline.Close
+			mapk["date"] = kline.Day
+			mapk["open"] = kline.Open
+			mapk["high"] = kline.High
+			mapk["low"] = kline.Low
+			mapk["close"] = kline.Close
 			Volume, _ := convertor.ToFloat(kline.Volume)
-			mapk["成交量(万手)"] = Volume / 10000.00 / 100.00
+			mapk["volume(万手)"] = Volume / 10000.00 / 100.00
 			*Kmap = append(*Kmap, mapk)
 		}
 		jsonData, _ := json.Marshal(Kmap)
 		markdownTable, _ := JSONToMarkdownTable(jsonData)
 		sourceInfo := ""
 		if sourceLabel != "" {
-			sourceInfo = "（数据源：" + sourceLabel + "）"
+			sourceInfo = " (source: " + sourceLabel + ")"
 		}
-		res := "\r\n ### " + stockCode + " " + convertor.ToString(toIntDay) + "日K线数据" + sourceInfo + "：\r\n" + markdownTable + "\r\n"
+		res := "\r\n ### " + stockCode + " " + convertor.ToString(toIntDay) + " Daily K-Line Data" + sourceInfo + ":\r\n" + markdownTable + "\r\n"
 		return res, nil
 	} else {
-		return "无数据，可能股票代码错误。（A股：sh,sz开头;港股hk开头,美股：us开头）", fmt.Errorf("不支持的股票代码:%s", stockCode)
+		return "No data, stock code may be invalid. (A-share: sh/sz prefix; HK: hk prefix; US: us prefix)", fmt.Errorf("unsupported stock code: %s", stockCode)
 	}
 }

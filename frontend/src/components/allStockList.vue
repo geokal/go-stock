@@ -1,5 +1,7 @@
 <script setup>
 import {h, onBeforeMount, onMounted, ref, reactive} from 'vue'
+import {useI18n} from 'vue-i18n'
+const { t } = useI18n()
 import {
   GetAllStockInfoList,
   GetAllStocks,
@@ -64,7 +66,7 @@ const columnsRef = ref([
   //   width: 120,
   // },
   {
-    title: '股票代码',
+    title: t('stock.code'),
     key: 'SECUCODE',
     width: 100,
     render(row) {
@@ -72,7 +74,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '股票名称',
+    title: t('stock.name'),
     key: 'SECURITY_NAME_ABBR',
     width: 100,
     render(row) {
@@ -80,7 +82,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '最新价',
+    title: t('stock.price'),
     key: 'NEW_PRICE',
     width: 100,
     render(row) {
@@ -89,7 +91,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '涨跌幅(%)',
+    title: t('stock.changeRate'),
     key: 'CHANGE_RATE',
     width: 100,
     render(row) {
@@ -100,7 +102,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '分时图',
+    title: t('stock.sparkline'),
     key: 'sparkline',
     width: 120,
     render(row) {
@@ -115,7 +117,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '最高价',
+    title: t('stock.highPrice'),
     key: 'HIGH_PRICE',
     width: 100,
     render(row) {
@@ -124,7 +126,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '最低价',
+    title: t('stock.lowPrice'),
     key: 'LOW_PRICE',
     width: 100,
     render(row) {
@@ -141,7 +143,7 @@ const columnsRef = ref([
   //   }
   // },
   {
-    title: '成交量',
+    title: t('stock.volume'),
     key: 'VOLUME',
     width: 120,
     render(row) {
@@ -156,7 +158,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '成交额',
+    title: t('stock.turnover'),
     key: 'DEAL_AMOUNT',
     width: 120,
     render(row) {
@@ -171,7 +173,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '换手率 (%)',
+    title: t('stock.turnoverRate'),
     key: 'TURNOVERRATE',
     width: 80,
     render(row) {
@@ -180,7 +182,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '量比',
+    title: t('stock.volumeRatio'),
     key: 'VOLUME_RATIO',
     width: 80,
     render(row) {
@@ -189,7 +191,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '所属行业',
+    title: t('stock.industry'),
     key: 'INDUSTRY',
     width: 100,
     render(row) {
@@ -197,7 +199,7 @@ const columnsRef = ref([
     }
   },
   {
-    title: '所属概念',
+    title: t('stock.concept'),
     key: 'CONCEPT',
     width: 100,
     ellipsis: {
@@ -208,7 +210,7 @@ const columnsRef = ref([
         return h(NTag, { type: "info", size: "small" ,style: "margin-right: 4px;" }, { default: () => row.CONCEPT })
       }else{
         if (!row.CONCEPT || row.CONCEPT.length === 0) {
-          return h(NText, { type: "secondary" }, { default: () => '无' })
+          return h(NText, { type: "secondary" }, { default: () => '-' })
         }
         return row.CONCEPT.map(concept =>
             h(NTag, { type: "info", size: "small", style: "margin-right: 4px;" }, { default: () => concept })
@@ -225,7 +227,7 @@ const columnsRef = ref([
   //   }
   // },
   {
-    title: '操作',
+    title: t('common.edit'),
     render(row, index) {
       return [h(
           NButton,
@@ -235,7 +237,7 @@ const columnsRef = ref([
             type: 'warning', // 橙色按钮
             onClick: () => showKline(row)
           },
-          { default: () => '日K' }
+          { default: () => t('allStockList.dayKLine') }
       ),]
     }
   },
@@ -248,12 +250,12 @@ const paginationReactive = reactive({
   pageSize: 9,
   itemCount: 0,
   prefix({ itemCount }) {
-    return `${itemCount} 只股票`
+    return t('stock.stockCount', { count: itemCount })
   }
 })
 const optionsReactive= reactive([
   {
-    label: '全部',
+    label: t('common.all'),
     value: ''
   },
  ])
@@ -276,11 +278,11 @@ function loadStocks(page, pageSize) {
         paginationReactive.page = 1
         paginationReactive.pageCount = 1
         paginationReactive.itemCount = 0
-        message.error('获取股票数据失败')
+        message.error(t('allStockList.getStockDataFailed'))
       }
       loadingRef.value = false
     }).catch(err => {
-      message.error('获取股票数据失败: ' + err.message)
+      message.error(t('allStockList.getStockDataFailed') + ': ' + err.message)
       loadingRef.value = false
     })
   }
@@ -289,7 +291,7 @@ function handleCheckedChange(checked) {
 
   if(checked&&(vipLevel.value===""|| Number(vipLevel.value) <=0)){
     handleReset()
-    message.warning('未开通VIP或者已经过期，无法使用技术面筛选')
+    message.warning(t('allStockList.vipExpiredNotice'))
   }
 }
 function handlePageChange(currentPage) {
@@ -323,7 +325,7 @@ function handleUpdateVal(value) {
         }))
       }
     }).catch(err => {
-      message.error('获取股票数据失败: ' + err.message)
+      message.error(t('allStockList.getStockDataFailed') + ': ' + err.message)
     })
   }
 }
@@ -456,121 +458,121 @@ const toNumber = (value, defaultValue = 0) => {
     <n-space justify="start">
       <n-card size="small" :bordered="false"  style="text-align: left">
         <n-checkbox   @update:checked="handleCheckedChange" v-model:checked="technicalIndicatorReactive.MACD_GOLDEN_FORK">
-        MACD金叉
+        {{ t('allStockList.macdGoldenFork') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.KDJ_GOLDEN_FORK">
-        KDJ金叉
+        {{ t('allStockList.kdjGoldenFork') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.BREAK_THROUGH">
-        放量突破
+        {{ t('allStockList.volumeBreakout') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.LOW_FUNDS_INFLOW">
-        低位资金净流入
+        {{ t('allStockList.lowFundsInflow') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.HIGH_FUNDS_OUTFLOW">
-        高位资金净流出
+        {{ t('allStockList.highFundsOutflow') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.BREAKUP_MA_5DAYS">
-        向上突破5日均线
+        {{ t('allStockList.breakupMA5Days') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.LONG_AVG_ARRAY">
-        均线多头排列
+        {{ t('allStockList.longAvgArray') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.SHORT_AVG_ARRAY">
-        均线空头排列
+        {{ t('allStockList.shortAvgArray') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.UPPER_LARGE_VOLUME">
-        连涨放量
+        {{ t('allStockList.upperLargeVolume') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.DOWN_NARROW_VOLUME">
-        下跌无量
+        {{ t('allStockList.downNarrowVolume') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.ONE_DAYANG_LINE">
-        一根大阳线
+        {{ t('allStockList.oneDayangLine') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.TWO_DAYANG_LINES">
-        两根大阳线
+        {{ t('allStockList.twoDayangLines') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"     v-model:checked="technicalIndicatorReactive.RISE_SUN">
-        旭日东升
+        {{ t('allStockList.riseSun') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.POWER_FULGUN">
-        强势多方炮
+        {{ t('allStockList.powerfulgun') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.RESTORE_JUSTICE">
-        拨云见日
+        {{ t('allStockList.restoreJustice') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"     v-model:checked="technicalIndicatorReactive.DOWN_7DAYS">
-        七仙女下凡(七连阴)
+        {{ t('allStockList.down7Days') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.UPPER_8DAYS">
-        八仙过海(八连阳)
+        {{ t('allStockList.upper8Days') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.UPPER_9DAYS">
-        九阳神功(九连阳)
+        {{ t('allStockList.upper9Days') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.UPPER_4DAYS">
-        四串阳
+        {{ t('allStockList.upper4Days') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.HEAVEN_RULE">
-        天量法则
+        {{ t('allStockList.heavenRule') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.UPSIDE_VOLUME">
-        放量上攻
+        {{ t('allStockList.upsideVolume') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.BEARISH_ENGULFING">
-        穿头破脚
+        {{ t('allStockList.bearishEngulfing') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.REVERSING_HAMMER">
-        倒转锤头
+        {{ t('allStockList.reversingHammer') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.SHOOTING_STAR">
-        射击之星
+        {{ t('allStockList.shootingStar') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.EVENING_STAR">
-        黄昏之星
+        {{ t('allStockList.eveningStar') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.FIRST_DAWN">
-        曙光初现
+        {{ t('allStockList.firstDawn') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.PREGNANT">
-        身怀六甲
+        {{ t('allStockList.pregnant') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.BLACK_CLOUD_TOPS">
-        乌云盖顶
+        {{ t('allStockList.blackCloudTops') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.MORNING_STAR">
-        早晨之星
+        {{ t('allStockList.morningStar') }}
       </n-checkbox>
       <n-checkbox  @update:checked="handleCheckedChange"    v-model:checked="technicalIndicatorReactive.NARROW_FINISH">
-        窄幅整理
+        {{ t('allStockList.narrowFinish') }}
       </n-checkbox>
       </n-card>
       <n-card size="small" :bordered="false"  style="text-align: left">
         <n-radio-group size="small"  @update:checked="handleCheckedChange" name="UPP_DAYS"   v-model:value="technicalIndicatorReactive.UPP_DAYS">
-          <n-radio :value="3">人气排名连涨:3天及以上</n-radio>
-          <n-radio :value="5">人气排名连涨:5天及以上</n-radio>
-          <n-radio :value="7">人气排名连涨:7天及以上</n-radio>
+          <n-radio :value="3">{{ t('allStockList.popularityRankRise3Days') }}</n-radio>
+          <n-radio :value="5">{{ t('allStockList.popularityRankRise5Days') }}</n-radio>
+          <n-radio :value="7">{{ t('allStockList.popularityRankRise7Days') }}</n-radio>
         </n-radio-group>
         <n-divider vertical/>
         <n-radio-group  size="small" @update:checked="handleCheckedChange"  name="CONCERN_RANK_7DAYS"  v-model:value="technicalIndicatorReactive.CONCERN_RANK_7DAYS">
-          <n-radio :value="10"> 7日关注排名:前10名</n-radio>
-          <n-radio :value="50"> 7日关注排名:前50名</n-radio>
-          <n-radio :value="100"> 7日关注排名:前100名</n-radio>
+          <n-radio :value="10">{{ t('allStockList.attentionRank7DaysTop10') }}</n-radio>
+          <n-radio :value="50">{{ t('allStockList.attentionRank7DaysTop50') }}</n-radio>
+          <n-radio :value="100">{{ t('allStockList.attentionRank7DaysTop100') }}</n-radio>
         </n-radio-group>
 
         <n-radio-group  size="small" @update:checked="handleCheckedChange" name="UPNDAY"  v-model:value="technicalIndicatorReactive.UPNDAY">
-          <n-radio :value="3"> 连涨天数:3天及以上</n-radio>
-          <n-radio :value="5"> 连涨天数:5天及以上</n-radio>
-          <n-radio :value="8"> 连涨天数:8天及以上</n-radio>
+          <n-radio :value="3">{{ t('allStockList.consecutiveRiseDays3Days') }}</n-radio>
+          <n-radio :value="5">{{ t('allStockList.consecutiveRiseDays5Days') }}</n-radio>
+          <n-radio :value="8">{{ t('allStockList.consecutiveRiseDays8Days') }}</n-radio>
         </n-radio-group>
         <n-divider vertical/>
         <n-radio-group  size="small" @update:checked="handleCheckedChange" name="DOWNNDAY"  v-model:value="technicalIndicatorReactive.DOWNNDAY">
-          <n-radio :value="3"> 连跌天数:3天及以上</n-radio>
-          <n-radio :value="5"> 连跌天数:5天及以上</n-radio>
-          <n-radio :value="8"> 连跌天数:8天及以上</n-radio>
-          <n-radio :value="10"> 连跌天数:10天及以上</n-radio>
-          <n-radio :value="14"> 连跌天数:14天及以上</n-radio>
+          <n-radio :value="3">{{ t('allStockList.consecutiveDeclineDays3Days') }}</n-radio>
+          <n-radio :value="5">{{ t('allStockList.consecutiveDeclineDays5Days') }}</n-radio>
+          <n-radio :value="8">{{ t('allStockList.consecutiveDeclineDays8Days') }}</n-radio>
+          <n-radio :value="10">{{ t('allStockList.consecutiveDeclineDays10Days') }}</n-radio>
+          <n-radio :value="14">{{ t('allStockList.consecutiveDeclineDays14Days') }}</n-radio>
         </n-radio-group>
       </n-card>
 
@@ -583,7 +585,7 @@ const toNumber = (value, defaultValue = 0) => {
             autocomplete: 'disabled',
           }"
           :options="optionsReactive"
-          placeholder="输入搜索关键词"
+          :placeholder="t('allStockList.enterKeyword')"
           clearable
           @input="handleUpdateVal"
           @select="(value) => {
@@ -592,9 +594,9 @@ const toNumber = (value, defaultValue = 0) => {
           }"
       />
     <n-button type="primary" ghost @click="handleSearch"  @input="handleSearch">
-      搜索
+      {{ t('common.search') }}
     </n-button>
-      <n-button @click="handleReset">重置</n-button>
+      <n-button @click="handleReset">{{ t('common.reset') }}</n-button>
 
     </n-input-group>
     <!-- 数据表格 -->

@@ -4,7 +4,7 @@
       v-if="showButton"
       :class="['edge-trigger', { 'edge-trigger-busy': hasBackgroundTask }]"
       @click="togglePanel"
-      :title="hasBackgroundTask ? 'go-stock AI Agent 助手正在后台分析...' : 'go-stock AI Agent 助手'"
+      :title="hasBackgroundTask ? t('floatingAgent.backgroundWorking') : t('floatingAgent.title')"
     >
       <div class="edge-trigger-inner">
         <NIcon :component="SparklesOutline" size="22" />
@@ -25,17 +25,17 @@
         >
           <template #header>
             <div class="panel-header">
-              <span class="panel-title">go-stock AI Agent 助手</span>
+              <span class="panel-title">{{ t('floatingAgent.title') }}</span>
               <div class="panel-actions">
-                <NButton size="small" quaternary @click="startNewChat" title="开始新对话">
-                  新对话
+                <NButton size="small" quaternary @click="startNewChat" :title="t('floatingAgent.startNewChat')">
+                  {{ t('floatingAgent.newChat') }}
                 </NButton>
-                <NButton quaternary circle size="small" title="分享到社区" :loading="shareLoading" @click="shareAiToCommunity">
+                <NButton quaternary circle size="small" :title="t('floatingAgent.shareToCommunity')" :loading="shareLoading" @click="shareAiToCommunity">
                   <template #icon>
                     <NIcon :component="ShareSocialOutline" />
                   </template>
                 </NButton>
-                <NButton quaternary circle size="small" title="关闭" @click="closePanel">
+                <NButton quaternary circle size="small" :title="t('floatingAgent.close')" @click="closePanel">
                   <template #icon>
                     <NIcon :component="CloseOutline" />
                   </template>
@@ -50,7 +50,7 @@
             </Transition>
             <div v-if="shareTipVisible" class="share-tip">
               <div class="share-tip-text">{{ shareTipText }}</div>
-              <NButton size="tiny" quaternary class="share-tip-close" @click="shareTipVisible = false">关闭</NButton>
+              <NButton size="tiny" quaternary class="share-tip-close" @click="shareTipVisible = false">{{ t('floatingAgent.close') }}</NButton>
             </div>
             <NScrollbar ref="scrollbarRef" class="chat-scroll">
               <div class="message-list">
@@ -101,7 +101,7 @@
                           <div v-if="group.assistantMsg.steps && group.assistantMsg.steps.length > 0" class="msg-steps-wrapper">
                             <div class="msg-steps-header" @click="toggleReasoning(group.assistantIndex)">
                               <NIcon :component="reasoningExpandedMap[group.assistantIndex] ? ChevronDownOutline : ChevronForwardOutline" size="14" />
-                              <span class="msg-steps-title">📋 执行步骤</span>
+                              <span class="msg-steps-title">📋 {{ t('floatingAgent.executionSteps') }}</span>
                               <span class="msg-steps-count">{{ group.assistantMsg.steps.length }}</span>
                             </div>
                             <div v-show="reasoningExpandedMap[group.assistantIndex]" class="msg-steps-content">
@@ -114,7 +114,7 @@
                           <div v-if="group.assistantMsg.reasoning" class="msg-reasoning-wrapper">
                             <div class="msg-reasoning-header" @click="toggleReasoning('r-' + group.assistantIndex)">
                               <NIcon :component="reasoningExpandedMap['r-' + group.assistantIndex] ? ChevronDownOutline : ChevronForwardOutline" size="14" />
-                              <span class="msg-reasoning-title">💭 思考过程</span>
+                              <span class="msg-reasoning-title">💭 {{ t('floatingAgent.thinkingProcess') }}</span>
                             </div>
                             <div v-show="reasoningExpandedMap['r-' + group.assistantIndex]" class="msg-reasoning-content">
                               <MdPreview
@@ -129,7 +129,7 @@
                           <div v-if="group.assistantMsg.jsonMarkdown" class="msg-json-md-wrapper">
                             <div class="msg-json-md-header" @click="toggleReasoning('j-' + group.assistantIndex)">
                               <NIcon :component="reasoningExpandedMap['j-' + group.assistantIndex] ? ChevronDownOutline : ChevronForwardOutline" size="14" />
-                              <span class="msg-json-md-title">📊 分析报告</span>
+                              <span class="msg-json-md-title">📊 {{ t('floatingAgent.analysisReport') }}</span>
                             </div>
                             <div v-show="reasoningExpandedMap['j-' + group.assistantIndex]" class="msg-json-md-content">
                               <MdPreview
@@ -152,7 +152,7 @@
                           />
                           <div v-if="isStreamLoad && groupIndex === messageGroups.length - 1 && !group.assistantMsg.content" class="msg-loading">
                             <NSpin size="small" />
-                            <span>思考中...</span>
+                            <span>{{ t('floatingAgent.thinking') }}</span>
                           </div>
                           <div class="msg-bubble-actions">
                             <div v-if="group.assistantMsg.modelName || group.assistantMsg.time" class="msg-meta-row-assistant">
@@ -163,32 +163,32 @@
                               <template #icon>
                                 <NIcon :component="isGroupExpanded(groupIndex) ? ChevronUpOutline : ChevronDownOutline" />
                               </template>
-                              {{ isGroupExpanded(groupIndex) ? '收起' : '展开' }}
+                              {{ isGroupExpanded(groupIndex) ? t('floatingAgent.collapse') : t('floatingAgent.expand') }}
                             </NButton>
                             <NButton quaternary size="tiny" class="msg-copy-btn" @click="copyAiContent(group.assistantMsg)">
                               <template #icon>
                                 <NIcon :component="CopyOutline" />
                               </template>
-                              复制
+                              {{ t('floatingAgent.copy') }}
                             </NButton>
                             <NButton
                               quaternary
                               size="tiny"
                               class="msg-export-img-btn"
                               :loading="exportImageKey === String(group.assistantIndex)"
-                              title="导出为图片"
+                              :title="t('floatingAgent.exportImage')"
                               @click="exportAiReplyImage(group.assistantIndex, $event)"
                             >
                               <template #icon>
                                 <NIcon :component="ImageOutline" />
                               </template>
-                              导出图
+                              {{ t('floatingAgent.exportImageBtn') }}
                             </NButton>
                             <NButton quaternary size="tiny" class="msg-share-btn" :loading="shareLoading" @click="shareAiContent(group.assistantMsg)">
                               <template #icon>
                                 <NIcon :component="ShareSocialOutline" />
                               </template>
-                              分享
+                              {{ t('floatingAgent.share') }}
                             </NButton>
                           </div>
                         </div>
@@ -208,7 +208,7 @@
                   filterable
                   to="body"
                   placement="top-start"
-                  placeholder="选择模型"
+                  :placeholder="t('floatingAgent.selectModel')"
                   :consistent-menu-width="false"
                   :menu-props="{ style: { zIndex: 10002 } }"
                   class="chat-footer-select"
@@ -220,7 +220,7 @@
                   clearable
                   to="body"
                   placement="top-start"
-                  placeholder="系统提示词"
+                  :placeholder="t('floatingAgent.systemPrompt')"
                   :consistent-menu-width="false"
                   :menu-props="{ style: { zIndex: 10002 } }"
                   class="chat-footer-prompt"
@@ -232,18 +232,18 @@
                   clearable
                   to="body"
                   placement="top-start"
-                  placeholder="用户提示词"
+                  :placeholder="t('floatingAgent.userPrompt')"
                   :consistent-menu-width="false"
                   :menu-props="{ style: { zIndex: 10002 } }"
                   class="chat-footer-prompt"
                   @update:value="onUserPromptChange"
                 />
                 <div class="chat-footer-thinking">
-                  <span class="chat-footer-thinking-label">思考模式</span>
+                  <span class="chat-footer-thinking-label">{{ t('floatingAgent.thinkingMode') }}</span>
                   <NSwitch v-model:value="thinkingMode" size="small" />
                 </div>
                 <div class="chat-footer-memory">
-                  <span class="chat-footer-thinking-label">记忆模式</span>
+                  <span class="chat-footer-thinking-label">{{ t('floatingAgent.memoryMode') }}</span>
                   <NSwitch v-model:value="memoryMode" size="small" />
                   <NSelect
                     v-if="memoryMode"
@@ -264,7 +264,7 @@
                     size="small"
                     to="body"
                     placement="top-start"
-                    placeholder="Agent模式"
+                    :placeholder="t('floatingAgent.agentMode')"
                     :consistent-menu-width="false"
                     :menu-props="{ style: { zIndex: 10002 } }"
                     class="chat-footer-agent-mode-select"
@@ -275,7 +275,7 @@
                 <NInput
                   v-model:value="inputValue"
                   type="textarea"
-                  placeholder="输入消息，回车发送..."
+                  :placeholder="t('floatingAgent.inputPlaceholder')"
                   :autosize="{ minRows: 2, maxRows: 4 }"
                   :disabled="isStreamLoad"
                   @keydown.enter.exact.prevent="sendMessage"
@@ -287,7 +287,7 @@
                   class="chat-footer-abort"
                   @click="abortStream(true)"
                 >
-                  中断
+                  {{ t('floatingAgent.abort') }}
                 </NButton>
                 <NButton
                   type="primary"
@@ -295,7 +295,7 @@
                   :disabled="isStreamLoad || !canSend"
                   @click="sendMessage"
                 >
-                  发送
+                  {{ t('floatingAgent.send') }}
                 </NButton>
               </div>
             </div>
@@ -308,7 +308,10 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, onBeforeMount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+
+const { t } = useI18n()
 import { NButton, NCard, NIcon, NInput, NScrollbar, NSelect, NSpin, NSwitch, useMessage } from 'naive-ui'
 import {
   CloseOutline,
@@ -378,24 +381,24 @@ const userPromptId = ref(null)
 const thinkingMode = ref(true)
 const memoryMode = ref(false)
 const memoryCount = ref(1)
-const memoryCountOptions = [
-  { label: '1 条', value: 1 },
-  { label: '2 条', value: 2 },
-  { label: '3 条', value: 3 },
-  { label: '4 条', value: 4 },
-  { label: '5 条', value: 5 },
-  { label: '10 条', value: 10 },
-]
+const memoryCountOptions = computed(() => [
+  { label: t('floatingAgent.memoryCount1'), value: 1 },
+  { label: t('floatingAgent.memoryCount2'), value: 2 },
+  { label: t('floatingAgent.memoryCount3'), value: 3 },
+  { label: t('floatingAgent.memoryCount4'), value: 4 },
+  { label: t('floatingAgent.memoryCount5'), value: 5 },
+  { label: t('floatingAgent.memoryCount10'), value: 10 },
+])
 const agentMode = ref('auto')
-const agentModeOptions = [
-  { label: '🤖 自动选择', value: 'auto' },
-  { label: '⚡ 快速模式', value: 'react' },
-  { label: '🧠 规划模式', value: 'plan_execute' },
-]
+const agentModeOptions = computed(() => [
+  { label: '🤖 ' + t('floatingAgent.autoSelect'), value: 'auto' },
+  { label: '⚡ ' + t('floatingAgent.quickMode'), value: 'react' },
+  { label: '🧠 ' + t('floatingAgent.planMode'), value: 'plan_execute' },
+])
 
 watch(agentMode, (val) => {
-  if (val === 'react') showHint('⚡ 快速模式推荐使用DeepSeek最新版')
-  else if (val === 'plan_execute') showHint('🧠 规划模式推荐使用GLM最新版')
+  if (val === 'react') showHint('⚡ ' + t('floatingAgent.quickModeHint'))
+  else if (val === 'plan_execute') showHint('🧠 ' + t('floatingAgent.planModeHint'))
 })
 
 watch(aiConfigId, (val) => {
@@ -404,15 +407,15 @@ watch(aiConfigId, (val) => {
   if (label.includes('deepseek-chat')) {
     agentMode.value = 'plan_execute'
     thinkingMode.value = false
-    showHint('deepseek-chat 已使用规划模式并关闭思考模式')
+    showHint('deepseek-chat ' + t('floatingAgent.deepseekChatHint'))
   } else if (label.includes('deepseek')) {
-    showHint('⚡ DeepSeek模型推荐使用快速模式')
+    showHint('⚡ ' + t('floatingAgent.deepseekHint'))
   } else if (labelCompact.includes('glm5.1')) {
     agentMode.value = 'plan_execute'
     thinkingMode.value = true
-    showHint('GLM 5.1 已使用规划模式并开启思考模式')
+    showHint('GLM 5.1 ' + t('floatingAgent.glm51Hint'))
   } else if (label.includes('glm')) {
-    showHint('🧠 GLM模型推荐使用规划模式')
+    showHint('🧠 ' + t('floatingAgent.glmHint'))
   }
 })
 
@@ -535,11 +538,11 @@ function onMdHtmlChanged() {
       block.classList.add('code-collapsed')
       const btn = document.createElement('span')
       btn.className = 'code-collapse-btn'
-      btn.textContent = '展开'
+      btn.textContent = t('floatingAgent.expand')
       btn.addEventListener('click', (e) => {
         e.stopPropagation()
         const collapsed = block.classList.toggle('code-collapsed')
-        btn.textContent = collapsed ? '展开' : '收起'
+        btn.textContent = collapsed ? t('floatingAgent.expand') : t('floatingAgent.collapse')
       })
       block.appendChild(btn)
     })
@@ -549,13 +552,13 @@ function onMdHtmlChanged() {
 async function copyAiContent(msg) {
   const text = (msg?.content ?? '').trim()
   if (!text) {
-    message.warning('暂无可复制的 AI 正文内容')
+    message.warning(t('floatingAgent.noContentToCopy'))
     return
   }
   try {
     if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text)
-      message.success('已复制 AI 回答内容')
+      message.success(t('floatingAgent.copiedSuccess'))
     } else {
       const textarea = document.createElement('textarea')
       textarea.value = text
@@ -565,17 +568,17 @@ async function copyAiContent(msg) {
       textarea.select()
       document.execCommand('copy')
       document.body.removeChild(textarea)
-      message.success('已复制 AI 回答内容')
+      message.success(t('floatingAgent.copiedSuccess'))
     }
   } catch (e) {
-    message.error('复制失败，请手动选择文本')
+    message.error(t('floatingAgent.copyFailed'))
   }
 }
 
 function shareTextToCommunity(text, title) {
   if (shareLoading.value) return
   shareLoading.value = true
-  shareTipText.value = '正在分享到社区...'
+  shareTipText.value = t('floatingAgent.sharingToCommunity')
   shareTipVisible.value = true
   ShareText(text, title)
     .then((msg) => {
@@ -583,7 +586,7 @@ function shareTextToCommunity(text, title) {
       shareTipVisible.value = true
     })
     .catch((err) => {
-      shareTipText.value = '分享失败: ' + (err?.message ?? err)
+      shareTipText.value = t('floatingAgent.shareFailed') + (err?.message ?? err)
       shareTipVisible.value = true
     })
     .finally(() => {
@@ -594,11 +597,11 @@ function shareTextToCommunity(text, title) {
 function shareAiContent(msg) {
   const text = (msg?.content ?? '').trim()
   if (!text) {
-    shareTipText.value = '暂无可分享的 AI 正文内容'
+    shareTipText.value = t('floatingAgent.noShareableContent')
     shareTipVisible.value = true
     return
   }
-  shareTextToCommunity(text, 'go-stock AI Agent助手')
+  shareTextToCommunity(text, t('floatingAgent.aiAgentAssistant'))
 }
 
 function getLastAssistantContent() {
@@ -615,18 +618,18 @@ function getLastAssistantContent() {
 function shareAiToCommunity() {
   const text = getLastAssistantContent()
   if (!text) {
-    shareTipText.value = '暂无可分享的 AI 回复内容'
+    shareTipText.value = t('floatingAgent.noShareableContent')
     shareTipVisible.value = true
     return
   }
-  shareTextToCommunity(text, 'go-stock AI Agent助手')
+  shareTextToCommunity(text, t('floatingAgent.aiAgentAssistant'))
 }
 
 async function exportAiReplyImage(assistantIndex, evt) {
   const msg = messages.value[assistantIndex]
   if (msg?.role !== 'assistant') return
   if (!(msg.content ?? '').trim()) {
-    shareTipText.value = '暂无可导出的 AI 回答内容'
+    shareTipText.value = t('floatingAgent.noExportableContent')
     shareTipVisible.value = true
     return
   }
@@ -642,7 +645,7 @@ async function exportAiReplyImage(assistantIndex, evt) {
       bubble?.querySelector('.md-editor-preview') ||
       null
     if (!target) {
-      shareTipText.value = '未找到预览区域，请展开回答后重试'
+      shareTipText.value = t('floatingAgent.previewNotFound')
       shareTipVisible.value = true
       return
     }
@@ -689,13 +692,13 @@ async function exportAiReplyImage(assistantIndex, evt) {
     const safeTime = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')
     const result = await SaveImage(`go-stock-agent-${safeTime}`, base64)
     if (result && !result.includes('异常') && !result.includes('无法')) {
-      shareTipText.value = '已导出为 PNG 图片：' + result
+      shareTipText.value = t('floatingAgent.exportedAsPng') + result
     } else {
-      shareTipText.value = result || '导出取消'
+      shareTipText.value = result || t('floatingAgent.exportCancelled')
     }
     shareTipVisible.value = true
   } catch (e) {
-    shareTipText.value = '导出图片失败: ' + (e?.message ?? e)
+    shareTipText.value = t('floatingAgent.exportImageFailed') + (e?.message ?? e)
     shareTipVisible.value = true
   } finally {
     exportImageKey.value = ''
@@ -720,7 +723,7 @@ function abortStream(showTip = true) {
     }
   }
   if (showTip) {
-    shareTipText.value = '已中断本次 AI 回答'
+    shareTipText.value = t('floatingAgent.abortedResponse')
     shareTipVisible.value = true
   }
   AbortChatWithAgent()
@@ -776,7 +779,7 @@ function openPanel() {
     messages.value = [
       {
         role: 'assistant',
-        content: '我是 go-stock AI Agent 助手，可以帮您分析股票、查询市场数据、获取研究报告等。请问有什么可以帮您的？',
+        content: t('floatingAgent.introMessage'),
         time: new Date().toLocaleString(),
         modelName: '',
         reasoning: ''
@@ -812,7 +815,7 @@ async function togglePanel() {
   if (!panelVisible.value) {
     await ensureVipInfo()
     if ((vipLevel.value ?? 0) < 2) {
-      message.warning('go-stock AI Agent 助手功能仅对 VIP2 及以上赞助用户开放，请前往关于页面查看赞助方式。')
+      message.warning(t('floatingAgent.vipRequired'))
       return
     }
     openPanel()
@@ -833,7 +836,7 @@ function sendMessage() {
   }
   const text = inputValue.value.trim()
   if (!text) {
-    message.warning('请输入你的问题')
+    message.warning(t('floatingAgent.inputWarning'))
     return
   }
 
@@ -881,7 +884,7 @@ function sendMessage() {
 
 function startNewChat() {
   if (isStreamLoad.value) {
-    message.warning('当前有回答正在生成，请先中断或等待完成')
+    message.warning(t('floatingAgent.responseInProgress'))
     return
   }
   messages.value = []
@@ -1138,7 +1141,7 @@ function onAgentMessage(msg) {
     nextTick(scrollToBottom)
     if (msg.content === 'agent-DONE' && last && last.role === 'assistant' && last.content) {
       const user = messages.value[messages.value.length - 2]
-      SaveAIResponseResult("agent","市场分析", last.content, sessionId.value,user.content, aiConfigId.value)
+      SaveAIResponseResult("agent",t('floatingAgent.marketAnalysis'), last.content, sessionId.value,user.content, aiConfigId.value)
     }
     return
   }

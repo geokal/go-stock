@@ -3,7 +3,7 @@
     <n-space>
       <n-input
         v-model:value="searchKeyword"
-        placeholder="搜索服务器名称..."
+        :placeholder="t('mcpServer.searchPlaceholder')"
         style="width: 200px"
         clearable
         @keyup.enter="handleSearch"
@@ -16,20 +16,20 @@
       <n-select
         v-model:value="filterStatus"
         :options="statusOptions"
-        placeholder="服务器状态"
+        :placeholder="t('mcpServer.serverStatus')"
         style="width: 120px"
         clearable
       />
 
       <n-button type="primary" @click="handleSearch">
-        搜索
+        {{ t('common.search') }}
       </n-button>
 
       <n-button type="warning" @click="handleCreate">
         <template #icon>
           <n-icon :component="AddOutline" />
         </template>
-        新建服务器
+        {{ t('mcpServer.createServer') }}
       </n-button>
     </n-space>
   </n-space>
@@ -52,7 +52,7 @@
 
   <n-modal
     v-model:show="showCreateModal"
-    :title="editingServer ? '修改服务器' : '创建新服务器'"
+    :title="editingServer ? t('mcpServer.modifyServer') : t('mcpServer.createNewServer')"
     preset="dialog"
     :style="{ width: '750px' }"
     @close="resetForm"
@@ -67,77 +67,77 @@
       label-width="130px"
       require-mark-placement="right-hanging"
     >
-      <n-form-item label="服务器名称" path="name">
-        <n-input v-model:value="formData.name" placeholder="请输入服务器名称" clearable />
+      <n-form-item :label="t('mcpServer.serverName')" path="name">
+        <n-input v-model:value="formData.name" :placeholder="t('mcpServer.enterServerName')" clearable />
       </n-form-item>
 
-      <n-form-item label="描述" path="description">
+      <n-form-item :label="t('mcpServer.description')" path="description">
         <n-input
           v-model:value="formData.description"
           type="textarea"
           :rows="2"
-          placeholder="请输入服务器描述（可选）"
+          :placeholder="t('mcpServer.enterServerDescription')"
           show-count
           maxlength="500"
         />
       </n-form-item>
 
       <n-form-item label="URL" path="url">
-        <n-input v-model:value="formData.url" placeholder="例如：http://localhost:8080 或 SSE 端点地址" clearable />
+        <n-input v-model:value="formData.url" :placeholder="t('mcpServer.urlPlaceholder')" clearable />
       </n-form-item>
 
-      <n-form-item label="环境变量" path="env">
+      <n-form-item :label="t('mcpServer.envVars')" path="env">
         <n-input
           v-model:value="formData.env"
           type="textarea"
           :rows="3"
-          placeholder='JSON 对象格式，例如：{"API_KEY": "your-api-key"}'
+          :placeholder="t('mcpServer.envPlaceholder')"
           show-count
         />
       </n-form-item>
 
-      <n-form-item label="启用状态" path="enable">
+      <n-form-item :label="t('mcpServer.enableStatus')" path="enable">
         <n-switch v-model:value="formData.enable" size="large">
           <template #checked>
             <n-icon :component="PlayCircleOutline" />
-            启用
+            {{ t('mcpServer.enable') }}
           </template>
           <template #unchecked>
             <n-icon :component="StopCircleOutline" />
-            禁用
+            {{ t('mcpServer.disable') }}
           </template>
         </n-switch>
       </n-form-item>
     </n-form>
 
     <template #action>
-      <n-button @click="showCreateModal = false">取消</n-button>
+      <n-button @click="showCreateModal = false">{{ t('common.cancel') }}</n-button>
       <n-button type="primary" @click="handleSubmit" :loading="submitting">
         <template #icon>
           <n-icon :component="CheckmarkCircleOutline" />
         </template>
-        {{ editingServer ? '修改服务器' : '创建新服务器' }}
+        {{ editingServer ? t('mcpServer.modifyServer') : t('mcpServer.createNewServer') }}
       </n-button>
     </template>
   </n-modal>
 
   <n-modal
     v-model:show="showToolDetailModal"
-    title="工具参数详情"
+    :title="t('mcpServer.toolParamsDetail')"
     preset="card"
     style="width: 850px"
     :z-index="2000"
   >
     <template v-if="currentTool">
       <n-descriptions bordered label-placement="top" :column="1" style="margin-bottom: 16px" content-style="text-align: left">
-        <n-descriptions-item label="工具名称">
+        <n-descriptions-item :label="t('mcpServer.toolName')">
           <n-text code>{{ currentTool.toolName }}</n-text>
         </n-descriptions-item>
-        <n-descriptions-item label="描述">{{ currentTool.description || '无描述' }}</n-descriptions-item>
+        <n-descriptions-item :label="t('mcpServer.description')">{{ currentTool.description || t('mcpServer.noDescription') }}</n-descriptions-item>
       </n-descriptions>
 
       <template v-if="parsedParams.length > 0">
-        <n-text strong style="margin-bottom: 8px; display: block">参数列表</n-text>
+        <n-text strong style="margin-bottom: 8px; display: block">{{ t('mcpServer.paramsList') }}</n-text>
         <n-data-table
           :columns="paramDetailColumns"
           :data="parsedParams"
@@ -146,10 +146,10 @@
           :pagination="false"
         />
       </template>
-      <n-text v-else depth="3">此工具无需参数</n-text>
+      <n-text v-else depth="3">{{ t('mcpServer.noParamsNeeded') }}</n-text>
 
       <n-collapse style="margin-top: 12px" v-if="currentTool.paramsSchema">
-        <n-collapse-item title="原始 JSON Schema" name="raw">
+        <n-collapse-item :title="t('mcpServer.rawJsonSchema')" name="raw">
           <VueJsonPretty
             :data="parseJSON(currentTool.paramsSchema)"
             :deep="3"
@@ -165,6 +165,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, h } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NIcon,
@@ -206,6 +207,7 @@ import {
   GetAllMCPTools
 } from '../../wailsjs/go/main/App'
 
+const { t } = useI18n()
 const message = useMessage()
 
 const formRef = ref(null)
@@ -236,24 +238,24 @@ const formData = reactive({
 })
 
 const formRules = {
-  name: { required: true, message: '请输入服务器名称', trigger: ['input', 'blur'] },
-  command: { required: true, message: '请输入命令', trigger: ['input', 'blur'] }
+  name: { required: true, message: t('mcpServer.enterServerName'), trigger: ['input', 'blur'] },
+  command: { required: true, message: t('mcpServer.enterCommand'), trigger: ['input', 'blur'] }
 }
 
 const statusOptions = [
-  { label: '可用', value: 'available' },
-  { label: '未测试', value: 'untested' },
-  { label: '不可用', value: 'unavailable' }
+  { label: t('mcpServer.available'), value: 'available' },
+  { label: t('mcpServer.untested'), value: 'untested' },
+  { label: t('mcpServer.unavailable'), value: 'unavailable' }
 ]
 
 const getStatusLabel = (status) => {
   switch (status) {
     case 'available':
-      return '可用'
+      return t('mcpServer.available')
     case 'untested':
-      return '未测试'
+      return t('mcpServer.untested')
     case 'unavailable':
-      return '不可用'
+      return t('mcpServer.unavailable')
     default:
       return status
   }
@@ -321,39 +323,39 @@ const parsedParams = computed(() => {
 
 const paramDetailColumns = [
   {
-    title: '参数名',
+    title: t('mcpServer.paramName'),
     key: 'name',
     width: 180,
     ellipsis: { tooltip: { style: { maxWidth: '300px' } } }
   },
   {
-    title: '类型',
+    title: t('mcpServer.type'),
     key: 'type',
     width: 80
   },
   {
-    title: '必填',
+    title: t('mcpServer.required'),
     key: 'required',
     width: 60,
     render(row) {
       return h(NTag, { type: row.required ? 'error' : 'default', size: 'small' }, {
-        default: () => row.required ? '是' : '否'
+        default: () => row.required ? t('mcpServer.yes') : t('mcpServer.no')
       })
     }
   },
   {
-    title: '描述',
+    title: t('mcpServer.description'),
     key: 'description',
     ellipsis: { tooltip: { style: { maxWidth: '400px', wordBreak: 'break-all' } } }
   },
   {
-    title: '枚举值',
+    title: t('mcpServer.enumValues'),
     key: 'enum',
     width: 120,
     ellipsis: { tooltip: { style: { maxWidth: '300px' } } }
   },
   {
-    title: '默认值',
+    title: t('mcpServer.defaultValue'),
     key: 'default',
     width: 80,
     ellipsis: { tooltip: true }
@@ -366,28 +368,28 @@ const columns = [
     renderExpand: (row) => {
       const tools = row.tools
       if (!tools || tools.length === 0) {
-        return h(NText, { depth: 3, style: 'padding: 8px 16px' }, { default: () => '暂无工具信息，请先测试连接以获取工具列表' })
+        return h(NText, { depth: 3, style: 'padding: 8px 16px' }, { default: () => t('mcpServer.noToolInfo') })
       }
 
       const toolColumns = [
         {
-          title: '工具名称',
+          title: t('mcpServer.toolName'),
           key: 'toolName',
           width: 200,
           ellipsis: { tooltip: true }
         },
         {
-          title: '描述',
+          title: t('mcpServer.description'),
           key: 'description',
           ellipsis: { tooltip: { style: { maxWidth: '400px', wordBreak: 'break-all' } } }
         },
         {
-          title: '参数',
+          title: t('mcpServer.params'),
           key: 'paramsSchema',
           width: 260,
           render(toolRow) {
             if (!toolRow.paramsSchema) {
-              return h(NTag, { type: 'default', size: 'small' }, { default: () => '无参数' })
+              return h(NTag, { type: 'default', size: 'small' }, { default: () => t('mcpServer.noParams') })
             }
             try {
               const schema = JSON.parse(toolRow.paramsSchema)
@@ -395,7 +397,7 @@ const columns = [
               const required = schema.required || []
               const paramNames = Object.keys(props)
               if (paramNames.length === 0) {
-                return h(NTag, { type: 'default', size: 'small' }, { default: () => '无参数' })
+                return h(NTag, { type: 'default', size: 'small' }, { default: () => t('mcpServer.noParams') })
               }
               const tags = paramNames.map(name => {
                 const prop = props[name]
@@ -428,7 +430,7 @@ const columns = [
                 onClick: () => handleViewToolDetail(toolRow)
               }, {
                 icon: () => h(NIcon, { component: EyeOutline }),
-                default: () => '查看参数'
+                default: () => t('mcpServer.viewParams')
               })
             }
           }
@@ -454,13 +456,13 @@ const columns = [
     ellipsis: { tooltip: true }
   },
   {
-    title: '服务器名称',
+    title: t('mcpServer.serverName'),
     key: 'name',
     width: 180,
     ellipsis: { tooltip: true }
   },
   {
-    title: '描述',
+    title: t('mcpServer.description'),
     key: 'description',
     width: 200,
     ellipsis: { tooltip: { style: { maxWidth: '400px', wordBreak: 'break-all' } } }
@@ -476,17 +478,17 @@ const columns = [
     }
   },
   {
-    title: '启用',
+    title: t('mcpServer.enable'),
     key: 'enable',
     width: 70,
     render(row) {
       return h(NTag, { type: row.enable ? 'success' : 'error' }, {
-        default: () => (row.enable ? '是' : '否')
+        default: () => (row.enable ? t('mcpServer.yes') : t('mcpServer.no'))
       })
     }
   },
   {
-    title: '状态',
+    title: t('mcpServer.status'),
     key: 'status',
     width: 80,
     render(row) {
@@ -501,7 +503,7 @@ const columns = [
     }
   },
   {
-    title: '测试结果',
+    title: t('mcpServer.testResult'),
     key: 'testResult',
     width: 200,
     ellipsis: { tooltip: { style: { maxWidth: '400px', wordBreak: 'break-all' } } },
@@ -512,7 +514,7 @@ const columns = [
     }
   },
   {
-    title: '操作',
+    title: t('common.actions'),
     key: 'actions',
     width: 280,
     fixed: 'right',
@@ -528,7 +530,7 @@ const columns = [
             },
             {
               icon: () => h(NIcon, { component: FlashOutline }),
-              default: () => '测试'
+              default: () => t('mcpServer.test')
             }
           ),
           h(
@@ -540,7 +542,7 @@ const columns = [
             },
             {
               icon: () => h(NIcon, { component: row.enable ? PauseOutline : PlayOutline }),
-              default: () => (row.enable ? '禁用' : '启用')
+              default: () => (row.enable ? t('mcpServer.disable') : t('mcpServer.enable'))
             }
           ),
           h(
@@ -552,7 +554,7 @@ const columns = [
             },
             {
               icon: () => h(NIcon, { component: CreateOutline }),
-              default: () => '编辑'
+              default: () => t('common.edit')
             }
           ),
           h(
@@ -570,10 +572,10 @@ const columns = [
                   },
                   {
                     icon: () => h(NIcon, { component: TrashOutline }),
-                    default: () => '删除'
+                    default: () => t('common.delete')
                   }
                 ),
-              default: () => `确定要删除服务器 "${row.name}" 吗？`
+              default: () => t('mcpServer.confirmDeleteServer', { name: row.name })
             }
           )
         ]
@@ -589,7 +591,7 @@ const pagination = computed(() => ({
   pageCount: Math.ceil(total.value / pageSize.value) || 1,
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100],
-  prefix: ({ itemCount }) => `共 ${itemCount} 条`,
+  prefix: ({ itemCount }) => `${t('common.total')} ${itemCount} ${t('common.records')}`,
   onChange: handlePageChange,
   onUpdatePageSize: handlePageSizeChange
 }))
@@ -611,7 +613,7 @@ const loadServerList = async () => {
       try {
         allTools = await GetAllMCPTools() || []
       } catch (error) {
-        console.error('加载工具列表失败:', error)
+        console.error(t('mcpServer.loadToolsFailed'), error)
       }
       const toolsMap = {}
       for (const t of allTools) {
@@ -625,8 +627,8 @@ const loadServerList = async () => {
       total.value = result.total || 0
     }
   } catch (error) {
-    console.error('加载服务器列表失败:', error)
-    message.error('加载服务器列表失败')
+    console.error(t('mcpServer.loadServerListFailed'), error)
+    message.error(t('mcpServer.loadServerListFailed'))
   } finally {
     loading.value = false
   }
@@ -654,7 +656,7 @@ const handleTest = async (row) => {
     message.success(result)
     await loadServerList()
   } catch (error) {
-    message.error('测试失败：' + error.message)
+    message.error(t('mcpServer.testFailed') + error.message)
   }
 }
 
@@ -665,7 +667,7 @@ const handleToggleEnable = async (row) => {
     message.success(result)
     await loadServerList()
   } catch (error) {
-    message.error('操作失败：' + error.message)
+    message.error(t('common.operation') + t('common.failed') + error.message)
   }
 }
 
@@ -693,7 +695,7 @@ const handleEdit = async (row) => {
       showCreateModal.value = true
     }
   } catch (error) {
-    message.error('获取服务器详情失败：' + error.message)
+    message.error(t('mcpServer.getServerDetailFailed') + error.message)
   }
 }
 
@@ -703,7 +705,7 @@ const handleDelete = async (id) => {
     message.success(result)
     await loadServerList()
   } catch (error) {
-    message.error('删除失败：' + error.message)
+    message.error(t('common.delete') + t('common.failed') + error.message)
   }
 }
 
@@ -727,7 +729,7 @@ const handleSubmit = async () => {
       result = await CreateMCPServer(submitData)
     }
 
-    if (result.includes('成功')) {
+    if (result.includes(t('common.success'))) {
       message.success(result)
       showCreateModal.value = false
       await loadServerList()
@@ -735,7 +737,7 @@ const handleSubmit = async () => {
       message.error(result)
     }
   } catch (error) {
-    message.error('操作失败：' + error.message)
+    message.error(t('common.operation') + t('common.failed') + error.message)
   } finally {
     submitting.value = false
   }

@@ -13,7 +13,7 @@
       <!-- eslint-disable vue/no-unused-vars -->
       <template #content="{ item, index }">
         <div v-if="item.role === 'assistant' && item.steps && item.steps.length > 0" class="agent-steps">
-          <div class="agent-steps-header">📋 执行步骤 <span class="agent-steps-badge">{{ item.steps.length }}</span></div>
+          <div class="agent-steps-header">{{ t('agentChat.executionSteps') }} <span class="agent-steps-badge">{{ item.steps.length }}</span></div>
           <div class="agent-steps-list">
             <div v-for="(step, si) in item.steps" :key="si" class="agent-step-item">
               <div class="agent-step-dot" :class="getStepDotClass(step)"></div>
@@ -22,13 +22,13 @@
           </div>
         </div>
         <t-chat-reasoning v-if="item.role === 'assistant'"  expand-icon-placement="right">
-          <t-chat-loading v-if="isStreamLoad" text="思考中..." />
+          <t-chat-loading v-if="isStreamLoad" :text="t('agentChat.thinking')" />
           <t-chat-content v-if="item.reasoning.length > 0" :content="item.reasoning" />
         </t-chat-reasoning>
         <div v-if="item.role === 'assistant' && item.jsonMarkdown" class="agent-json-md">
           <div class="agent-json-md-header" @click="toggleJsonMd(index)">
             <svg :class="['agent-json-md-arrow', { 'agent-json-md-arrow-expanded': jsonMdExpandedMap[index] }]" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M9 6l6 6-6 6z"/></svg>
-            <span class="agent-json-md-title">📊 分析报告</span>
+            <span class="agent-json-md-title">{{ t('agentChat.analysisReport') }}</span>
           </div>
           <div v-show="jsonMdExpandedMap[index]" class="agent-json-md-content">
             <t-chat-content :content="item.jsonMarkdown" />
@@ -50,7 +50,7 @@
               v-model="inputValue"
               class="chat-sender"
               :textarea-props="{
-                placeholder: '请输入消息...',
+                placeholder: t('agentChat.enterMessage'),
               }"
               :loading="loading"
               :stop-disabled="isStreamLoad"
@@ -59,7 +59,7 @@
           >
             <template #suffix>
               <!-- 监听键盘回车发送事件需要在sender组件监听 -->
-              <t-button theme="default" variant="text" size="large" class="btn" @click="inputEnter"> 发送 </t-button>
+              <t-button theme="default" variant="text" size="large" class="btn" @click="inputEnter"> {{ t('agentChat.send') }} </t-button>
             </template>
             <template #prefix>
               <NFlex>
@@ -91,6 +91,8 @@
 </template>
 <script setup lang="ts">
 import {ref, onMounted, h, onBeforeUnmount, onBeforeMount} from 'vue';
+import {useI18n} from 'vue-i18n'
+const { t } = useI18n()
 import {ArrowDownIcon, CheckCircleIcon, SystemSumIcon} from 'tdesign-icons-vue-next';
 const fetchCancel = ref(null);
 const loading = ref(false);
@@ -116,9 +118,9 @@ const selectOptions = ref([]);
 const selectValue = ref("default");
 const agentMode = ref('auto')
 const agentModeOptions = [
-  { label: '🤖 自动', value: 'auto' },
-  { label: '⚡ 快速', value: 'react' },
-  { label: '🧠 规划', value: 'plan_execute' },
+  { label: t('cronTask.autoSelect'), value: 'auto' },
+  { label: t('cronTask.quickMode'), value: 'react' },
+  { label: t('cronTask.planMode'), value: 'plan_execute' },
 ]
 const jsonMdExpandedMap = ref({})
 
@@ -472,18 +474,18 @@ const chatList = ref([
   // },
   {
     avatar: h(NImage, { src: icon.value, height: '48px', width: '48px'}),
-    name: 'Go-Stock AI',
+    name: t('aiRecommendStocksList.assistantName'),
     datetime: '',
     reasoning: '',
-    content: '我是您的AI赋能股票分析助手,您可以问我任何关于股票投资方面的问题。',
+    content: t('aiRecommendStocksList.introMessage'),
     role: 'assistant',
     duration: 10,
   },
   {
     avatar: 'https://tdesign.gtimg.com/site/avatar.jpg',
-    name: '宇宙无敌大韭菜',
+    name: t('aiRecommendStocksList.userName'),
     datetime: '',
-    content: '介绍下自己？',
+    content: t('aiRecommendStocksList.askIntro'),
     role: 'user',
     reasoning: '',
   },
@@ -517,7 +519,7 @@ const inputEnter = function () {
   if (!inputValue.value) return;
   const params = {
     avatar: 'https://tdesign.gtimg.com/site/avatar.jpg',
-    name: '宇宙无敌大韭菜',
+    name: t('aiRecommendStocksList.userName'),
     datetime: new Date().toDateString(),
     content: inputValue.value,
     role: 'user',

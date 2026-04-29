@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {onBeforeMount, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {LongTigerRank} from "../../wailsjs/go/main/App";
 import {BrowserOpenURL} from "../../wailsjs/runtime";
 import {ArrowDownOutline} from "@vicons/ionicons5";
@@ -7,6 +8,7 @@ import _ from "lodash";
 import KLineChart from "./KLineChart.vue";
 import MoneyTrend from "./moneyTrend.vue";
 import {NButton, NText, useMessage} from "naive-ui";
+const { t } = useI18n()
 const message = useMessage()
 
 const lhbList=  ref([])
@@ -32,14 +34,14 @@ function longTiger_old(date) {
   if(date) {
     SearchForm.value.dateValue = date
   }
-  let loading1=message.loading("正在获取龙虎榜数据...",{
+  let loading1=message.loading(t('market.dragonTigerLoading'),{
     duration: 0,
   })
   LongTigerRank(date).then(res => {
     lhbList.value = res
     loading1.destroy()
     if (res.length === 0) {
-      message.info("暂无数据,请切换日期")
+      message.info(t('market.noDataSwitchDate'))
     }
     EXPLANATIONs.value=_.uniqBy(_.map(lhbList.value,function (item){
       return {
@@ -55,7 +57,7 @@ function longTiger(date) {
     SearchForm.value.dateValue = date;
   }
 
-  let loading1 = message.loading("正在获取龙虎榜数据...", {
+  let loading1 = message.loading(t('market.dragonTigerLoading'), {
     duration: 0,
   });
 
@@ -64,7 +66,7 @@ function longTiger(date) {
       lhbList.value = [];
       EXPLANATIONs.value = [];
       loading1.destroy();
-      message.info("暂无历史数据");
+      message.info(t('market.uplimitLadderNoHistory'));
       return;
     }
 
@@ -78,7 +80,7 @@ function longTiger(date) {
         const day = String(previousDate.getDate()).padStart(2, '0');
         const prevFormattedDate = `${year}-${month}-${day}`;
 
-        message.info(`当前日期 ${currentDate} 暂无数据，尝试查询前一日：${prevFormattedDate}`);
+        message.info(t('market.noDataSwitchDate', { currentDate: currentDate, prevDate: prevFormattedDate }));
 
         SearchForm.value.dateValue = prevFormattedDate;
         fetchDate(prevFormattedDate, retryCount + 1); // 递归调用
@@ -94,7 +96,7 @@ function longTiger(date) {
       }
     }).catch(err => {
       loading1.destroy();
-      message.error("获取数据失败，请重试");
+      message.error(t('market.uplimitLadderFetchFailed'));
       console.error(err);
     });
   };
@@ -108,7 +110,7 @@ function handleEXPLANATION(value, option){
     LongTigerRank(SearchForm.value.dateValue).then(res => {
       lhbList.value=_.filter(res, function(o) { return o['EXPLANATION']===value; });
       if (res.length === 0) {
-        message.info("暂无数据,请切换日期")
+        message.info(t('market.noDataSwitchDate'))
       }
     })
   }else{
@@ -120,38 +122,33 @@ function handleEXPLANATION(value, option){
 <template>
   <n-form :model="SearchForm" >
     <n-grid :cols="24" :x-gap="24">
-      <n-form-item-gi  :span="4" label="日期" path="dateValue" label-placement="left">
+      <n-form-item-gi  :span="4" :label="t('market.date')" path="dateValue" label-placement="left">
         <n-date-picker   v-model:formatted-value="SearchForm.dateValue"
                          value-format="yyyy-MM-dd"  type="date"  :on-update:value="(v,v2)=>longTiger(v2)"/>
 
       </n-form-item-gi>
-      <n-form-item-gi :span="8" label="上榜原因" path="EXPLANATION" label-placement="left">
-        <n-select  clearable placeholder="上榜原因过滤" v-model:value="SearchForm.EXPLANATION" :options="EXPLANATIONs" :on-update:value="handleEXPLANATION"/>
+      <n-form-item-gi :span="8" :label="t('market.listingReason')" path="EXPLANATION" label-placement="left">
+        <n-select  clearable :placeholder="t('market.listingReasonFilter')" v-model:value="SearchForm.EXPLANATION" :options="EXPLANATIONs" :on-update:value="handleEXPLANATION"/>
       </n-form-item-gi>
       <n-form-item-gi :span="10" label=""  label-placement="left">
-        <n-text type="error">*当天的龙虎榜数据通常在收盘结束后一小时左右更新</n-text>
+        <n-text type="error">* {{ t('market.dragonTigerNote') }}</n-text>
       </n-form-item-gi>
     </n-grid>
   </n-form>
   <n-table :single-line="false" striped>
     <n-thead>
       <n-tr>
-        <n-th>代码</n-th>
-        <!--                <n-th width="90px">日期</n-th>-->
-        <n-th width="60px">名称</n-th>
-        <n-th>收盘价</n-th>
-        <n-th width="60px">涨跌幅</n-th>
-        <n-th>龙虎榜净买额(万)</n-th>
-        <n-th>龙虎榜买入额(万)</n-th>
-        <n-th>龙虎榜卖出额(万)</n-th>
-        <n-th>龙虎榜成交额(万)</n-th>
-        <!--                <n-th>市场总成交额(万)</n-th>-->
-        <!--                <n-th>净买额占总成交比</n-th>-->
-        <!--                <n-th>成交额占总成交比</n-th>-->
-        <n-th width="60px"  data-field="TURNOVERRATE">换手率<n-icon :component="ArrowDownOutline" /></n-th>
-        <n-th>流通市值(亿)</n-th>
-        <n-th>上榜原因</n-th>
-        <!--                <n-th>解读</n-th>-->
+        <n-th>{{ t('market.code') }}</n-th>
+        <n-th width="60px">{{ t('market.name') }}</n-th>
+        <n-th>{{ t('market.closePrice') }}</n-th>
+        <n-th width="60px">{{ t('market.changeRate') }}</n-th>
+        <n-th>{{ t('market.billboardNetBuy') }}</n-th>
+        <n-th>{{ t('market.billboardBuy') }}</n-th>
+        <n-th>{{ t('market.billboardSell') }}</n-th>
+        <n-th>{{ t('market.billboardDeal') }}</n-th>
+        <n-th width="60px"  data-field="TURNOVERRATE">{{ t('market.turnoverRate') }}<n-icon :component="ArrowDownOutline" /></n-th>
+        <n-th>{{ t('market.freeMarketCap') }}</n-th>
+        <n-th>{{ t('market.listingReason') }}</n-th>
       </n-tr>
     </n-thead>
     <n-tbody>

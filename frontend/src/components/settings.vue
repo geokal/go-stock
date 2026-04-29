@@ -1,5 +1,6 @@
 <script setup>
-import {h, onBeforeUnmount, onMounted, ref} from "vue";
+import {h, onBeforeUnmount, onMounted, ref, computed} from "vue";
+import {useI18n} from 'vue-i18n'
 import {
   AddPrompt,
   DelPrompt,
@@ -18,6 +19,7 @@ import {EventsEmit} from "../../wailsjs/runtime";
 import {HelpCircleFilledIcon, HelpIcon} from "tdesign-icons-vue-next";
 
 const message = useMessage()
+const { t, locale } = useI18n()
 
 const formRef = ref(null)
 const formValue = ref({
@@ -58,6 +60,7 @@ const formValue = ref({
   qgqpBId: '',
   updateChannel: 'release',
   promptPlazaApiBase: '',
+  language: 'zh-CN',
 })
 
 // 添加一个新的AI配置到列表
@@ -83,14 +86,19 @@ function removeAiConfig(index) {
 }
 
 const updateChannelOptions = [
-  { label: 'Release（稳定版）', value: 'release' },
-  { label: 'Pre-release（预发布版）', value: 'pre' },
-  { label: 'Dev（开发版）', value: 'dev' },
+  { label: 'Release', value: 'release' },
+  { label: 'Pre-release', value: 'pre' },
+  { label: 'Dev', value: 'dev' },
 ]
+
+const languageOptions = computed(() => [
+  { label: t('settings.chinese'), value: 'zh-CN' },
+  { label: 'English', value: 'en' },
+])
 
 async function fetchAiModels(aiConfig) {
   if (!aiConfig.baseUrl || !aiConfig.apiKey) {
-    message.warning('请先填写接口地址和 apiKey')
+    message.warning(t('settings.fillApiKeyFirst'))
     return
   }
   if (aiConfig._loadingModels) {
@@ -106,11 +114,11 @@ async function fetchAiModels(aiConfig) {
       onModelNameChange(aiConfig, aiConfig.modelName)
     }
     if (!options.length) {
-      message.warning('未从接口获取到可用模型，请检查地址和 apiKey')
+      message.warning(t('settings.noModelsFromApi'))
     }
   } catch (e) {
     console.error('FetchAiModels error', e)
-    message.error('获取模型列表失败，请检查接口地址和 apiKey')
+    message.error(t('settings.fetchModelsFailed'))
   } finally {
     aiConfig._loadingModels = false
   }
@@ -119,24 +127,24 @@ async function fetchAiModels(aiConfig) {
 
 const promptTemplates = ref([])
 
-const aiPlatformOptions = [
-  { label: 'DeepSeek (https://api.deepseek.com)', value: 'https://api.deepseek.com' },
-  { label: '硅基流动 (https://api.siliconflow.cn/v1)', value: 'https://api.siliconflow.cn/v1' },
-  { label: '智谱AI(GLM) (https://open.bigmodel.cn/api/paas/v4)', value: 'https://open.bigmodel.cn/api/paas/v4' },
-  { label: '字节豆包(火山引擎) (https://ark.cn-beijing.volces.com/api/v3)', value: 'https://ark.cn-beijing.volces.com/api/v3' },
-  { label: '阿里云百炼 (https://dashscope.aliyuncs.com/compatible-mode/v1)', value: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
-  { label: 'Moonshot(月之暗面) (https://api.moonshot.cn/v1)', value: 'https://api.moonshot.cn/v1' },
-  { label: '腾讯混元 (https://api.hunyuan.cloud.tencent.com/v1)', value: 'https://api.hunyuan.cloud.tencent.com/v1' },
-  { label: '讯飞星火 (https://spark-api-open.xf-yun.com/v1)', value: 'https://spark-api-open.xf-yun.com/v1' },
-  { label: '零一万物 (https://api.lingyiwanwu.com/v1)', value: 'https://api.lingyiwanwu.com/v1' },
+const aiPlatformOptions = computed(() => [
+  { label: t('settings.platform.deepSeek') + ' (https://api.deepseek.com)', value: 'https://api.deepseek.com' },
+  { label: t('settings.platform.siliconFlow') + ' (https://api.siliconflow.cn/v1)', value: 'https://api.siliconflow.cn/v1' },
+  { label: t('settings.platform.zhipuAI') + ' (https://open.bigmodel.cn/api/paas/v4)', value: 'https://open.bigmodel.cn/api/paas/v4' },
+  { label: t('settings.platform.byteDance') + ' (https://ark.cn-beijing.volces.com/api/v3)', value: 'https://ark.cn-beijing.volces.com/api/v3' },
+  { label: t('settings.platform.alibabaCloud') + ' (https://dashscope.aliyuncs.com/compatible-mode/v1)', value: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
+  { label: t('settings.platform.moonshot') + ' (https://api.moonshot.cn/v1)', value: 'https://api.moonshot.cn/v1' },
+  { label: t('settings.platform.tencentHunyuan') + ' (https://api.hunyuan.cloud.tencent.com/v1)', value: 'https://api.hunyuan.cloud.tencent.com/v1' },
+  { label: t('settings.platform.xunfeiSpark') + ' (https://spark-api-open.xf-yun.com/v1)', value: 'https://spark-api-open.xf-yun.com/v1' },
+  { label: t('settings.platform.lingyiwanwu') + ' (https://api.lingyiwanwu.com/v1)', value: 'https://api.lingyiwanwu.com/v1' },
   { label: 'MiniMax (https://api.minimax.chat/v1)', value: 'https://api.minimax.chat/v1' },
-  { label: '百川智能 (https://api.baichuan-ai.com/v1)', value: 'https://api.baichuan-ai.com/v1' },
-  { label: '百度千帆 (https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop)', value: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop' },
+  { label: 'Baichuan (https://api.baichuan-ai.com/v1)', value: 'https://api.baichuan-ai.com/v1' },
+  { label: 'Baidu Qianfan (https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop)', value: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop' },
   { label: 'OpenAI (https://api.openai.com/v1)', value: 'https://api.openai.com/v1' },
   { label: 'Azure OpenAI (https://YOUR_RESOURCE.openai.azure.com)', value: 'https://YOUR_RESOURCE.openai.azure.com' },
   { label: 'OpenRouter (https://openrouter.ai/api/v1)', value: 'https://openrouter.ai/api/v1' },
-  { label:'Ollama (http://localhost:11434/v1)', value: 'http://localhost:11434/v1' },
-]
+  { label: t('settings.platform.ollama') + ' (http://localhost:11434/v1)', value: 'http://localhost:11434/v1' },
+])
 
 function getPlatformName(baseUrl) {
   if (!baseUrl) return ''
@@ -185,8 +193,8 @@ async function fetchModelInfo(aiConfig, modelName) {
     const info = await FetchAiModelInfo(aiConfig.baseUrl, aiConfig.apiKey || '', modelName)
     if (info && info.maxTokens > 0) {
       aiConfig.maxTokens = info.maxTokens
-      const sourceLabel = info.source === 'api' ? 'API' : '内置数据'
-      message.success(`已自动设置 ${modelName} 的 MaxTokens 为 ${info.maxTokens}（来源：${sourceLabel}）`)
+      const sourceLabel = info.source === 'api' ? t('settings.apiSource') : t('settings.builtIn')
+      message.success(t('settings.autoSetMaxtokens', { modelName: modelName, maxTokens: info.maxTokens, source: sourceLabel }))
     }
   } catch (e) {
     console.error('FetchAiModelInfo error', e)
@@ -235,7 +243,8 @@ onMounted(() => {
     formValue.value.qgqpBId = res.qgqpBId;
     formValue.value.updateChannel = res.updateChannel || 'release';
     formValue.value.promptPlazaApiBase = res.promptPlazaApiBase || '';
-
+    formValue.value.language = res.language || 'zh-CN';
+    locale.value = formValue.value.language;
   })
 
   // GetPromptTemplates("", "").then(res => {
@@ -279,7 +288,8 @@ function saveConfig() {
     enableAgent: formValue.value.enableAgent,
     qgqpBId: formValue.value.qgqpBId,
     updateChannel: formValue.value.updateChannel,
-    promptPlazaApiBase: formValue.value.promptPlazaApiBase
+    promptPlazaApiBase: formValue.value.promptPlazaApiBase,
+    language: formValue.value.language,
   })
 
   if (config.sponsorCode) {
@@ -287,6 +297,7 @@ function saveConfig() {
       if (res.code) {
         UpdateConfig(config).then(res => {
           message.success(res)
+          locale.value = formValue.value.language
           EventsEmit("updateSettings", config);
         })
       } else {
@@ -296,6 +307,7 @@ function saveConfig() {
   } else {
     UpdateConfig(config).then(res => {
       message.success(res)
+      locale.value = formValue.value.language
       EventsEmit("updateSettings", config);
     })
   }
@@ -394,9 +406,9 @@ window.onerror = function (event, source, lineno, colno, error) {
 };
 
 const showManagePromptsModal = ref(false)
-const promptTypeOptions = [
-  {label: "模型系统Prompt", value: '模型系统Prompt'},
-  {label: "模型用户Prompt", value: '模型用户Prompt'},]
+const promptTypeOptions = computed(() => [
+  {label: t('promptTemplateList.systemPromptType'), value: '模型系统Prompt'},
+  {label: t('promptTemplateList.userPromptType'), value: '模型用户Prompt'},])
 const formPromptRef = ref(null)
 const formPrompt = ref({
   ID: 0,
@@ -442,23 +454,26 @@ function deletePrompt(ID) {
   <n-flex justify="left" style="text-align: left; --wails-draggable:no-drag">
     <n-form ref="formRef" :label-placement="'left'" :label-align="'left'">
       <n-space vertical size="large">
-        <n-card :title="() => h(NTag, { type: 'primary', bordered: false }, () => '基础设置')" size="small">
+        <n-card :title="() => h(NTag, { type: 'primary', bordered: false }, () => t('settings.basicSettings'))" size="small">
           <n-grid :cols="24" :x-gap="24" style="text-align: left">
 <!--            <n-form-item-gi :span="10" label="Tushare Token：" path="tushareToken">
               <n-input type="text" placeholder="Tushare api token" v-model:value="formValue.tushareToken" clearable/>
             </n-form-item-gi>-->
-            <n-form-item-gi :span="4" label="启动时更新基础信息：" path="updateBasicInfoOnStart">
+            <n-form-item-gi :span="4" :label="t('settings.updateBasicInfoOnStart')" path="updateBasicInfoOnStart">
               <n-switch v-model:value="formValue.updateBasicInfoOnStart"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="4" label="数据刷新间隔：" path="refreshInterval">
-              <n-input-number v-model:value="formValue.refreshInterval" placeholder="请输入数据刷新间隔(秒)">
-                <template #suffix>秒</template>
+            <n-form-item-gi :span="4" :label="t('settings.refreshInterval')" path="refreshInterval">
+              <n-input-number v-model:value="formValue.refreshInterval" :placeholder="t('settings.enterRefreshInterval')">
+                <template #suffix>{{ t('settings.seconds') }}</template>
               </n-input-number>
             </n-form-item-gi>
-            <n-form-item-gi :span="6" label="暗黑主题：" path="darkTheme">
+            <n-form-item-gi :span="6" :label="t('settings.darkTheme')" path="darkTheme">
               <n-switch v-model:value="formValue.darkTheme"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="8" label="更新通道：" path="updateChannel">
+            <n-form-item-gi :span="6" :label="t('settings.language')" path="language">
+              <n-select v-model:value="formValue.language" :options="languageOptions" :placeholder="t('settings.selectLanguage')" />
+            </n-form-item-gi>
+            <n-form-item-gi :span="8" :label="t('settings.updateChannel')" path="updateChannel">
               <n-select v-model:value="formValue.updateChannel" :options="updateChannelOptions" />
               <n-tooltip placement="top">
                 <template #trigger>
@@ -469,17 +484,17 @@ function deletePrompt(ID) {
                 <template #default>
                   <n-gradient-text :type="'warning'">
                   <div style="max-width: 400px;text-align: left">
-                    更新通道说明：<br>
-                    <b>Release（稳定版）</b>：仅接收正式发布版本，稳定性最高<br>
-                    <b>Pre-release（预发布版）</b>：包含预发布版本，可提前体验新功能<br>
-                    <b>Dev（开发版）</b>：包含所有可用版本，获取最新开发进度
+                    {{ t('settings.updateChannelNote') }}<br>
+                    <b>{{ t('settings.releaseStable') }}</b>：{{ t('settings.releaseStableDesc') }}<br>
+                    <b>{{ t('settings.preRelease') }}</b>：{{ t('settings.preReleaseDesc') }}<br>
+                    <b>{{ t('settings.devBuild') }}</b>：{{ t('settings.devBuildDesc') }}
                   </div>
                   </n-gradient-text>
                 </template>
               </n-tooltip>
             </n-form-item-gi>
-            <n-form-item-gi :span="10" label="浏览器安装路径：" path="browserPath">
-              <n-input type="text" placeholder="浏览器安装路径" v-model:value="formValue.browserPath" clearable/>
+            <n-form-item-gi :span="10" :label="t('settings.browserPath')" path="browserPath">
+              <n-input type="text" :placeholder="t('settings.enterBrowserPath')" v-model:value="formValue.browserPath" clearable/>
             </n-form-item-gi>
 <!--            <n-form-item-gi :span="3" label="指数基金：" path="enableFund">
               <n-switch v-model:value="formValue.enableFund"/>
@@ -487,8 +502,8 @@ function deletePrompt(ID) {
             <n-form-item-gi :span="3" label="AI智能体：" path="enableAgent">
               <n-switch v-model:value="formValue.enableAgent"/>
             </n-form-item-gi>-->
-            <n-form-item-gi :span="11" label="东财唯一标识：" path="qgqpBId">
-              <n-input type="text" placeholder="东财唯一标识" v-model:value="formValue.qgqpBId" clearable/>
+            <n-form-item-gi :span="11" :label="t('settings.eastmoneyUniqueId')" path="qgqpBId">
+              <n-input type="text" :placeholder="t('settings.enterEastmoneyId')" v-model:value="formValue.qgqpBId" clearable/>
               <n-tooltip placement="top">
                 <template #trigger>
                   <n-icon color="#0e7a0d" size="20">
@@ -498,18 +513,15 @@ function deletePrompt(ID) {
                 <template #default>
                   <n-gradient-text :type="'warning'">
                   <div style="max-width: 400px;text-align: left">
-                    获取方法：<br>
-                    打开浏览器,访问东财网站，<br>
-                    按F12打开开发人员工具-》网络面板，<br>
-                    随便点开一个请求，复制请求cookie中qgqp_b_id对应的值。
+                    {{ t('settings.eastmoneyIdHelp') }}
                   </div>
                   </n-gradient-text>
                 </template>
               </n-tooltip>
             </n-form-item-gi>
 
-            <n-form-item-gi :span="11" label="问财API密钥：" path="iwencaiApiKey">
-              <n-input type="password" placeholder="同花顺问财开放平台API Key" v-model:value="formValue.iwencaiApiKey" clearable show-password-on="click"/>
+            <n-form-item-gi :span="11" :label="t('settings.wencaiApiKey')" path="iwencaiApiKey">
+              <n-input type="password" :placeholder="t('settings.enterWencaiKey')" v-model:value="formValue.iwencaiApiKey" clearable show-password-on="click"/>
               <n-tooltip placement="top">
                 <template #trigger>
                   <n-icon color="#0e7a0d" size="20">
@@ -519,19 +531,15 @@ function deletePrompt(ID) {
                 <template #default>
                   <n-gradient-text :type="'warning'">
                   <div style="max-width: 400px;text-align: left">
-                    获取方法：<br>
-                    访问同花顺问财开放平台：<br>
-                    <a href="https://open.iwencai.com" target="_blank" style="color: #63e2b7">https://open.iwencai.com</a><br>
-                    注册并登录后，在控制台获取API Key。<br>
-                    配置后可使用问财智能选股、行情查询、研报搜索等功能。
+                    {{ t('settings.wencaiHelp') }}
                   </div>
                   </n-gradient-text>
                 </template>
               </n-tooltip>
             </n-form-item-gi>
 
-            <n-form-item-gi :span="11" label="东财AI密钥：" path="emApiKey">
-              <n-input type="password" placeholder="东方财富AI SaaS API Key" v-model:value="formValue.emApiKey" clearable show-password-on="click"/>
+            <n-form-item-gi :span="11" :label="t('settings.eastmoneyAiKey')" path="emApiKey">
+              <n-input type="password" :placeholder="t('settings.enterEastmoneyAiKey')" v-model:value="formValue.emApiKey" clearable show-password-on="click"/>
               <n-tooltip placement="top">
                 <template #trigger>
                   <n-icon color="#0e7a0d" size="20">
@@ -541,21 +549,19 @@ function deletePrompt(ID) {
                 <template #default>
                   <n-gradient-text :type="'warning'">
                   <div style="max-width: 400px;text-align: left">
-                    获取方法：<br>
-                    访问东方财富妙想AI平台获取API Key。<br>
-                    配置后可使用个股业绩点评功能。
+                    {{ t('settings.eastmoneyAiHelp') }}
                   </div>
                   </n-gradient-text>
                 </template>
               </n-tooltip>
             </n-form-item-gi>
 
-            <n-form-item-gi :span="11" label="赞助码：" path="sponsorCode">
+            <n-form-item-gi :span="11" :label="t('settings.sponsorCode')" path="sponsorCode">
               <n-input-group>
-                <n-input :show-count="true" placeholder="联系作者QQ或微信获取，激活VIP功能" v-model:value="formValue.sponsorCode">
+                <n-input :show-count="true" :placeholder="t('settings.enterSponsorCode')" v-model:value="formValue.sponsorCode">
                 </n-input>
                 <n-button type="success" secondary strong
-                          @click="CheckSponsorCode(formValue.sponsorCode).then((res) => {message.warning(res.msg)})">验证
+                          @click="CheckSponsorCode(formValue.sponsorCode).then((res) => {message.warning(res.msg)})">{{ t('settings.verify') }}
                 </n-button>
                 <n-popover trigger="hover" placement="top">
                   <template #trigger>
@@ -565,17 +571,16 @@ function deletePrompt(ID) {
                   </template>
                   <n-gradient-text :type="'warning'">
                     <div style="max-width: 400px;text-align: left">
-                      赞助码获取方式：<br>
-                      联系作者获取赞助码，激活VIP功能<br>
-                      享受更多高级功能和优先支持
+                      {{ t('settings.sponsorCodeHowTo') }}<br>
+                      {{ t('settings.sponsorCodeHowToDesc') }}
                     </div>
                   </n-gradient-text>
                 </n-popover>
               </n-input-group>
             </n-form-item-gi>
 
-            <n-form-item-gi :span="11" label="提示词广场地址：" path="promptPlazaApiBase">
-              <n-input type="text" placeholder="http://go-stock.sparkmemory.top:1918/api" v-model:value="formValue.promptPlazaApiBase" clearable/>
+            <n-form-item-gi :span="11" :label="t('settings.promptPlazaUrl')" path="promptPlazaApiBase">
+              <n-input type="text" :placeholder="t('settings.promptPlazaUrlDefault')" v-model:value="formValue.promptPlazaApiBase" clearable/>
               <n-tooltip placement="top">
                 <template #trigger>
                   <n-icon color="#0e7a0d" size="20">
@@ -585,9 +590,7 @@ function deletePrompt(ID) {
                 <template #default>
                   <n-gradient-text :type="'warning'">
                   <div style="max-width: 400px;text-align: left">
-                    提示词广场服务接口地址<br>
-                    默认: http://go-stock.sparkmemory.top:1918/api<br>
-                    如已部署提示词广场服务，可修改为实际地址
+                    {{ t('settings.promptPlazaUrlHelp') }}
                   </div>
                   </n-gradient-text>
                 </template>
@@ -596,74 +599,74 @@ function deletePrompt(ID) {
           </n-grid>
         </n-card>
 
-        <n-card :title="() => h(NTag, { type: 'primary', bordered: false }, () => '通知设置')" size="small">
+        <n-card :title="() => h(NTag, { type: 'primary', bordered: false }, () => t('settings.notificationSettings'))" size="small">
           <n-grid :cols="24" :x-gap="24" style="text-align: left">
-            <n-form-item-gi :span="3" label="钉钉推送：" path="dingPush.enable">
+            <n-form-item-gi :span="3" :label="t('settings.dingtalkPush')" path="dingPush.enable">
               <n-switch v-model:value="formValue.dingPush.enable"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="3" label="本地推送：" path="localPush.enable">
+            <n-form-item-gi :span="3" :label="t('settings.localPush')" path="localPush.enable">
               <n-switch v-model:value="formValue.localPush.enable"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="3" label="弹幕功能：" path="enableDanmu">
+            <n-form-item-gi :span="3" :label="t('settings.danmuFeature')" path="enableDanmu">
               <n-switch v-model:value="formValue.enableDanmu"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="3" label="显示滚动快讯：" path="enableNews">
+            <n-form-item-gi :span="3" :label="t('settings.showScrollNews')" path="enableNews">
               <n-switch v-model:value="formValue.enableNews"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="3" label="市场资讯提醒：" path="enablePushNews">
+            <n-form-item-gi :span="3" :label="t('settings.marketNewsAlert')" path="enablePushNews">
               <n-switch v-model:value="formValue.enablePushNews"/>
             </n-form-item-gi>
-            <n-form-item-gi v-if="formValue.enablePushNews" :span="4" label="只提醒红字或关注个股的新闻：" path="enableOnlyPushRedNews">
+            <n-form-item-gi v-if="formValue.enablePushNews" :span="4" :label="t('settings.onlyAlertRedOrWatched')" path="enableOnlyPushRedNews">
               <n-switch v-model:value="formValue.enableOnlyPushRedNews"/>
             </n-form-item-gi>
 
-            <n-form-item-gi :span="22" v-if="formValue.dingPush.enable" label="钉钉机器人接口地址："
+            <n-form-item-gi :span="22" v-if="formValue.dingPush.enable" :label="t('settings.dingtalkRobotUrl')"
                             path="dingPush.dingRobot">
-              <n-input placeholder="请输入钉钉机器人接口地址" v-model:value="formValue.dingPush.dingRobot"/>
-              <n-button type="primary" @click="sendTestNotice">发送测试通知</n-button>
+              <n-input :placeholder="t('settings.enterDingtalkUrl')" v-model:value="formValue.dingPush.dingRobot"/>
+              <n-button type="primary" @click="sendTestNotice">{{ t('settings.sendTestNotification') }}</n-button>
             </n-form-item-gi>
           </n-grid>
         </n-card>
 
-        <n-card :title="() => h(NTag, { type: 'primary', bordered: false }, () => 'AI设置')" size="small">
+        <n-card :title="() => h(NTag, { type: 'primary', bordered: false }, () => t('settings.aiSettings'))" size="small">
           <n-grid :cols="24" :x-gap="24" style="text-align: left;">
-            <n-form-item-gi :span="24" label="AI诊股：" path="openAI.enable">
+            <n-form-item-gi :span="24" :label="t('settings.aiStockAnalysis')" path="openAI.enable">
               <n-switch v-model:value="formValue.openAI.enable"/>
             </n-form-item-gi>
 
-            <n-form-item-gi :span="6" v-if="formValue.openAI.enable" label="Crawler Timeout(秒)"
-                            title="资讯采集超时时间(秒)" path="openAI.crawlTimeOut">
+            <n-form-item-gi :span="6" v-if="formValue.openAI.enable" :label="t('settings.crawlerTimeout')"
+                            :title="t('settings.crawlerTimeout')" path="openAI.crawlTimeOut">
               <n-input-number min="30" step="1" v-model:value="formValue.openAI.crawlTimeOut"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="4" v-if="formValue.openAI.enable" title="天数越多消耗tokens越多"
-                            label="日K线数据(天)" path="openAI.kDays">
+            <n-form-item-gi :span="4" v-if="formValue.openAI.enable" :title="t('settings.moreDaysMoreTokens')"
+                            :label="t('settings.dailyKlineDays')" path="openAI.kDays">
               <n-input-number min="30" step="1" max="60" v-model:value="formValue.openAI.kDays"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="2" label="爬虫http代理" path="httpProxyEnabled">
+            <n-form-item-gi :span="2" :label="t('settings.httpProxy')" path="httpProxyEnabled">
               <n-switch v-model:value="formValue.httpProxyEnabled"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="10" v-if="formValue.httpProxyEnabled" title="http代理地址"
-                            label="http代理地址" path="httpProxy">
-              <n-input type="text" placeholder="爬虫http代理地址" v-model:value="formValue.httpProxy" clearable/>
+            <n-form-item-gi :span="10" v-if="formValue.httpProxyEnabled" :title="t('settings.httpProxyAddress')"
+                            :label="t('settings.httpProxyAddress')" path="httpProxy">
+              <n-input type="text" :placeholder="t('settings.enterHttpProxy')" v-model:value="formValue.httpProxy" clearable/>
             </n-form-item-gi>
 
 
             <n-gi :span="24" v-if="formValue.openAI.enable">
-              <n-divider title-placement="left">默认提示词设置</n-divider>
+              <n-divider :title="() => t('settings.defaultPromptSettings')" title-placement="left"></n-divider>
             </n-gi>
-            <n-form-item-gi :span="12" v-if="formValue.openAI.enable" label="默认系统提示词" path="openAI.prompt">
+            <n-form-item-gi :span="12" v-if="formValue.openAI.enable" :label="t('settings.defaultSystemPrompt')" path="openAI.prompt">
               <n-input v-model:value="formValue.openAI.prompt" type="textarea" :show-count="true"
-                       placeholder="请输入系统提示词" :autosize="{ minRows: 4, maxRows: 8 }"/>
+                       :placeholder="t('settings.enterSystemPrompt')" :autosize="{ minRows: 4, maxRows: 8 }"/>
             </n-form-item-gi>
-            <n-form-item-gi :span="12" v-if="formValue.openAI.enable" label="默认个股分析提示词"
+            <n-form-item-gi :span="12" v-if="formValue.openAI.enable" :label="t('settings.defaultStockAnalysisPrompt')"
                             path="openAI.questionTemplate">
               <n-input v-model:value="formValue.openAI.questionTemplate" type="textarea" :show-count="true"
-                       placeholder="请输入个股分析提示词:例如{{stockName}}[{{stockCode}}]分析和总结"
+                       :placeholder="t('settings.enterStockAnalysisPrompt')"
                        :autosize="{ minRows: 4, maxRows: 8 }"/>
             </n-form-item-gi>
 
             <n-gi :span="24" v-if="formValue.openAI.enable">
-              <n-divider title-placement="left">AI模型服务配置</n-divider>
+              <n-divider :title="() => t('settings.aiModelConfig')" title-placement="left"></n-divider>
             </n-gi>
             <n-gi :span="24" v-if="formValue.openAI.enable">
               <n-space vertical>
@@ -671,62 +674,62 @@ function deletePrompt(ID) {
                         size="small">
                   <template #header>
                     <n-flex justify="space-between" align="center">
-                      <n-text depth="3">AI 配置 #{{ index + 1 }}</n-text>
-                      <n-button type="error" size="tiny" ghost @click="removeAiConfig(index)">删除</n-button>
+                      <n-text depth="3">{{ t('settings.aiConfigIndex', { index: index + 1 }) }}</n-text>
+                      <n-button type="error" size="tiny" ghost @click="removeAiConfig(index)">{{ t('settings.removeAiConfig') }}</n-button>
                     </n-flex>
                   </template>
                   <n-grid :cols="24" :x-gap="24">
-                    <n-form-item-gi :span="24" hidden label="配置ID" :path="`openAI.aiConfigs[${index}].ID`">
-                      <n-input type="text" placeholder="配置ID" v-model:value="aiConfig.ID" clearable/>
+                    <n-form-item-gi :span="24" hidden :label="t('settings.configId')" :path="`openAI.aiConfigs[${index}].ID`">
+                      <n-input type="text" :placeholder="t('settings.enterConfigId')" v-model:value="aiConfig.ID" clearable/>
                     </n-form-item-gi>
-                    <n-form-item-gi :span="12" label="配置名称" :path="`openAI.aiConfigs[${index}].name`">
-                      <n-input type="text" placeholder="配置名称" v-model:value="aiConfig.name" clearable/>
+                    <n-form-item-gi :span="12" :label="t('settings.configName')" :path="`openAI.aiConfigs[${index}].name`">
+                      <n-input type="text" :placeholder="t('settings.enterConfigName')" v-model:value="aiConfig.name" clearable/>
                     </n-form-item-gi>
-                    <n-form-item-gi :span="12" label="接口地址" :path="`openAI.aiConfigs[${index}].baseUrl`">
+                    <n-form-item-gi :span="12" :label="t('settings.apiAddress')" :path="`openAI.aiConfigs[${index}].baseUrl`">
                       <n-select
                         v-model:value="aiConfig.baseUrl"
                         :options="aiPlatformOptions"
                         filterable
                         tag
                         clearable
-                        placeholder="选择或输入AI接口地址"
+                        :placeholder="t('settings.enterApiAddress')"
                         @update:value="(val) => onBaseUrlChange(aiConfig, val)"
                       />
                     </n-form-item-gi>
-                    <n-form-item-gi :span="12" label="令牌(apiKey)" :path="`openAI.aiConfigs[${index}].apiKey`">
-                      <n-input type="password" placeholder="apiKey" v-model:value="aiConfig.apiKey" clearable
+                    <n-form-item-gi :span="12" :label="t('settings.apiKey')" :path="`openAI.aiConfigs[${index}].apiKey`">
+                      <n-input type="password" :placeholder="t('settings.enterApiKey')" v-model:value="aiConfig.apiKey" clearable
                                show-password-on="click"/>
                     </n-form-item-gi>
-                    <n-form-item-gi :span="8" label="模型名称" :path="`openAI.aiConfigs[${index}].modelName`">
+                    <n-form-item-gi :span="8" :label="t('settings.modelName')" :path="`openAI.aiConfigs[${index}].modelName`">
                       <n-select
                         v-model:value="aiConfig.modelName"
                         :options="aiConfig._modelOptions || []"
                         filterable
                         tag
                         :loading="aiConfig._loadingModels"
-                        placeholder="点击获取模型列表或手动输入"
+                        :placeholder="t('settings.getModelListOrEnter')"
                         @click="fetchAiModels(aiConfig)"
                         @update:value="(val) => onModelNameChange(aiConfig, val)"
                       />
                     </n-form-item-gi>
                     <n-form-item-gi :span="5" label="Temperature" :path="`openAI.aiConfigs[${index}].temperature`">
-                      <n-input-number placeholder="temperature" v-model:value="aiConfig.temperature" :step="0.1"/>
+                      <n-input-number :placeholder="t('settings.temperature')" v-model:value="aiConfig.temperature" :step="0.1"/>
                     </n-form-item-gi>
                     <n-form-item-gi :span="5" label="MaxTokens" :path="`openAI.aiConfigs[${index}].maxTokens`">
-                      <n-input-number placeholder="maxTokens" v-model:value="aiConfig.maxTokens"/>
+                      <n-input-number :placeholder="t('settings.maxTokens')" v-model:value="aiConfig.maxTokens"/>
                     </n-form-item-gi>
-                    <n-form-item-gi :span="5" label="Timeout(秒)" :path="`openAI.aiConfigs[${index}].timeOut`">
-                      <n-input-number min="60" step="1" placeholder="超时(秒)" v-model:value="aiConfig.timeOut"/>
+                    <n-form-item-gi :span="5" label="Timeout" :path="`openAI.aiConfigs[${index}].timeOut`">
+                      <n-input-number min="60" step="1" :placeholder="t('settings.enterTimeout')" v-model:value="aiConfig.timeOut"/>
                     </n-form-item-gi>
-                    <n-form-item-gi :span="12" label="http代理" :path="`openAI.aiConfigs[${index}].httpProxyEnabled`">
+                    <n-form-item-gi :span="12" :label="t('settings.proxyEnabled')" :path="`openAI.aiConfigs[${index}].httpProxyEnabled`">
                       <n-switch v-model:value="aiConfig.httpProxyEnabled"/>
                     </n-form-item-gi>
-                    <n-form-item-gi :span="12" v-if="aiConfig.httpProxyEnabled" title="http代理地址" :path="`openAI.aiConfigs[${index}].httpProxy`">
-                      <n-input type="text" placeholder="http代理地址" v-model:value="aiConfig.httpProxy" clearable/>
+                    <n-form-item-gi :span="12" v-if="aiConfig.httpProxyEnabled" :title="t('settings.httpProxyAddress')" :path="`openAI.aiConfigs[${index}].httpProxy`">
+                      <n-input type="text" :placeholder="t('settings.enterHttpProxy')" v-model:value="aiConfig.httpProxy" clearable/>
                     </n-form-item-gi>
                   </n-grid>
                 </n-card>
-                <n-button type="primary" dashed @click="addAiConfig" style="width: 100%;">+ 添加AI配置</n-button>
+                <n-button type="primary" dashed @click="addAiConfig" style="width: 100%;">{{ t('settings.addAiConfig') }}</n-button>
               </n-space>
             </n-gi>
 
@@ -738,13 +741,13 @@ function deletePrompt(ID) {
               <n-space vertical>
                 <n-space justify="center">
 <!--                  <n-button type="warning" @click="managePrompts">管理提示词模板</n-button>-->
-                  <n-button type="primary" strong @click="saveConfig">保存设置</n-button>
-                  <n-button type="info" @click="exportConfig">导出配置</n-button>
-                  <n-button type="error" @click="importConfig">导入配置</n-button>
+                  <n-button type="primary" strong @click="saveConfig">{{ t('settings.saveSettings') }}</n-button>
+                  <n-button type="info" @click="exportConfig">{{ t('settings.exportSettings') }}</n-button>
+                  <n-button type="error" @click="importConfig">{{ t('settings.importSettings') }}</n-button>
                 </n-space>
 
                 <n-flex justify="start" style="margin-top: 10px" v-if="promptTemplates.length > 0">
-                  <n-tag :bordered="false" type="warning">提示词模板:</n-tag>
+                  <n-tag :bordered="false" type="warning">{{ t('settings.promptTemplate') }}:</n-tag>
                   <n-tag size="medium" secondary v-for="prompt in promptTemplates" closable
                          @close="deletePrompt(prompt.ID)" @click="editPrompt(prompt)" :title="prompt.content"
                          :type="prompt.type === '模型系统Prompt' ? 'success' : 'info'" :bordered="false">{{
@@ -763,23 +766,23 @@ function deletePrompt(ID) {
 
   <n-modal v-model:show="showManagePromptsModal" closable :mask-closable="false">
     <n-card style="width: 800px; height: 600px; text-align: left" :bordered="false"
-            :title="(formPrompt.ID > 0 ? '修改' : '添加') + '提示词'" size="huge" role="dialog" aria-modal="true">
+            :title="(formPrompt.ID > 0 ? t('settings.modify') : t('settings.add')) + ' ' + t('settings.promptTemplate')" size="huge" role="dialog" aria-modal="true">
       <n-form ref="formPromptRef" :label-placement="'left'" :label-align="'left'">
-        <n-form-item label="名称">
-          <n-input v-model:value="formPrompt.Name" placeholder="请输入提示词名称"/>
+        <n-form-item :label="t('settings.promptName')">
+          <n-input v-model:value="formPrompt.Name" :placeholder="t('settings.enterPromptName')"/>
         </n-form-item>
-        <n-form-item label="类型">
-          <n-select v-model:value="formPrompt.Type" :options="promptTypeOptions" placeholder="请选择提示词类型"/>
+        <n-form-item :label="t('settings.promptType')">
+          <n-select v-model:value="formPrompt.Type" :options="promptTypeOptions" :placeholder="t('settings.selectPromptType')"/>
         </n-form-item>
-        <n-form-item label="内容">
-          <n-input v-model:value="formPrompt.Content" type="textarea" :show-count="true" placeholder="请输入prompt"
+        <n-form-item :label="t('settings.promptContent')">
+          <n-input v-model:value="formPrompt.Content" type="textarea" :show-count="true" :placeholder="t('settings.enterPromptContent')"
                    :autosize="{ minRows: 12, maxRows: 12, }"/>
         </n-form-item>
       </n-form>
       <template #footer>
         <n-flex justify="end">
-          <n-button type="primary" @click="savePrompt">保存</n-button>
-          <n-button type="warning" @click="showManagePromptsModal = false">取消</n-button>
+          <n-button type="primary" @click="savePrompt">{{ t('settings.save') }}</n-button>
+          <n-button type="warning" @click="showManagePromptsModal = false">{{ t('settings.cancel') }}</n-button>
         </n-flex>
       </template>
     </n-card>

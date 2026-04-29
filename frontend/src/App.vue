@@ -8,9 +8,12 @@ import {
   WindowUnfullscreen,
   WindowSetTitle
 } from '../wailsjs/runtime'
-import {h, onBeforeMount, onBeforeUnmount, onMounted, ref} from "vue";
+import {h, onBeforeMount, onBeforeUnmount, onMounted, ref, computed} from "vue";
 import {RouterLink, useRouter} from 'vue-router'
-import {createDiscreteApi,darkTheme,lightTheme , NIcon, NText,NButton,dateZhCN,zhCN} from 'naive-ui'
+import {createDiscreteApi,darkTheme,lightTheme , NIcon, NText,NButton,dateZhCN,dateEnUS,zhCN,enUS} from 'naive-ui'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n()
 import {
   AlarmOutline,
   AnalyticsOutline,
@@ -41,13 +44,13 @@ import {FireFilled, MoneyCollectOutlined, NotificationFilled, StockOutlined} fro
 
 const router = useRouter()
 const loading = ref(true)
-const loadingMsg = ref("加载数据中...")
+const loadingMsg = computed(() => t('app.loadingData'))
 const enableNews = ref(false)
 const contentStyle = ref("")
 const enableFund = ref(false)
 const enableAgent = ref(false)
 const enableDarkTheme = ref(null)
-const content = ref('未经授权,禁止商业目的!\n\n数据来源于网络,仅供参考;投资有风险,入市需谨慎')
+const content = ref(t('app.disclaimer'))
 const isFullscreen = ref(false)
 const activeKey = ref('stock')
 const containerRef = ref({})
@@ -58,28 +61,7 @@ const officialStatement= ref("")
 const marketStatus = ref('')
 let marketStatusTimer = null
 
-const investmentMottos = [
-  "投资有风险，入市需谨慎",
-  "别人贪婪我恐惧，别人恐惧我贪婪",
-  "股市有风险，投资需谨慎",
-  "不要把所有鸡蛋放在一个篮子里",
-  "时间是优秀企业的朋友",
-  "买股票就是买公司",
-  "市场短期是投票机，长期是称重机",
-  "保住本金是投资的第一要务",
-  "在别人恐慌时贪婪，在别人贪婪时恐慌",
-  "风险来自于你不知道自己在做什么",
-  "价格是你付出的，价值是你得到的",
-  "投资最重要的品质是耐心",
-  "机会总是留给有准备的人",
-  "知行合一，方能致远",
-  "顺势而为，逆势而思",
-  "投资是一场马拉松，不是百米冲刺",
-  "独立思考是投资成功的关键",
-  "市场永远在波动，但价值终将回归",
-  "控制风险比追求收益更重要",
-  "学习是最好的投资",
-]
+const investmentMottos = t('app.mottos', { returnObjects: true })
 const currentMotto = ref(investmentMottos[Math.floor(Math.random() * investmentMottos.length)])
 
 function refreshMotto() {
@@ -93,11 +75,11 @@ function updateMarketStatus() {
     IsUSTradingTime().catch(() => false)
   ]).then(([cn, hk, us]) => {
     const parts = []
-    parts.push(cn ? 'A股交易中' : 'A股休市')
-    parts.push(hk ? '港股交易中' : '港股休市')
-    parts.push(us ? '美股交易中' : '美股休市')
+    parts.push(cn ? t('app.marketStatusCnTrading') : t('app.marketStatusCnClosed'))
+    parts.push(hk ? t('app.marketStatusHkTrading') : t('app.marketStatusHkClosed'))
+    parts.push(us ? t('app.marketStatusUsTrading') : t('app.marketStatusUsClosed'))
     marketStatus.value = parts.join(' | ')
-    WindowSetTitle("go-stock " + marketStatus.value + " " + officialStatement.value + "  「" + currentMotto.value + "」  [数据来源于网络，仅供参考；投资有风险，入市需谨慎]")
+    WindowSetTitle("go-stock " + marketStatus.value + " " + officialStatement.value + "  「" + currentMotto.value + "」  " + t('app.disclaimer'))
   })
 }
 const menuOptions = ref([
@@ -118,7 +100,7 @@ const menuOptions = ref([
                 activeKey.value = 'stock'
               },
             },
-            {default: () => '股票自选',}
+            {default: () => t('menu.stock')},
         ),
     key: 'stock',
     icon: renderIcon(StarOutline),
@@ -140,7 +122,7 @@ const menuOptions = ref([
                         groupId: 0,
                       },
                     })
-                    EventsEmit("changeTab", {ID: 0, name: '全部'})
+                    EventsEmit("changeTab", {ID: 0, name: 'stockGroupAll'})
                   },
                   to: {
                     name: 'stock',
@@ -150,7 +132,7 @@ const menuOptions = ref([
                     },
                   }
                 },
-                {default: () => '全部',}
+                {default: () => t('menu.stockGroupAll')},
             ),
         key: 0,
       }
@@ -168,10 +150,10 @@ const menuOptions = ref([
               },
               onClick: () => {
                 activeKey.value = 'market'
-                EventsEmit("changeMarketTab", {ID: 0, name: '市场快讯'})
+                EventsEmit("changeMarketTab", {ID: 0, name: 'marketNews'})
               },
             },
-            {default: () => '市场行情'}
+            {default: () => t('menu.market')}
         ),
     key: 'market',
     icon: renderIcon(NewspaperOutline),
@@ -190,10 +172,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '市场快讯'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'marketNews'})
                   },
                 },
-                {default: () => '市场快讯',}
+                {default: () => t('menu.marketNews')},
             ),
         key: 'market1',
         icon: renderIcon(NewspaperSharp),
@@ -212,10 +194,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '全球股指'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'globalIndexes'})
                   },
                 },
-                {default: () => '全球股指',}
+                {default: () => t('menu.globalIndexes')},
             ),
         key: 'market2',
         icon: renderIcon(BarChartSharp),
@@ -234,10 +216,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '重大指数'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'majorIndexes'})
                   },
                 },
-                {default: () => '重大指数',}
+                {default: () => t('menu.majorIndexes')},
             ),
         key: 'market3',
         icon: renderIcon(AnalyticsOutline),
@@ -256,10 +238,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '行业排名'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'industryRanking'})
                   },
                 },
-                {default: () => '行业排名',}
+                {default: () => t('menu.industryRanking')},
             ),
         key: 'market4',
         icon: renderIcon(Flag),
@@ -278,10 +260,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '个股资金流向'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'stockFundFlow'})
                   },
                 },
-                {default: () => '个股资金流向',}
+                {default: () => t('menu.stockFundFlow')},
             ),
         key: 'market5',
         icon: renderIcon(Pulse),
@@ -300,10 +282,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '龙虎榜'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'dragonTigerList'})
                   },
                 },
-                {default: () => '龙虎榜',}
+                {default: () => t('menu.dragonTigerList')},
             ),
         key: 'market6',
         icon: renderIcon(Dragon),
@@ -322,10 +304,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '个股研报'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'stockResearchReport'})
                   },
                 },
-                {default: () => '个股研报',}
+                {default: () => t('menu.stockResearchReport')},
             ),
         key: 'market7',
         icon: renderIcon(StockOutlined),
@@ -344,10 +326,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '公司公告'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'companyAnnouncement'})
                   },
                 },
-                {default: () => '公司公告',}
+                {default: () => t('menu.companyAnnouncement')},
             ),
         key: 'market8',
         icon: renderIcon(NotificationFilled),
@@ -366,10 +348,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '行业研究'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'industryResearch'})
                   },
                 },
-                {default: () => '行业研究',}
+                {default: () => t('menu.industryResearch')},
             ),
         key: 'market9',
         icon: renderIcon(ReportSearch),
@@ -388,10 +370,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '当前热门'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'currentHot'})
                   },
                 },
-                {default: () => '当前热门',}
+                {default: () => t('menu.currentHot')},
             ),
         key: 'market10',
         icon: renderIcon(Gripfire),
@@ -410,10 +392,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '指标选股'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'indicatorStock'})
                   },
                 },
-                {default: () => '指标选股',}
+                {default: () => t('menu.indicatorStock')},
             ),
         key: 'market11',
         icon: renderIcon(BoxSearch20Regular),
@@ -432,10 +414,10 @@ const menuOptions = ref([
                   },
                   onClick: () => {
                     activeKey.value = 'market'
-                    EventsEmit("changeMarketTab", {ID: 0, name: '名站优选'})
+                    EventsEmit("changeMarketTab", {ID: 0, name: 'famousStations'})
                   },
                 },
-                {default: () => '名站优选',}
+                {default: () => t('menu.famousStations')},
             ),
         key: 'market12',
         icon: renderIcon(FirefoxBrowser),
@@ -450,21 +432,21 @@ const menuOptions = ref([
               to: {
                 name: 'fund',
                 query: {
-                  name: '基金自选',
+                  name: t('menu.fund'),
                 },
               },
               onClick: () => {
                 activeKey.value = 'fund'
               },
             },
-            {default: () => '基金自选',}
+            {default: () => t('menu.fund')},
         ),
     show: enableFund.value,
     key: 'fund',
     icon: renderIcon(SparklesOutline),
     children: [
       {
-        label: () => h(NText, {type: realtimeProfit.value > 0 ? 'error' : 'success'}, {default: () => '功能完善中！'}),
+        label: () => h(NText, {type: realtimeProfit.value > 0 ? 'error' : 'success'}, {default: () => t('menu.fundDeveloping')}),
         key: 'realtimeProfit',
         show: realtimeProfit.value,
         icon: renderIcon(AlarmOutline),
@@ -479,14 +461,14 @@ const menuOptions = ref([
               to: {
                 name: 'agent',
                 query: {
-                  name:"Ai智能体",
+                  name:"aiAgent",
                 },
                 onClick: () => {
                   activeKey.value = 'agent'
                 },
               }
             },
-            {default: () => 'Ai智能体'}
+            {default: () => t('menu.agent')}
         ),
     key: 'agent',
     show:enableAgent.value,
@@ -500,17 +482,17 @@ const menuOptions = ref([
                 to: {
                   name: 'research',
                   query: {
-                    name:"研究中心",
+                    name:"researchCenter",
                   },
                 },
                 onClick: () => {
                   activeKey.value = 'research'
                   setTimeout(() => {
-                    EventsEmit("changeResearchTab", {ID: 0, name: 'AI分析报告'})
+                    EventsEmit("changeResearchTab", {ID: 0, name: 'aiAnalysisReport'})
                   }, 100)
                 },
               },
-              {default: () => '研究中心'}
+              {default: () => t('menu.research')}
           ),
       key: 'research',
       icon: renderIcon(FlaskOutline),
@@ -523,17 +505,17 @@ const menuOptions = ref([
                       to: {
                         name: 'research',
                         query: {
-                          name:"AI分析报告",
+                          name:"aiAnalysisReport",
                         },
                       },
                       onClick: () => {
                         activeKey.value = 'research'
                         setTimeout(() => {
-                          EventsEmit("changeResearchTab", {ID: 0, name: 'AI分析报告'})
+                          EventsEmit("changeResearchTab", {ID: 0, name: 'aiAnalysisReport'})
                         }, 100)
                       },
                     },
-                    {default: () => 'AI分析报告'}
+                    {default: () => t('menu.aiAnalysisReport')}
                 ),
             key: 'research1',
             icon: renderIcon(ReportAnalytics),
@@ -546,17 +528,17 @@ const menuOptions = ref([
                     to: {
                       name: 'research',
                       query: {
-                        name:"股票推荐记录",
+                        name:"stockRecommendRecord",
                       },
                     },
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 1, name: '股票推荐记录'})
+                        EventsEmit("changeResearchTab", {ID: 1, name: 'stockRecommendRecord'})
                       }, 100)
                     },
                   },
-                  {default: () => '股票推荐记录'}
+                  {default: () => t('menu.stockRecommendRecord')}
               ),
           key: 'research2',
           icon: renderIcon(DiamondOutline),
@@ -569,17 +551,17 @@ const menuOptions = ref([
                     to: {
                       name: 'research',
                       query: {
-                        name:"异动监控",
+                        name:"stockChangesMonitor",
                       },
                     },
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 2, name: '异动监控'})
+                        EventsEmit("changeResearchTab", {ID: 2, name: 'stockChangesMonitor'})
                       }, 100)
                     },
                   },
-                  {default: () => '异动监控'}
+                  {default: () => t('menu.stockChangesMonitor')}
               ),
           key: 'stockChanges',
           icon: renderIcon(TrendingUp),
@@ -592,17 +574,17 @@ const menuOptions = ref([
                     to: {
                       name: 'research',
                       query: {
-                        name:"涨停梯队",
+                        name:"uplimitLadder",
                       },
                     },
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 9, name: '涨停梯队'})
+                        EventsEmit("changeResearchTab", {ID: 9, name: 'uplimitLadder'})
                       }, 100)
                     },
                   },
-                  {default: () => '涨停梯队'}
+                  {default: () => t('menu.uplimitLadder')}
               ),
           key: 'uplimitLadder',
           icon: renderIcon(LocalFireDepartmentRound),
@@ -615,17 +597,17 @@ const menuOptions = ref([
                     to: {
                       name: 'research',
                       query: {
-                        name:"提示词模板",
+                        name:"promptTemplate",
                       },
                     },
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 3, name: '提示词模板'})
+                        EventsEmit("changeResearchTab", {ID: 3, name: 'promptTemplate'})
                       }, 100)
                     },
                   },
-                  {default: () => '提示词模板'}
+                  {default: () => t('menu.promptTemplate')}
               ),
           key: 'research3',
           icon: renderIcon(Prompt),
@@ -638,17 +620,17 @@ const menuOptions = ref([
                     to: {
                       name: 'research',
                       query: {
-                        name:"提示词广场",
+                        name:"promptPlaza",
                       },
                     },
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 10, name: '提示词广场'})
+                        EventsEmit("changeResearchTab", {ID: 10, name: 'promptPlaza'})
                       }, 100)
                     },
                   },
-                  {default: () => '提示词广场'}
+                  {default: () => t('menu.promptPlaza')}
               ),
           key: 'promptPlaza',
           icon: renderIcon(GlobeOutline),
@@ -661,17 +643,17 @@ const menuOptions = ref([
                     to: {
                       name: 'research',
                       query: {
-                        name:"股票信息筛选",
+                        name:"stockInfoFilter",
                       },
                     },
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 3, name: '股票信息筛选'})
+                        EventsEmit("changeResearchTab", {ID: 3, name: 'stockInfoFilter'})
                       }, 100)
                     },
                   },
-                  {default: () => '股票信息筛选'}
+                  {default: () => t('menu.stockInfoFilter')}
               ),
           key: 'research4',
           icon: renderIcon(AppsList20Regular),
@@ -684,17 +666,17 @@ const menuOptions = ref([
                     to: {
                       name: 'research',
                       query: {
-                        name:"定时任务",
+                        name:"scheduledTask",
                       },
                     },
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 5, name: '定时任务'})
+                        EventsEmit("changeResearchTab", {ID: 5, name: 'scheduledTask'})
                       }, 100)
                     },
                   },
-                  {default: () => '定时任务'}
+                  {default: () => t('menu.scheduledTask')}
               ),
           key: 'research5',
           icon: renderIcon(TimeOutline),
@@ -707,17 +689,17 @@ const menuOptions = ref([
                     to: {
                       name: 'research',
                       query: {
-                        name:"交易日志",
+                        name:"tradingLog",
                       },
                     },
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 6, name: '交易日志'})
+                        EventsEmit("changeResearchTab", {ID: 6, name: 'tradingLog'})
                       }, 100)
                     },
                   },
-                  {default: () => '交易日志(beta)'}
+                  {default: () => t('menu.tradingLog')}
               ),
           key: 'research6',
           icon: renderIcon(MoneyCollectOutlined),
@@ -733,11 +715,11 @@ const menuOptions = ref([
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 7, name: 'MCP服务'})
+                        EventsEmit("changeResearchTab", {ID: 7, name: 'mcpService'})
                       }, 100)
                     },
                   },
-                  {default: () => 'MCP服务'}
+                  {default: () => t('menu.mcpService')}
               ),
           key: 'mcpServers',
           icon: renderIcon(ServerOutline),
@@ -753,11 +735,11 @@ const menuOptions = ref([
                     onClick: () => {
                       activeKey.value = 'research'
                       setTimeout(() => {
-                        EventsEmit("changeResearchTab", {ID: 8, name: '技能管理'})
+                        EventsEmit("changeResearchTab", {ID: 8, name: 'skillManagement'})
                       }, 100)
                     },
                   },
-                  {default: () => '技能管理'}
+                  {default: () => t('menu.skillManagement')}
               ),
           key: 'skills',
           icon: renderIcon(FlashOutline),
@@ -773,14 +755,14 @@ const menuOptions = ref([
               to: {
                 name: 'settings',
                 query: {
-                  name:"设置",
+                  name:"settings",
                 },
                 onClick: () => {
                   activeKey.value = 'settings'
                 },
               }
             },
-            {default: () => '设置'}
+            {default: () => t('menu.settings')}
         ),
     key: 'settings',
     icon: renderIcon(SettingsOutline),
@@ -793,14 +775,14 @@ const menuOptions = ref([
               to: {
                 name: 'about',
                 query: {
-                  name:"关于",
+                  name:"about",
                 }
               },
               onClick: () => {
                 activeKey.value = 'about'
               },
             },
-            {default: () => '关于'}
+            {default: () => t('menu.about')}
         ),
     key: 'about',
     icon: renderIcon(LogoGithub),
@@ -810,8 +792,8 @@ const menuOptions = ref([
     label: () => h("a", {
       href: '#',
       onClick: toggleFullscreen,
-      title: '全屏 Ctrl+F 退出全屏 Esc',
-    }, {default: () => isFullscreen.value ? '取消全屏' : '全屏'}),
+      title: t('app.fullscreenTip'),
+    }, {default: () => isFullscreen.value ? t('menu.cancelFullscreen') : t('menu.fullscreen')}),
     key: 'full',
     icon: renderIcon(ExpandOutline),
   },
@@ -828,7 +810,7 @@ const menuOptions = ref([
     label: () => h("a", {
       href: '#',
       onClick: Hide,
-    }, {default: () => '隐藏至托盘区'}),
+    }, {default: () => t('menu.hideToTray')}),
     key: 'hide',
     icon: renderIcon(SlideHide24Filled),
   },
@@ -836,7 +818,7 @@ const menuOptions = ref([
     label: () => h("a", {
       href: '#',
       onClick: Quit,
-    }, {default: () => '退出程序'}),
+    }, {default: () => t('menu.exitProgram')}),
     key: 'exit',
     icon: renderIcon(PowerOutline),
   },
@@ -851,10 +833,10 @@ function toggleFullscreen(e) {
   //console.log(e)
   if (isFullscreen.value) {
     WindowUnfullscreen()
-    //e.target.innerHTML = '全屏'
+    //e.target.innerHTML = t('menu.fullscreen')
   } else {
     WindowFullscreen()
-    // e.target.innerHTML = '取消全屏'
+    // e.target.innerHTML = t('menu.cancelFullscreen')
   }
   isFullscreen.value = !isFullscreen.value
 }
@@ -885,7 +867,7 @@ EventsOn("telegraph", (data) => {
 
 EventsOn("loadingMsg", (data) => {
   if(data==="done"){
-    loadingMsg.value = "加载完成..."
+    loadingMsg.value = t('app.loadingComplete')
     EventsEmit("loadingDone", "app")
     loading.value  = false
   }else{
@@ -1046,7 +1028,7 @@ onMounted(() => {
 })
 </script>
 <template>
-  <n-config-provider ref="containerRef" :theme="enableDarkTheme" :locale="zhCN" :date-locale="dateZhCN">
+  <n-config-provider ref="containerRef" :theme="enableDarkTheme" :locale="locale === 'en' ? enUS : zhCN" :date-locale="locale === 'en' ? dateEnUS : dateZhCN">
     <n-message-provider>
       <n-notification-provider>
         <n-modal-provider>

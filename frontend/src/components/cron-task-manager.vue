@@ -4,7 +4,7 @@
       <n-space>
     <n-input
           v-model:value="searchKeyword"
-          placeholder="搜索任务名称..."
+          :placeholder="t('cronTask.searchPlaceholder')"
           style="width: 200px"
           clearable
           @keyup.enter="handleSearch"
@@ -13,32 +13,32 @@
             <n-icon :component="SearchOutline" />
           </template>
         </n-input>
-        
+
         <n-select
           v-model:value="filterTaskType"
           :options="taskTypeOptions"
-          placeholder="任务类型"
+          :placeholder="t('cronTask.taskType')"
           style="width: 140px"
           clearable
         />
-        
+
         <n-select
           v-model:value="filterStatus"
           :options="statusOptions"
-          placeholder="任务状态"
+          :placeholder="t('cronTask.taskStatus')"
           style="width: 120px"
           clearable
         />
-        
+
         <n-button type="primary"  @click="handleSearch">
-          搜索
+          {{ t('common.search') }}
         </n-button>
-        
+
         <n-button type="warning"  @click="handleCreate">
           <template #icon>
             <n-icon :component="AddOutline" />
           </template>
-          新建任务
+          {{ t('cronTask.createTask') }}
         </n-button>
  </n-space>
  </n-space> 
@@ -59,7 +59,7 @@
     <!-- 创建/编辑任务弹窗 -->
     <n-modal
       v-model:show="showCreateModal"
-      :title="editingTask ? '修改任务' : '创建新任务'"
+      :title="editingTask ? t('cronTask.editTask') : t('cronTask.createTask')"
       preset="dialog"
       :style="{ width: '750px' }"
       @close="resetForm"
@@ -74,23 +74,23 @@
         label-width="130px"
         require-mark-placement="right-hanging"
       >
-        <n-form-item label="任务名称" path="name">
-          <n-input v-model:value="formData.name" placeholder="请输入任务名称" clearable />
+        <n-form-item :label="t('cronTask.taskName')" path="name">
+          <n-input v-model:value="formData.name" :placeholder="t('cronTask.enterTaskName')" clearable />
         </n-form-item>
 
-        <n-form-item label="任务类型" path="taskType">
+        <n-form-item :label="t('cronTask.taskType')" path="taskType">
           <n-select
             v-model:value="formData.taskType"
             :options="taskTypeOptions"
-            placeholder="请选择任务类型"
+            :placeholder="t('cronTask.selectTaskType')"
           />
         </n-form-item>
 
-        <n-form-item label="Cron 表达式" path="cronExpr">
+        <n-form-item :label="t('cronTask.cronExpression')" path="cronExpr">
           <n-space :vertical="true" :size="8" style="width: 100%">
             <n-input
               v-model:value="formData.cronExpr"
-              placeholder="通过下方选择器生成或直接输入"
+              :placeholder="t('cronTask.generateOrEnterCron')"
               clearable
             >
               <template #suffix>
@@ -98,18 +98,18 @@
                   <template #icon>
                     <n-icon :component="SettingsOutline" />
                   </template>
-                  配置
+                  {{ t('cronTask.config') }}
                 </n-button>
               </template>
             </n-input>
             <n-space :vertical="true" :size="4" style="width: 100%">
               <n-text depth="3" style="font-size: 12px">
                 <n-icon :component="InformationCircleOutline" size="14" />
-                点击"配置"按钮打开可视化配置器 | 当前值：{{ formData.cronExpr || '未设置' }}
+                {{ t('cronTask.configTip') }}{{ formData.cronExpr || t('cronTask.notSet') }}
               </n-text>
               <n-text v-if="calculateNextRunTime" depth="2" style="font-size: 12px; color: #18a058">
                 <n-icon :component="TimeOutline" size="14" />
-                下次执行时间：{{ calculateNextRunTime }}
+                {{ t('cronTask.nextRunTime') }}：{{ calculateNextRunTime }}
               </n-text>
             </n-space>
           </n-space>
@@ -123,44 +123,44 @@
 <!--          />-->
 <!--        </n-form-item>-->
 
-        <n-form-item :label="'任务参数'" path="params">
+        <n-form-item :label="t('cronTask.taskParams')" path="params">
           <!-- 股票分析任务的参数配置 UI -->
           <n-card v-if="formData.taskType === 'stock_analysis'" size="small" style="width: 100%">
             <n-space :vertical="true" :size="12">
               <!-- 第一行：提示词模板和 AI 配置 -->
               <n-grid :cols="2" :x-gap="12">
                 <n-gi>
-                  <n-form-item label-width="90px" label="提示词模板:">
+                  <n-form-item label-width="90px" :label="t('cronTask.promptTemplate')">
                     <n-select
                       v-model:value="stockAnalysisParamsData.promptId"
                       :options="promptTemplateOptions"
-                      placeholder="请选择提示词模板"
+                      :placeholder="t('cronTask.selectPromptTemplate')"
                       filterable
                       style="width: 100%"
                     />
                   </n-form-item>
                 </n-gi>
                 <n-gi>
-                  <n-form-item label-width="90px" label="AI 配置:">
+                  <n-form-item label-width="90px" :label="t('cronTask.aiConfig')">
                     <n-select
                       v-model:value="stockAnalysisParamsData.aiConfigId"
                       :options="aiConfigOptions"
-                      placeholder="请选择 AI 配置"
+                      :placeholder="t('cronTask.selectAiConfig')"
                       filterable
                       style="width: 100%"
                     />
                   </n-form-item>
                 </n-gi>
               </n-grid>
-              
+
               <!-- 第二行：系统提示词和启用思考 -->
               <n-grid :cols="2" :x-gap="12">
                 <n-gi>
-                  <n-form-item label-width="90px" label="系统提示词:">
+                  <n-form-item label-width="90px" :label="t('cronTask.systemPrompt')">
                     <n-select
                       v-model:value="stockAnalysisParamsData.sysPromptId"
                       :options="sysPromptOptions"
-                      placeholder="请选择系统提示词（可选）"
+                      :placeholder="t('cronTask.selectSystemPrompt')"
                       filterable
                       clearable
                       style="width: 100%"
@@ -168,13 +168,13 @@
                   </n-form-item>
                 </n-gi>
                 <n-gi>
-                  <n-form-item label-width="90px" label="启用思考:">
+                  <n-form-item label-width="90px" :label="t('cronTask.enableThinking')">
                     <n-switch v-model:value="stockAnalysisParamsData.thinking" size="large">
                       <template #checked>
-                        开启
+                        {{ t('cronTask.open') }}
                       </template>
                       <template #unchecked>
-                        关闭
+                        {{ t('cronTask.close') }}
                       </template>
                     </n-switch>
                   </n-form-item>
@@ -184,20 +184,20 @@
               <!-- 第三行：Agent模式和股票代码 -->
               <n-grid :cols="2" :x-gap="12">
                 <n-gi>
-                  <n-form-item label-width="90px" label="Agent模式:">
+                  <n-form-item label-width="90px" :label="t('cronTask.agentMode')">
                     <n-select
                       v-model:value="stockAnalysisParamsData.agentMode"
                       :options="agentModeOptions"
-                      placeholder="请选择Agent模式"
+                      :placeholder="t('cronTask.selectAgentMode')"
                       style="width: 100%"
                     />
                   </n-form-item>
                 </n-gi>
                 <n-gi>
-                  <n-form-item label-width="90px" label="股票代码:">
+                  <n-form-item label-width="90px" :label="t('cronTask.stockCode')">
                     <n-input
                       v-model:value="stockAnalysisParamsData.stockCode"
-                      placeholder="请输入股票代码，如：600519"
+                      :placeholder="t('cronTask.enterStockCode')"
                       clearable
                       style="width: 100%"
                     />
@@ -208,10 +208,10 @@
               <!-- 第四行：股票名称 -->
               <n-grid :cols="2" :x-gap="12">
                 <n-gi>
-                  <n-form-item label-width="90px" label="股票名称:">
+                  <n-form-item label-width="90px" :label="t('cronTask.stockName')">
                     <n-input
                       v-model:value="stockAnalysisParamsData.stockName"
-                      placeholder="请输入股票名称，如：贵州茅台"
+                      :placeholder="t('cronTask.enterStockName')"
                       clearable
                       style="width: 100%"
                     />
@@ -220,44 +220,44 @@
               </n-grid>
             </n-space>
           </n-card>
-          
+
           <!-- 市场分析任务的参数配置 UI -->
           <n-card v-else-if="formData.taskType === 'market_analysis'" size="small" style="width: 100%">
             <n-space :vertical="true" :size="12">
               <!-- 第一行：提示词模板和 AI 配置 -->
               <n-grid :cols="2" :x-gap="12">
                 <n-gi>
-                  <n-form-item label-width="90px" label="提示词模板:">
+                  <n-form-item label-width="90px" :label="t('cronTask.promptTemplate')">
                     <n-select
                       v-model:value="marketAnalysisParamsData.promptId"
                       :options="promptTemplateOptions"
-                      placeholder="请选择提示词模板"
+                      :placeholder="t('cronTask.selectPromptTemplate')"
                       filterable
                       style="width: 100%"
                     />
                   </n-form-item>
                 </n-gi>
                 <n-gi>
-                  <n-form-item label-width="90px" label="AI 配置:">
+                  <n-form-item label-width="90px" :label="t('cronTask.aiConfig')">
                     <n-select
                       v-model:value="marketAnalysisParamsData.aiConfigId"
                       :options="aiConfigOptions"
-                      placeholder="请选择 AI 配置"
+                      :placeholder="t('cronTask.selectAiConfig')"
                       filterable
                       style="width: 100%"
                     />
                   </n-form-item>
                 </n-gi>
               </n-grid>
-              
+
               <!-- 第二行：系统提示词和启用思考 -->
               <n-grid :cols="2" :x-gap="12">
                 <n-gi>
-                  <n-form-item label-width="90px" label="系统提示词:">
+                  <n-form-item label-width="90px" :label="t('cronTask.systemPrompt')">
                     <n-select
                       v-model:value="marketAnalysisParamsData.sysPromptId"
                       :options="sysPromptOptions"
-                      placeholder="请选择系统提示词（可选）"
+                      :placeholder="t('cronTask.selectSystemPrompt')"
                       filterable
                       clearable
                       style="width: 100%"
@@ -265,13 +265,13 @@
                   </n-form-item>
                 </n-gi>
                 <n-gi>
-                  <n-form-item label-width="90px" label="启用思考:">
+                  <n-form-item label-width="90px" :label="t('cronTask.enableThinking')">
                     <n-switch v-model:value="marketAnalysisParamsData.thinking" size="large">
                       <template #checked>
-                        开启
+                        {{ t('cronTask.open') }}
                       </template>
                       <template #unchecked>
-                        关闭
+                        {{ t('cronTask.close') }}
                       </template>
                     </n-switch>
                   </n-form-item>
@@ -281,11 +281,11 @@
               <!-- 第三行：Agent模式 -->
               <n-grid :cols="2" :x-gap="12">
                 <n-gi>
-                  <n-form-item label-width="90px" label="Agent模式:">
+                  <n-form-item label-width="90px" :label="t('cronTask.agentMode')">
                     <n-select
                       v-model:value="marketAnalysisParamsData.agentMode"
                       :options="agentModeOptions"
-                      placeholder="请选择Agent模式"
+                      :placeholder="t('cronTask.selectAgentMode')"
                       style="width: 100%"
                     />
                   </n-form-item>
@@ -300,43 +300,43 @@
             v-model:value="formData.params"
             type="textarea"
             :rows="5"
-            placeholder='JSON 格式，如：{"stock_codes":["600519"],"ai_config_id":1}'
+            :placeholder="t('common.jsonFormatPlaceholder')"
             show-count
           />
         </n-form-item>
 
-        <n-form-item label="任务描述" path="description">
+        <n-form-item :label="t('cronTask.taskDescription')" path="description">
           <n-input
             v-model:value="formData.description"
             type="textarea"
             :rows="3"
-            placeholder="请输入任务描述（可选）"
+            :placeholder="t('cronTask.enterTaskDescription')"
             show-count
             maxlength="500"
           />
         </n-form-item>
 
-        <n-form-item label="启用状态" path="enable">
+        <n-form-item :label="t('cronTask.enableStatus')" path="enable">
           <n-switch v-model:value="formData.enable" size="large">
             <template #checked>
               <n-icon :component="PlayCircleOutline" />
-              启用
+              {{ t('cronTask.enabled') }}
             </template>
             <template #unchecked>
               <n-icon :component="StopCircleOutline" />
-              禁用
+              {{ t('cronTask.disabled') }}
             </template>
           </n-switch>
         </n-form-item>
       </n-form>
 
       <template #action>
-        <n-button @click="showCreateModal = false">取消</n-button>
+        <n-button @click="showCreateModal = false">{{ t('cronTask.cancel') }}</n-button>
         <n-button type="primary" @click="handleSubmit" :loading="submitting">
           <template #icon>
             <n-icon :component="CheckmarkCircleOutline" />
           </template>
-          {{ editingTask ? '修改任务' : '创建新任务' }}
+          {{ editingTask ? t('cronTask.editTask') : t('cronTask.createTask') }}
         </n-button>
       </template>
     </n-modal>
@@ -344,7 +344,7 @@
     <!-- Cron 表达式配置器 -->
     <n-modal
       v-model:show="showCronBuilder"
-      title="Cron 表达式配置器"
+      :title="t('cronTask.cronBuilder')"
       preset="dialog"
       :style="{ width: '850px' }"
       :z-index="11000"
@@ -354,79 +354,79 @@
         <n-space :vertical="true" :size="12">
           <!-- 秒 -->
           <div class="cron-row">
-            <span class="cron-label">秒:</span>
+            <span class="cron-label">{{ t('cronTask.second') }}:</span>
             <n-radio-group v-model:value="cronSecond.type" name="secondType">
               <n-space :size="8">
-                <n-radio :value="'*'">每秒</n-radio>
-                <n-radio :value="'interval'">周期</n-radio>
+                <n-radio :value="'*'">{{ t('cronTask.everySec') }}</n-radio>
+                <n-radio :value="'interval'">{{ t('cronTask.interval') }}</n-radio>
                 <n-input-number v-model:value="cronSecond.start" :min="0" :max="59" :disabled="cronSecond.type !== 'interval'" style="width: 80px" />-
                 <n-input-number v-model:value="cronSecond.end" :min="0" :max="59" :disabled="cronSecond.type !== 'interval'" style="width: 80px" />
-                <n-radio :value="'loop'">循环</n-radio>
+                <n-radio :value="'loop'">{{ t('cronTask.loop') }}</n-radio>
                 <n-input-number v-model:value="cronSecond.loopStart" :min="0" :max="59" :disabled="cronSecond.type !== 'loop'" style="width: 80px" />/
                 <n-input-number v-model:value="cronSecond.loopStep" :min="1" :max="59" :disabled="cronSecond.type !== 'loop'" style="width: 80px" />
-                <n-radio :value="'appoint'">指定</n-radio>
-                <n-select v-model:value="cronSecond.appoint" multiple :options="secondOptions" :disabled="cronSecond.type !== 'appoint'" style="width: 400px" placeholder="选择具体的秒" />
+                <n-radio :value="'appoint'">{{ t('cronTask.specify') }}</n-radio>
+                <n-select v-model:value="cronSecond.appoint" multiple :options="secondOptions" :disabled="cronSecond.type !== 'appoint'" style="width: 400px" :placeholder="t('cronTask.selectSpecificSecond')" />
               </n-space>
             </n-radio-group>
           </div>
 
           <!-- 分 -->
           <div class="cron-row">
-            <span class="cron-label">分:</span>
+            <span class="cron-label">{{ t('cronTask.minute') }}:</span>
             <n-radio-group v-model:value="cronMinute.type" name="minuteType">
               <n-space :size="8">
-                <n-radio :value="'*'">每分</n-radio>
-                <n-radio :value="'interval'">周期</n-radio>
+                <n-radio :value="'*'">{{ t('cronTask.everyMin') }}</n-radio>
+                <n-radio :value="'interval'">{{ t('cronTask.interval') }}</n-radio>
                 <n-input-number v-model:value="cronMinute.start" :min="0" :max="59" :disabled="cronMinute.type !== 'interval'" style="width: 80px" />-
                 <n-input-number v-model:value="cronMinute.end" :min="0" :max="59" :disabled="cronMinute.type !== 'interval'" style="width: 80px" />
-                <n-radio :value="'loop'">循环</n-radio>
+                <n-radio :value="'loop'">{{ t('cronTask.loop') }}</n-radio>
                 <n-input-number v-model:value="cronMinute.loopStart" :min="0" :max="59" :disabled="cronMinute.type !== 'loop'" style="width: 80px" />/
                 <n-input-number v-model:value="cronMinute.loopStep" :min="1" :max="59" :disabled="cronMinute.type !== 'loop'" style="width: 80px" />
-                <n-radio :value="'appoint'">指定</n-radio>
-                <n-select v-model:value="cronMinute.appoint" multiple :options="minuteOptions" :disabled="cronMinute.type !== 'appoint'" style="width: 400px" placeholder="选择具体的分" />
+                <n-radio :value="'appoint'">{{ t('cronTask.specify') }}</n-radio>
+                <n-select v-model:value="cronMinute.appoint" multiple :options="minuteOptions" :disabled="cronMinute.type !== 'appoint'" style="width: 400px" :placeholder="t('cronTask.selectSpecificMinute')" />
               </n-space>
             </n-radio-group>
           </div>
 
           <!-- 时 -->
           <div class="cron-row">
-            <span class="cron-label">时:</span>
+            <span class="cron-label">{{ t('cronTask.hour') }}:</span>
             <n-radio-group v-model:value="cronHour.type" name="hourType">
               <n-space :size="8">
-                <n-radio :value="'*'">每小时</n-radio>
-                <n-radio :value="'interval'">周期</n-radio>
+                <n-radio :value="'*'">{{ t('cronTask.everyHr') }}</n-radio>
+                <n-radio :value="'interval'">{{ t('cronTask.interval') }}</n-radio>
                 <n-input-number v-model:value="cronHour.start" :min="0" :max="23" :disabled="cronHour.type !== 'interval'" style="width: 80px" />-
                 <n-input-number v-model:value="cronHour.end" :min="0" :max="23" :disabled="cronHour.type !== 'interval'" style="width: 80px" />
-                <n-radio :value="'loop'">循环</n-radio>
+                <n-radio :value="'loop'">{{ t('cronTask.loop') }}</n-radio>
                 <n-input-number v-model:value="cronHour.loopStart" :min="0" :max="23" :disabled="cronHour.type !== 'loop'" style="width: 80px" />/
                 <n-input-number v-model:value="cronHour.loopStep" :min="1" :max="23" :disabled="cronHour.type !== 'loop'" style="width: 80px" />
-                <n-radio :value="'appoint'">指定</n-radio>
-                <n-select v-model:value="cronHour.appoint" multiple :options="hourOptions" :disabled="cronHour.type !== 'appoint'" style="width: 400px" placeholder="选择具体的时" />
+                <n-radio :value="'appoint'">{{ t('cronTask.specify') }}</n-radio>
+                <n-select v-model:value="cronHour.appoint" multiple :options="hourOptions" :disabled="cronHour.type !== 'appoint'" style="width: 400px" :placeholder="t('cronTask.selectSpecificHour')" />
               </n-space>
             </n-radio-group>
           </div>
 
           <!-- 日 -->
           <div class="cron-row">
-            <span class="cron-label">日:</span>
+            <span class="cron-label">{{ t('cronTask.day') }}:</span>
             <n-radio-group v-model:value="cronDay.type" name="dayType">
               <n-space :size="8">
-                <n-radio :value="'*'">每日</n-radio>
-                <n-radio :value="'interval'">周期</n-radio>
+                <n-radio :value="'*'">{{ t('cronTask.everyDay') }}</n-radio>
+                <n-radio :value="'interval'">{{ t('cronTask.interval') }}</n-radio>
                 <n-input-number v-model:value="cronDay.start" :min="1" :max="31" :disabled="cronDay.type !== 'interval'" style="width: 80px" />-
                 <n-input-number v-model:value="cronDay.end" :min="1" :max="31" :disabled="cronDay.type !== 'interval'" style="width: 80px" />
-                <n-radio :value="'?'">不指定</n-radio>
+                <n-radio :value="'?'">{{ t('cronTask.notSpecify') }}</n-radio>
               </n-space>
             </n-radio-group>
           </div>
 
           <!-- 月 -->
           <div class="cron-row">
-            <span class="cron-label">月:</span>
+            <span class="cron-label">{{ t('cronTask.month') }}:</span>
             <n-radio-group v-model:value="cronMonth.type" name="monthType">
               <n-space :size="8">
-                <n-radio :value="'*'">每月</n-radio>
-                <n-radio :value="'interval'">周期</n-radio>
+                <n-radio :value="'*'">{{ t('cronTask.everyMonth') }}</n-radio>
+                <n-radio :value="'interval'">{{ t('cronTask.interval') }}</n-radio>
                 <n-input-number v-model:value="cronMonth.start" :min="1" :max="12" :disabled="cronMonth.type !== 'interval'" style="width: 80px" />-
                 <n-input-number v-model:value="cronMonth.end" :min="1" :max="12" :disabled="cronMonth.type !== 'interval'" style="width: 80px" />
               </n-space>
@@ -435,13 +435,13 @@
 
           <!-- 周 -->
           <div class="cron-row">
-            <span class="cron-label">周:</span>
+            <span class="cron-label">{{ t('cronTask.week') }}:</span>
             <n-radio-group v-model:value="cronWeek.type" name="weekType">
               <n-space :size="8">
-                <n-radio :value="'*'">每周</n-radio>
-                <n-radio :value="'interval'">周期</n-radio>
+                <n-radio :value="'*'">{{ t('cronTask.everyWeek') }}</n-radio>
+                <n-radio :value="'interval'">{{ t('cronTask.interval') }}</n-radio>
                 <n-select v-model:value="cronWeek.days" multiple :options="weekOptions" :disabled="cronWeek.type !== 'interval'" style="width: 250px" />
-                <n-radio :value="'?'">不指定</n-radio>
+                <n-radio :value="'?'">{{ t('cronTask.notSpecify') }}</n-radio>
               </n-space>
             </n-radio-group>
           </div>
@@ -449,7 +449,7 @@
       </n-card>
 
       <!-- 预览结果 -->
-      <n-alert type="info" title="生成的 Cron 表达式" style="margin-top: 12px;">
+      <n-alert type="info" :title="t('cronTask.generatedCronExpr')" style="margin-top: 12px;">
         <n-space :vertical="true" :size="8">
           <n-space align="center">
             <n-text strong style="font-size: 14px; font-family: monospace;">{{ generatedCronExpr }}</n-text>
@@ -457,13 +457,13 @@
               <template #icon>
                 <n-icon :component="CreateOutline" />
               </template>
-              复制
+              {{ t('cronTask.copy') }}
             </n-button>
           </n-space>
           <n-space :vertical="true" :size="4">
-            <n-text strong style="font-size: 14px;">未来 5 次执行时间：</n-text>
+            <n-text strong style="font-size: 14px;">{{ t('cronTask.next5RunTimes') }}：</n-text>
             <n-text v-if="!nextRunTimes.length" depth="3" style="font-size: 12px;">
-              暂无可用时间，请检查 Cron 表达式是否有效。
+              {{ t('cronTask.noAvailableTime') }}
             </n-text>
             <n-text
               v-for="(time, index) in nextRunTimes"
@@ -478,12 +478,12 @@
       </n-alert>
 
       <template #action>
-        <n-button @click="showCronBuilder = false">取消</n-button>
+        <n-button @click="showCronBuilder = false">{{ t('cronTask.cancel') }}</n-button>
         <n-button type="primary" @click="saveCronExpr">
           <template #icon>
             <n-icon :component="CheckmarkCircleOutline" />
           </template>
-          确定
+          {{ t('cronTask.confirm') }}
         </n-button>
       </template>
     </n-modal>
@@ -491,6 +491,8 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, h, watch } from 'vue'
+import {useI18n} from 'vue-i18n'
+const { t } = useI18n()
 import { NButton, NIcon, NTag, NSpace, NPopconfirm, useMessage, NText, NCard, NRadioGroup, NRadio, NInputNumber, NSelect, NAlert, NCode, NSwitch } from 'naive-ui'
 import {
   SearchOutline,
@@ -558,17 +560,17 @@ const formData = reactive({
 
 // 表单验证规则
 const formRules = {
-  name: { required: true, message: '请输入任务名称', trigger: ['input', 'blur'] },
-  cronExpr: { required: true, message: '请输入 Cron 表达式', trigger: ['input', 'blur'] },
-  taskType: { required: true, message: '请选择任务类型', trigger: [ 'input', 'blur'] }
+  name: { required: true, message: t('cronTask.enterTaskName'), trigger: ['input', 'blur'] },
+  cronExpr: { required: true, message: t('cronTask.enterCronExpr'), trigger: ['input', 'blur'] },
+  taskType: { required: true, message: t('cronTask.selectTaskType'), trigger: [ 'input', 'blur'] }
 }
 
 // 选项数据
 const taskTypeOptions = ref([])
 const statusOptions = [
-  { label: '活跃', value: 'active' },
-  { label: '暂停', value: 'paused' },
-  { label: '错误', value: 'error' }
+  { label: t('cronTask.active'), value: 'active' },
+  { label: t('cronTask.paused'), value: 'paused' },
+  { label: t('cronTask.error'), value: 'error' }
 ]
 
 // 生成参数 JSON 预览
@@ -658,7 +660,7 @@ const generateCronExpression = () => {
 const saveCronExpr = () => {
   formData.cronExpr = generatedCronExpr.value
   showCronBuilder.value = false
-  message.success('Cron 表达式已保存')
+  message.success(t('cronTask.cronExprSaved'))
 }
 
 // 解析 Cron 表达式并回填到配置器（支持 6 段：秒 分 时 日 月 周；兼容 5 段时自动补秒为 0）
@@ -783,9 +785,9 @@ const parseCronExpression = (cronExpr) => {
 const copyCronExpr = async () => {
   try {
     await navigator.clipboard.writeText(generatedCronExpr.value)
-    message.success('已复制到剪贴板')
+    message.success(t('cronTask.copiedToClipboard'))
   } catch (err) {
-    message.error('复制失败')
+    message.error(t('cronTask.copyFailed'))
   }
 }
 
@@ -797,9 +799,9 @@ const nextRunTimes = ref([])
 
 //任务参数
 const agentModeOptions = [
-  { label: '🤖 自动选择', value: '' },
-  { label: '⚡ 快速模式', value: 'react' },
-  { label: '🧠 规划模式', value: 'plan_execute' }
+  { label: t('cronTask.autoSelect'), value: '' },
+  { label: t('cronTask.quickMode'), value: 'react' },
+  { label: t('cronTask.planMode'), value: 'plan_execute' }
 ]
 
 const stockAnalysisParamsData = reactive({
@@ -834,13 +836,13 @@ const minuteOptions = Array.from({ length: 60 }, (_, i) => ({ label: String(i).p
 const hourOptions = Array.from({ length: 24 }, (_, i) => ({ label: String(i).padStart(2, '0'), value: String(i) }))
 
 const weekOptions = [
-  { label: '周日', value: '0' },
-  { label: '周一', value: '1' },
-  { label: '周二', value: '2' },
-  { label: '周三', value: '3' },
-  { label: '周四', value: '4' },
-  { label: '周五', value: '5' },
-  { label: '周六', value: '6' }
+  { label: t('cronTask.sunday'), value: '0' },
+  { label: t('cronTask.monday'), value: '1' },
+  { label: t('cronTask.tuesday'), value: '2' },
+  { label: t('cronTask.wednesday'), value: '3' },
+  { label: t('cronTask.thursday'), value: '4' },
+  { label: t('cronTask.friday'), value: '5' },
+  { label: t('cronTask.saturday'), value: '6' }
 ]
 
 // 监听 Cron 配置变化，自动生成表达式并预览未来执行时间
@@ -901,13 +903,13 @@ const getTaskTypeLabel = (value) => {
 // 表格列定义
 const columns = [
   {
-    title: 'ID',
+    title: t('cronTask.id'),
     key: 'id',
     width: 60,
     ellipsis: { tooltip: true }
   },
   {
-    title: '任务名称',
+    title: t('cronTask.taskName'),
     key: 'name',
     width: 180,
     ellipsis: { tooltip: true },
@@ -929,7 +931,7 @@ const columns = [
   //   }
   // },
   {
-    title: 'Cron 表达式',
+    title: t('cronTask.cronExpression'),
     key: 'cronExpr',
     width: 150,
     ellipsis: { tooltip: true },
@@ -938,23 +940,23 @@ const columns = [
     }
   },
   {
-    title: '目标',
+    title: t('cronTask.target'),
     key: 'target',
     width: 150,
     ellipsis: { tooltip: true }
   },
   {
-    title: '启用',
+    title: t('cronTask.enable'),
     key: 'enable',
     width: 70,
     render(row) {
       return h(NTag, { type: row.enable ? 'success' : 'error' }, {
-        default: () => (row.enable ? '是' : '否')
+        default: () => (row.enable ? t('cronTask.yes') : t('cronTask.no'))
       })
     }
   },
   {
-    title: '状态',
+    title: t('cronTask.status'),
     key: 'status',
     width: 80,
     render(row) {
@@ -969,7 +971,7 @@ const columns = [
     }
   },
   {
-    title: '运行次数',
+    title: t('cronTask.runCount'),
     key: 'runCount',
     width: 90,
     render(row) {
@@ -982,11 +984,11 @@ const columns = [
     }
   },
   {
-    title: '最近执行',
+    title: t('cronTask.lastRun'),
     key: 'lastRunAt',
     width: 200,
     render(row) {
-      if (!row.lastRunAt) return h(NText, { depth: 3 }, { default: () => '未运行' })
+      if (!row.lastRunAt) return h(NText, { depth: 3 }, { default: () => t('cronTask.notRun') })
       const date = new Date(row.lastRunAt)
       const resultType = row.lastRunResult && row.lastRunResult.startsWith('成功') ? 'success' : 'error'
       return h(NSpace, { vertical: true, size: 2 }, {
@@ -1010,7 +1012,7 @@ const columns = [
   //   }
   // },
   {
-    title: '操作',
+    title: t('common.edit'),
     key: 'actions',
     width: 280,
     fixed: 'right',
@@ -1026,7 +1028,7 @@ const columns = [
             },
             {
               icon: () => h(NIcon, { component: PlayOutline }),
-              default: () => '执行'
+              default: () => t('cronTask.execute')
             }
           ),
           h(
@@ -1038,7 +1040,7 @@ const columns = [
             },
             {
               icon: () => h(NIcon, { component: row.enable ? PauseOutline : PlayOutline }),
-              default: () => (row.enable ? '暂停' : '启用')
+              default: () => (row.enable ? t('cronTask.pause') : t('cronTask.enable'))
             }
           ),
           h(
@@ -1050,7 +1052,7 @@ const columns = [
             },
             {
               icon: () => h(NIcon, { component: CreateOutline }),
-              default: () => '编辑'
+              default: () => t('cronTask.edit')
             }
           ),
           h(
@@ -1068,10 +1070,10 @@ const columns = [
                   },
                   {
                     icon: () => h(NIcon, { component: TrashOutline }),
-                    default: () => '删除'
+                    default: () => t('cronTask.delete')
                   }
                 ),
-              default: () => `确定要删除任务 "${row.name}" 吗？`
+              default: () => `${t('cronTask.confirmDelete')} "${row.name}"?`
             }
           )
         ]
@@ -1159,7 +1161,7 @@ const loadTaskList = async () => {
     }
   } catch (error) {
     console.error('加载任务列表失败:', error)
-    message.error('加载任务列表失败')
+    message.error(t('cronTask.loadTaskListFailed'))
   } finally {
     loading.value = false
   }
@@ -1189,7 +1191,7 @@ const handleExecute = async (row) => {
     const result = await ExecuteCronTaskNow(row.id)
     message.success(result)
   } catch (error) {
-    message.error('执行任务失败：' + error.message)
+    message.error(t('cronTask.executeTaskFailed'))
   }
 }
 
@@ -1199,13 +1201,13 @@ const handleToggleEnable = async (row) => {
     const newEnable = !row.enable
     const result = await EnableCronTask(row.id, newEnable)
     if (result === '操作成功') {
-      message.success(newEnable ? '任务已启用' : '任务已禁用')
+      message.success(newEnable ? t('cronTask.taskEnabled') : t('cronTask.taskDisabled'))
       await loadTaskList()
     } else {
       message.error(result)
     }
   } catch (error) {
-    message.error('操作失败：' + error.message)
+    message.error(t('cronTask.operationFailed'))
   }
 }
 
@@ -1275,7 +1277,7 @@ const handleEdit = async (row) => {
       showCreateModal.value = true
     }
   } catch (error) {
-    message.error('获取任务详情失败：' + error.message)
+    message.error(t('cronTask.getTaskDetailFailed'))
   }
 }
 
@@ -1284,13 +1286,13 @@ const handleDelete = async (id) => {
   try {
     const result = await DeleteCronTask(id)
     if (result === '删除成功') {
-      message.success('任务已删除')
+      message.success(t('cronTask.taskDeleted'))
       await loadTaskList()
     } else {
       message.error(result)
     }
   } catch (error) {
-    message.error('删除失败：' + error.message)
+    message.error(t('cronTask.operationFailed'))
   }
 }
 
@@ -1339,9 +1341,7 @@ const handleSubmit = async () => {
     // 检查执行间隔不小于 60 秒
     const intervalCheck = await checkCronInterval(formData.cronExpr)
     if (!intervalCheck.ok) {
-      message.warning(
-        `两次执行间隔过短（约 ${intervalCheck.minIntervalSeconds} 秒），请将间隔设置为至少 60 秒后再保存。`
-      )
+      message.warning(t('common.intervalTooShortWarning', { seconds: intervalCheck.minIntervalSeconds }))
       return
     }
 
@@ -1365,7 +1365,7 @@ const handleSubmit = async () => {
       message.error(result)
     }
   } catch (error) {
-    message.error('操作失败：' + error.message)
+    message.error(t('common.operationFailedWithMsg', { error: error.message }))
   } finally {
     submitting.value = false
   }
@@ -1385,7 +1385,7 @@ const validateCronExpression = async () => {
       return false
     }
   } catch (error) {
-    message.error('Cron 表达式无效：' + error.message)
+    message.error('Cron ' + t('cronTask.interval') + ' ' + t('common.invalid') + ': ' + error.message)
     return false
   }
 }

@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import {nextTick, onBeforeMount, onMounted, onUnmounted, ref} from 'vue'
+import {onBeforeMount, onUnmounted, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {InvestCalendarTimeLine} from "../../wailsjs/go/main/App";
 import { addMonths, format ,parse} from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+import { zhCN, enUS } from 'date-fns/locale';
 
 import {useMessage} from 'naive-ui'
 import {Star48Filled} from "@vicons/fluent";
+const { t, locale } = useI18n()
 const today = new Date();
 const year = today.getFullYear();
-const month = String(today.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要+1
+const month = String(today.getMonth() + 1).padStart(2, '0');
 const day = String(today.getDate()).padStart(2, '0');
 
-// 常见格式：YYYY-MM-DD
 const formattedDate = `${year}-${month}-${day}`;
 const formattedYM = `${year}-${month}`;
 const list  = ref([])
@@ -50,7 +51,7 @@ function loadMore(){
     console.log(ym)
     InvestCalendarTimeLine(ym).then(res => {
       if (res.length==0){
-        message.warning("没有更多数据了")
+        message.warning(t('calendar.noMoreData'))
         return
       }
       list.value.push( ...res)
@@ -59,21 +60,11 @@ function loadMore(){
 }
 function getweekday(date){
   let day=parse(date, 'yyyy-MM-dd', new Date())
-  return format(day, 'EEEE', {locale: zhCN})
+  return format(day, 'EEEE', {locale: locale.value === 'en' ? enUS : zhCN})
 }
 </script>
 
 <template>
-<!--    <n-timeline size="large"  style="text-align: left">-->
-<!--      <n-timeline-item v-for="item in list" :key="item.date" :title="item.date"  type="info" >-->
-<!--        <n-list>-->
-<!--          <n-list-item v-for="l in item.list" :key="l.article_id	">-->
-<!--            <n-text>{{l.title}}</n-text>-->
-<!--          </n-list-item>-->
-<!--        </n-list>-->
-<!--      </n-timeline-item>-->
-<!--    </n-timeline>-->
-
     <n-list bordered   style="max-height: calc(100vh - 230px);text-align: left;">
       <n-scrollbar style="max-height: calc(100vh - 230px);" >
       <n-list-item v-for="(item, index) in list" :id="item.date" :key="item.date">
@@ -91,12 +82,12 @@ function getweekday(date){
           </n-thing>
       </n-list-item>
         <n-list-item v-if="list.length==0">
-          <n-text type="info">没有数据</n-text>
+          <n-text type="info">{{ t('common.noData') }}</n-text>
         </n-list-item>
         <n-list-item v-else style="text-align: center;">
           <n-button-group>
-            <n-button  strong secondary type="info" @click="loadMore">加载更多</n-button>
-            <n-button  strong secondary  type="warning" @click="goBackToday">回到今天</n-button>
+            <n-button  strong secondary type="info" @click="loadMore">{{ t('common.loadMore') }}</n-button>
+            <n-button  strong secondary  type="warning" @click="goBackToday">{{ t('common.backToToday') }}</n-button>
           </n-button-group>
         </n-list-item>
       </n-scrollbar>
