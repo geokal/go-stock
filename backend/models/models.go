@@ -278,6 +278,38 @@ func (receiver StockInfoUS) TableName() string {
 	return "stock_base_info_us"
 }
 
+type StockInfoEU struct {
+	gorm.Model
+	Code     string                `json:"code"`      // stock code without prefix, e.g. "ASML"
+	Name     string                `json:"name"`      // local name
+	EName    string                `json:"eName"`      // English name
+	Isin     string                `json:"isin"`      // ISIN code
+	Exchange string                `json:"exchange"`  // "Euronext", "LSE", "Swiss"
+	Currency string                `json:"currency"`  // "EUR", "GBP", "CHF"
+	Type     string                `json:"type"`      // "Stock", "ETF", "Index"
+	IsDel    soft_delete.DeletedAt `gorm:"softDelete:flag"`
+	BKName   string                `json:"bk_name"`   // sector/block
+	BKCode   string                `json:"bk_code"`
+}
+
+func (receiver StockInfoEU) TableName() string {
+	return "stock_base_info_eu"
+}
+
+type IndexBasicEU struct {
+	gorm.Model
+	Code     string                `json:"code"`      // index code, e.g. "DAX", "FTSE"
+	Name     string                `json:"name"`      // local name
+	EName    string                `json:"eName"`      // English name
+	Exchange string                `json:"exchange"`  // "XETRA", "Euronext", "LSE", "SIX"
+	Currency string                `json:"currency"`
+	IsDel    soft_delete.DeletedAt `gorm:"softDelete:flag"`
+}
+
+func (receiver IndexBasicEU) TableName() string {
+	return "index_basic_eu"
+}
+
 type Resp struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`

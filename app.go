@@ -1977,6 +1977,13 @@ func (a *App) RemoveGroup(groupId int) string {
 }
 
 func (a *App) GetStockKLine(stockCode, stockName string, days int64) *[]data.KLineData {
+	// Route EU/UK/CH stocks to Yahoo Finance via fallback
+	if strings.HasPrefix(stockCode, "eu:") || strings.HasPrefix(stockCode, "uk:") || strings.HasPrefix(stockCode, "ch:") {
+		result := data.FetchKLineWithFallback(stockCode, stockName, "101", int(days), "")
+		if result.Data != nil && len(*result.Data) > 0 {
+			return result.Data
+		}
+	}
 	return data.NewStockDataApi().GetHK_KLineData(stockCode, "day", days)
 }
 
@@ -2335,6 +2342,13 @@ func (a *App) SaveWordFile(filename string, base64Data string) string {
 //	@return error
 func (a *App) GetAiConfigs() []*data.AIConfig {
 	return data.GetSettingConfig().AiConfigs
+}
+
+// GetEuronextStocks returns all EU stocks from database for market UI
+func (a *App) GetEuronextStocks() []*models.StockInfoEU {
+	var stocks []*models.StockInfoEU
+	db.Dao.Find(&stocks)
+	return stocks
 }
 
 // GetAiAssistantSession 获取 AI 助手会话消息列表，sessionId 为空时获取最新的

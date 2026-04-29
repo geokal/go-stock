@@ -447,7 +447,7 @@ func (o *OpenAi) NewChatStream(stock, stockCode, userQuestion string, sysPromptI
 		go func() {
 			defer wg.Done()
 			//logger.SugaredLogger.Infof("NewChatStream getKLineData stock:%s stockCode:%s", stock, stockCode)
-			if strutil.HasPrefixAny(stockCode, []string{"sz", "sh", "hk", "us", "gb_"}) {
+			if strutil.HasPrefixAny(stockCode, []string{"sz", "sh", "hk", "us", "gb_", "eu:", "uk:", "ch:"}) {
 				K := &[]KLineData{}
 				//logger.SugaredLogger.Infof("NewChatStream getKLineData stock:%s stockCode:%s", stock, stockCode)
 				if strutil.HasPrefixAny(stockCode, []string{"sz", "sh"}) {
@@ -455,6 +455,15 @@ func (o *OpenAi) NewChatStream(stock, stockCode, userQuestion string, sysPromptI
 				}
 				if strutil.HasPrefixAny(stockCode, []string{"hk", "us", "gb_"}) {
 					K = NewStockDataApi().GetHK_KLineData(stockCode, "day", o.KDays)
+				}
+				if strutil.HasPrefixAny(stockCode, []string{"eu:", "uk:", "ch:"}) {
+					fallbackResult := FetchKLineWithFallback(stockCode, "", "101", int(o.KDays), "")
+					if fallbackResult.Data != nil && len(*fallbackResult.Data) > 0 {
+						K = fallbackResult.Data
+					}
+				}
+				if K == nil || len(*K) == 0 {
+					return
 				}
 				Kmap := &[]map[string]any{}
 				for _, kline := range *K {

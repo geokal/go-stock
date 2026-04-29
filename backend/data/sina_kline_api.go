@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/duke-git/lancet/v2/strutil"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -560,6 +561,17 @@ type KLineSourceResult struct {
 }
 
 func FetchKLineWithFallback(stockCode, stockName, klt string, limit int, end string) *KLineSourceResult {
+	// Check if this is a European stock code (eu:, uk:, ch:)
+	if strutil.HasPrefixAny(stockCode, []string{"eu:", "uk:", "ch:"}) {
+		yahooResult := fetchFromYahoo(stockCode, klt, limit)
+		if yahooResult != nil && yahooResult.Data != nil && len(*yahooResult.Data) > 0 {
+			yahooResult.Source = "yahoo"
+			return yahooResult
+		}
+		logger.SugaredLogger.Warnf("Yahoo Finance K线数据为空: code=%s klt=%s", stockCode, klt)
+		return &KLineSourceResult{Data: &[]KLineData{}, Source: ""}
+	}
+
 	eastMoneyResult := fetchFromEastMoney(stockCode, stockName, klt, limit, end)
 	if eastMoneyResult != nil && eastMoneyResult.Data != nil && len(*eastMoneyResult.Data) > 0 {
 		eastMoneyResult.Source = "eastmoney"
@@ -620,6 +632,12 @@ func fetchFromTencent(stockCode, klt string, limit int) *KLineSourceResult {
 
 func fetchFromTdx(stockCode, klt string, limit int) *KLineSourceResult {
 	api := NewTdxKLineApi()
+	data := api.GetKLineData(stockCode, klt, limit)
+	return &KLineSourceResult{Data: data}
+}
+
+func fetchFromYahoo(stockCode, klt string, limit int) *KLineSourceResult {
+	api := NewYahooFinanceApi()
 	data := api.GetKLineData(stockCode, klt, limit)
 	return &KLineSourceResult{Data: data}
 }

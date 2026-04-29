@@ -14,8 +14,8 @@ func init() {
 }
 
 func buildStockKLineSection(o *OpenAi, stockCode string, toIntDay int64) string {
-	if !strutil.HasPrefixAny(stockCode, []string{"sz", "sh", "hk", "us", "gb_"}) {
-		return stockCode + "：无数据，可能股票代码错误。（A股：sh,sz开头;港股hk开头,美股：us开头）"
+	if !strutil.HasPrefixAny(stockCode, []string{"sz", "sh", "hk", "us", "gb_", "eu:", "uk:", "ch:"}) {
+		return stockCode + "：无数据，可能股票代码错误。（A股：sh,sz开头;港股hk开头,美股：us开头;欧股：eu:开头;英股：uk:开头;瑞士股：ch:开头）"
 	}
 	var K *[]KLineData
 	if strutil.HasPrefixAny(stockCode, []string{"sz", "sh"}) {
@@ -23,6 +23,12 @@ func buildStockKLineSection(o *OpenAi, stockCode string, toIntDay int64) string 
 	}
 	if strutil.HasPrefixAny(stockCode, []string{"hk", "us", "gb_"}) {
 		K = NewStockDataApi().GetHK_KLineData(stockCode, "day", o.KDays)
+	}
+	if strutil.HasPrefixAny(stockCode, []string{"eu:", "uk:", "ch:"}) {
+		fallbackResult := FetchKLineWithFallback(stockCode, "", "101", int(toIntDay), "")
+		if fallbackResult.Data != nil && len(*fallbackResult.Data) > 0 {
+			K = fallbackResult.Data
+		}
 	}
 	var sourceLabel string
 	if K == nil || len(*K) == 0 {

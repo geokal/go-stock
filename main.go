@@ -296,6 +296,8 @@ func AutoMigrate() {
 	db.Dao.AutoMigrate(&models.MCPServer{})
 	db.Dao.AutoMigrate(&models.MCPServerTool{})
 	db.Dao.AutoMigrate(&models.Skill{})
+	db.Dao.AutoMigrate(&models.StockInfoEU{})
+	db.Dao.AutoMigrate(&models.IndexBasicEU{})
 
 	//updateMultipleModel()
 
@@ -388,6 +390,8 @@ func updateBasicInfo() {
 		go data.NewStockDataApi().GetStockBaseInfo()
 		go data.NewStockDataApi().GetIndexBasic()
 	}
+	// Seed EU stocks and indices
+	go data.SeedEUStockData()
 }
 
 func initStockData(ctx context.Context) {
