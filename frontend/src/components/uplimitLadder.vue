@@ -442,11 +442,11 @@ function showKline(code, name) {
                       </n-space>
                       <n-space align="center" :size="4">
                         <n-text depth="3" style="font-size:11px;">{{ t('market.transaction') }}</n-text>
-                        <n-text style="font-size:13px;">{{ stock.amount }}亿</n-text>
+                        <n-text style="font-size:13px;">{{ stock.amount }}{{ t('market.unit100m') }}</n-text>
                       </n-space>
                       <n-space align="center" :size="4">
                         <n-text depth="3" style="font-size:11px;">{{ t('market.marketCap') }}</n-text>
-                        <n-text style="font-size:13px;">{{ stock.market_c }}亿</n-text>
+                        <n-text style="font-size:13px;">{{ stock.market_c }}{{ t('market.unit100m') }}</n-text>
                       </n-space>
                     </n-space>
                   </n-space>
@@ -584,8 +584,8 @@ function showKline(code, name) {
                   <n-td><n-text type="error" style="cursor:pointer;text-decoration:underline;" @click="showKline(s.stock_code, s.stock_name)">{{ s.stock_name }}</n-text></n-td>
                   <n-td><n-text depth="3" style="font-size:12px;">{{ s.up_limit_time }}</n-text></n-td>
                   <n-td><n-text style="font-size:12px;">{{ s.fd_max }}%</n-text></n-td>
-                  <n-td><n-text style="font-size:12px;">{{ s.amount }}亿</n-text></n-td>
-                  <n-td><n-text style="font-size:12px;">{{ s.market_c }}亿</n-text></n-td>
+                  <n-td><n-text style="font-size:12px;">{{ s.amount }}{{ t('market.unit100m') }}</n-text></n-td>
+                  <n-td><n-text style="font-size:12px;">{{ s.market_c }}{{ t('market.unit100m') }}</n-text></n-td>
                   <n-td>
                     <n-space :size="4" wrap>
                       <n-tag v-for="p in s.plates.slice(0,5)" :key="p" size="tiny" :bordered="false" type="info">{{ p }}</n-tag>

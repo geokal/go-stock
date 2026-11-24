@@ -1,56 +1,56 @@
 #!/bin/bash
 
-# Linux 平台构建脚本
-# 此脚本需要在 Linux 环境下运行
+# Linux Platform Build Script
+# This script must be run on a Linux environment
 
 echo -e "======================================"
-echo -e "  go-stock Linux 构建脚本"
+echo -e "  go-stock Linux Build Script"
 echo -e "======================================"
 
-# 检查是否在 Linux 环境下运行
+# Check if running on Linux
 if [ "$(uname -s)" != "Linux" ]; then
-    echo -e "\n错误：此脚本只能在 Linux 环境下运行"
-    echo -e "请使用 Docker、WSL 或 Linux 虚拟机进行构建"
-    echo -e "\n示例 Docker 构建命令:"
+    echo -e "\nError: This script can only run on Linux"
+    echo -e "Use Docker, WSL, or a Linux VM for building"
+    echo -e "\nExample Docker build command:"
     echo -e "  docker run --rm -v \$(pwd):/app -w /app golang:1.21 ./scripts/build-linux.sh"
     exit 1
 fi
 
-# 进入项目根目录
+# Enter project root directory
 cd "$(dirname "$0")/.."
 
-echo -e "\n[1/5] 检查依赖..."
+echo -e "\n[1/5] Checking dependencies..."
 
-# 检查 Go 是否安装
+# Check if Go is installed
 if ! command -v go &> /dev/null; then
-    echo -e "错误：未找到 Go 编译器，请先安装 Go 1.21+"
+    echo -e "Error: Go compiler not found, please install Go 1.21+ first"
     exit 1
 fi
-echo -e "  ✓ Go 版本：$(go version)"
+echo -e "  OK Go version：$(go version)"
 
-# 检查 Node.js 是否安装
+# Check if Node.js is installed
 if ! command -v npm &> /dev/null; then
-    echo -e "错误：未找到 Node.js/npm，请先安装 Node.js 18+"
+    echo -e "Error: Node.js/npm not found, please install Node.js 18+ first"
     exit 1
 fi
-echo -e "  ✓ Node.js 版本：$(node --version)"
+echo -e "  OK Node.js version：$(node --version)"
 
-# 检查 Wails 是否安装
+# Check if Wails is installed
 if ! command -v wails &> /dev/null; then
-    echo -e "  正在安装 Wails..."
+    echo -e "  Installing Wails..."
     go install github.com/wailsapp/wails/v2/cmd/wails@latest
     if ! command -v wails &> /dev/null; then
-        echo -e "错误：Wails 安装失败"
+        echo -e "Error: Wails installation failed"
         exit 1
     fi
 fi
-echo -e "  ✓ Wails 版本：$(wails version)"
+echo -e "  OK Wails version：$(wails version)"
 
-# 检查 libgtk-3-dev 和 libwebkit2gtk-4.0-dev 是否安装 (Ubuntu/Debian)
+# Check for libgtk-3-dev and libwebkit2gtk-4.0-dev (Ubuntu/Debian)
 if command -v apt-get &> /dev/null; then
     if ! dpkg -l | grep -q libgtk-3-dev || ! dpkg -l | grep -q libwebkit2gtk-4.0-dev; then
-        echo -e "\n  警告：缺少必要的系统依赖"
-        echo -e "  请运行以下命令安装依赖:"
+        echo -e "\n  Warning: Missing required system dependencies"
+        echo -e "  Please run the following command to install dependencies:"
         echo -e "    sudo apt-get update && sudo apt-get install -y \\"
         echo -e "      libgtk-3-dev \\"
         echo -e "      libwebkit2gtk-4.0-dev \\"
@@ -60,26 +60,26 @@ if command -v apt-get &> /dev/null; then
     fi
 fi
 
-echo -e "\n[2/5] 清理旧的构建文件..."
+echo -e "\n[2/5] Cleaning old build files..."
 rm -rf build/bin/linux
 
-echo -e "\n[3/5] 安装前端依赖..."
+echo -e "\n[3/5] Installing frontend dependencies..."
 cd frontend
 npm install
 cd ..
 
-echo -e "\n[4/5] 构建前端..."
+echo -e "\n[4/5] Building frontend..."
 cd frontend
 npm run build
 cd ..
 
-echo -e "\n[5/5] 构建 Linux 应用..."
+echo -e "\n[5/5] Building Linux application..."
 wails build --platform linux/amd64 --clean
 
 echo -e "\n======================================"
-echo -e "  构建完成!"
+echo -e "  Build complete!"
 echo -e "======================================"
-echo -e "\n  可执行文件位置：build/bin/linux/go-stock"
-echo -e "\n运行方式:"
+echo -e "\n  Executable location：build/bin/linux/go-stock"
+echo -e "\nRun with:"
 echo -e "  ./build/bin/linux/go-stock"
 echo -e "\n======================================"

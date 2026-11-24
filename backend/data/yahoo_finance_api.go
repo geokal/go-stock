@@ -95,8 +95,7 @@ func ConvertStockCodeToYahoo(stockCode string) (string, string) {
 		switch ticker {
 		case "FTSE", "FTSE100":
 			return "^FTSE", "LSE"
-		case "FTSE250":
-			return "^MCX", "LSE"
+		// Note: FTSE 250 has no direct Yahoo Finance index symbol; use ^FTSE for FTSE 100
 		}
 		// Otherwise treat as stock
 		return ticker + ".L", "LSE"
@@ -211,7 +210,7 @@ func (y *YahooFinanceApi) GetKLineData(stockCode, period string, limit int) *[]K
 			close = fmt.Sprintf("%.2f", quote.Close[i])
 		}
 		volume := ""
-		if i < len(quote.Volume) && !isNaNFloat(float64(quote.Volume[i])) {
+		if i < len(quote.Volume) && !isNaN(float64(quote.Volume[i])) {
 			volume = fmt.Sprintf("%.0f", float64(quote.Volume[i]))
 		}
 
@@ -309,9 +308,5 @@ func (y *YahooFinanceApi) limitToRange(limit int, period string) string {
 }
 
 func isNaN(f float64) bool {
-	return f != f
-}
-
-func isNaNFloat(f float64) bool {
 	return f != f
 }

@@ -511,7 +511,7 @@ const columnsRef = ref([
       return h(
         NTag,
         { type: row.Direction === 'buy' ? 'error' : 'success', size: 'small', round: true, bordered: false },
-        { default: () => row.Direction }
+        { default: () => t('tradingRecord.' + row.Direction) }
       )
     }
   },
